@@ -1,7 +1,6 @@
 package com.tradingjournal.api.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,9 +14,26 @@ public class Strategy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank
-    @Column(nullable = false, unique = true)
-    private String name;
+    @Column(name = "htf_pd_array", nullable = false)
+    private boolean htfPdArray;
+
+    @Column(nullable = false)
+    private boolean ifvg;
+
+    @Column(nullable = false)
+    private boolean cisd;
+
+    @Column(name = "followed_rules", nullable = false)
+    private boolean followedRules;
+
+    @Column(nullable = false)
+    private boolean continuation;
+
+    @Column(nullable = false)
+    private boolean reversal;
+
+    @Column(name = "correct_risk", nullable = false)
+    private boolean correctRisk;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -38,12 +54,60 @@ public class Strategy {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public boolean isHtfPdArray() {
+        return htfPdArray;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setHtfPdArray(boolean htfPdArray) {
+        this.htfPdArray = htfPdArray;
+    }
+
+    public boolean isIfvg() {
+        return ifvg;
+    }
+
+    public void setIfvg(boolean ifvg) {
+        this.ifvg = ifvg;
+    }
+
+    public boolean isCisd() {
+        return cisd;
+    }
+
+    public void setCisd(boolean cisd) {
+        this.cisd = cisd;
+    }
+
+    public boolean isFollowedRules() {
+        return followedRules;
+    }
+
+    public void setFollowedRules(boolean followedRules) {
+        this.followedRules = followedRules;
+    }
+
+    public boolean isContinuation() {
+        return continuation;
+    }
+
+    public void setContinuation(boolean continuation) {
+        this.continuation = continuation;
+    }
+
+    public boolean isReversal() {
+        return reversal;
+    }
+
+    public void setReversal(boolean reversal) {
+        this.reversal = reversal;
+    }
+
+    public boolean isCorrectRisk() {
+        return correctRisk;
+    }
+
+    public void setCorrectRisk(boolean correctRisk) {
+        this.correctRisk = correctRisk;
     }
 
     public LocalDateTime getCreatedAt() {
