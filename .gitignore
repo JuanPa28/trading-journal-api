@@ -39,3 +39,6 @@ application-local.properties
 ### OS ###
 .DS_Store
 Thumbs.db
+
+### Claude Code local config ###
+.claude/
