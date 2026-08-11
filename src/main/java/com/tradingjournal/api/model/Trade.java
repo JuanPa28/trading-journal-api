@@ -67,27 +67,6 @@ public class Trade {
     @Column(columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "htf_pd_array", nullable = false)
-    private boolean htfPdArray;
-
-    @Column(nullable = false)
-    private boolean ifvg;
-
-    @Column(nullable = false)
-    private boolean cisd;
-
-    @Column(name = "followed_rules", nullable = false)
-    private boolean followedRules;
-
-    @Column(nullable = false)
-    private boolean continuation;
-
-    @Column(nullable = false)
-    private boolean reversal;
-
-    @Column(name = "correct_risk", nullable = false)
-    private boolean correctRisk;
-
     @Transient
     public boolean isOpen() {
         return exitTime == null;
@@ -216,61 +195,5 @@ public class Trade {
 
     public void setNotes(String notes) {
         this.notes = notes;
-    }
-
-    public boolean isHtfPdArray() {
-        return htfPdArray;
-    }
-
-    public void setHtfPdArray(boolean htfPdArray) {
-        this.htfPdArray = htfPdArray;
-    }
-
-    public boolean isIfvg() {
-        return ifvg;
-    }
-
-    public void setIfvg(boolean ifvg) {
-        this.ifvg = ifvg;
-    }
-
-    public boolean isCisd() {
-        return cisd;
-    }
-
-    public void setCisd(boolean cisd) {
-        this.cisd = cisd;
-    }
-
-    public boolean isFollowedRules() {
-        return followedRules;
-    }
-
-    public void setFollowedRules(boolean followedRules) {
-        this.followedRules = followedRules;
-    }
-
-    public boolean isContinuation() {
-        return continuation;
-    }
-
-    public void setContinuation(boolean continuation) {
-        this.continuation = continuation;
-    }
-
-    public boolean isReversal() {
-        return reversal;
-    }
-
-    public void setReversal(boolean reversal) {
-        this.reversal = reversal;
-    }
-
-    public boolean isCorrectRisk() {
-        return correctRisk;
-    }
-
-    public void setCorrectRisk(boolean correctRisk) {
-        this.correctRisk = correctRisk;
     }
 }
