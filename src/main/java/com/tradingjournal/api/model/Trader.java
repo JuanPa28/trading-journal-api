@@ -3,7 +3,9 @@ package com.tradingjournal.api.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +30,10 @@ public class Trader {
     @NotBlank
     @Column(name = "full_name", nullable = false)
     private String fullName;
+
+    @NotNull
+    @Column(name = "available_funds", nullable = false, precision = 19, scale = 2)
+    private BigDecimal availableFunds;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -70,6 +76,14 @@ public class Trader {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public BigDecimal getAvailableFunds() {
+        return availableFunds;
+    }
+
+    public void setAvailableFunds(BigDecimal availableFunds) {
+        this.availableFunds = availableFunds;
     }
 
     public LocalDateTime getCreatedAt() {
