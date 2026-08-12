@@ -4,8 +4,10 @@ import com.tradingjournal.api.dto.TradeQueryRequest;
 import com.tradingjournal.api.dto.TradeRequest;
 import com.tradingjournal.api.dto.TradeResponse;
 import com.tradingjournal.api.service.TradeService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -47,8 +49,13 @@ public class TradeController {
         tradeService.delete(id);
     }
 
-    @PostMapping("/query")
-    public List<TradeResponse> query(@RequestBody TradeQueryRequest request) {
-        return tradeService.search(request);
+    // No RequestMethod.QUERY exists in Spring 7.0.8 yet, so method is left unrestricted
+    // here and checked manually against the raw HTTP method line.
+    @RequestMapping("/query")
+    public ResponseEntity<?> query(HttpServletRequest servletRequest, @RequestBody TradeQueryRequest request) {
+        if (!"QUERY".equalsIgnoreCase(servletRequest.getMethod())) {
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).build();
+        }
+        return ResponseEntity.ok(tradeService.search(request));
     }
 }
