@@ -1,0 +1,39 @@
+name: trading-journal-produccion
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: journal_prod
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - db_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/journal_prod
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      # application-prod.yml uses ddl-auto: validate (production-safe: never modifies the
+      # schema on its own). This fresh local container has no schema yet and the project
+      # has no migration tool (Flyway/Liquibase) set up, so this override bootstraps it
+      # once. Real cloud production would run a migration tool instead of this override.
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    ports:
+      - "8081:8080"
+
+volumes:
+  db_data_prod:
