@@ -1,3 +1,5 @@
+name: trading-journal-pruebas
+
 services:
   db:
     image: postgres:17
