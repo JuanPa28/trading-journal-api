@@ -1,0 +1,305 @@
+{
+  "info": {
+    "_postman_id": "7d39d0bf-dfdf-40f9-b323-f96c3d943fe4",
+    "name": "Trading Journal API",
+    "description": "Colección completa de la API REST del Trading Journal (Actividad 1). Incluye las 3 entidades (Trader, Strategy, Trade), el endpoint QUERY con el método HTTP literal, y casos de prueba de validación/errores. Usa las variables de colección o selecciona el environment 'Pruebas' / 'Producción' para cambiar de puerto.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
+    { "key": "traderId", "value": "1", "type": "string" },
+    { "key": "strategyId", "value": "1", "type": "string" },
+    { "key": "tradeId", "value": "1", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Traders",
+      "item": [
+        {
+          "name": "Crear trader",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 5000.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/traders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders"]
+            },
+            "description": "Crea un Trader. Campos validados: fullName y username no vacíos, email con formato válido, availableFunds >= 0."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar traders",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/traders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener trader por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders", "{{traderId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar trader",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 7500.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders", "{{traderId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar trader",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders", "{{traderId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Strategies",
+      "item": [
+        {
+          "name": "Listar strategies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/strategies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "strategies"]
+            },
+            "description": "Solo lectura. Las Strategy se crean automáticamente dentro de POST /api/trades, nunca directamente."
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener strategy por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/strategies/{{strategyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "strategies", "{{strategyId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Trades",
+      "item": [
+        {
+          "name": "Crear trade",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Buen setup\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades"]
+            },
+            "description": "Crea un Trade. El objeto 'strategy' anidado se guarda como una fila NUEVA de Strategy siempre (nunca se reutiliza una existente)."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar trades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Obtener trade por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "{{tradeId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar trade",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29700.00,\n  \"pnl\": 234.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Ajustado el precio de salida\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "{{tradeId}}"]
+            },
+            "description": "Actualiza un Trade existente. A diferencia de crear, aquí la Strategy existente se reutiliza y se le pisan los campos (no se crea una nueva fila)."
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar trade",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "{{tradeId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar trades (QUERY)",
+          "request": {
+            "method": "QUERY",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"won\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/query",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "query"]
+            },
+            "description": "Usa el verbo HTTP QUERY literal (no POST). Filtra por traderId y/o won (true = ganadoras, false = perdedoras). Cualquiera de los dos campos puede omitirse o mandarse null."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Casos de prueba",
+      "item": [
+        {
+          "name": "QUERY - Solo perdedoras",
+          "request": {
+            "method": "QUERY",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"won\": false\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/query",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "query"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QUERY con GET en vez de QUERY (debe dar 405)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"won\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/query",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "query"]
+            },
+            "description": "Demuestra que la ruta /api/trades/query rechaza cualquier método que no sea el literal QUERY -> espera 405 Method Not Allowed."
+          },
+          "response": []
+        },
+        {
+          "name": "404 - Trader inexistente",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/traders/999999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders", "999999"]
+            },
+            "description": "Demuestra el manejo centralizado de errores (GlobalExceptionHandler) -> espera 404 con cuerpo JSON de error."
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Validación falla al crear trader",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"\",\n  \"username\": \"x\",\n  \"email\": \"not-an-email\",\n  \"availableFunds\": -5\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/traders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders"]
+            },
+            "description": "fullName vacío, email inválido y availableFunds negativo -> espera 400 con el detalle de cada campo que falló."
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
