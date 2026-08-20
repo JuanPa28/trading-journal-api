@@ -1,5 +1,6 @@
 package com.tradingjournal.api.service;
 
+import com.tradingjournal.api.dto.TraderPatchRequest;
 import com.tradingjournal.api.dto.TraderRequest;
 import com.tradingjournal.api.dto.TraderResponse;
 import com.tradingjournal.api.exception.ResourceNotFoundException;
@@ -109,6 +110,28 @@ class TraderServiceTest {
         when(traderRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> traderService.update(99L, request))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patch_onlyOverwritesProvidedFields() {
+        Trader existing = traderWithId(1L, "oldUsername");
+        when(traderRepository.findById(1L)).thenReturn(Optional.of(existing));
+        TraderPatchRequest patchRequest = new TraderPatchRequest(null, null, null, new BigDecimal("7500.00"));
+
+        TraderResponse response = traderService.patch(1L, patchRequest);
+
+        assertThat(response.availableFunds()).isEqualByComparingTo("7500.00");
+        assertThat(response.username()).isEqualTo("oldUsername");
+        assertThat(response.fullName()).isEqualTo("Full oldUsername");
+    }
+
+    @Test
+    void patch_throwsResourceNotFound_whenTraderMissing() {
+        when(traderRepository.findById(99L)).thenReturn(Optional.empty());
+        TraderPatchRequest patchRequest = new TraderPatchRequest(null, null, null, BigDecimal.TEN);
+
+        assertThatThrownBy(() -> traderService.patch(99L, patchRequest))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 

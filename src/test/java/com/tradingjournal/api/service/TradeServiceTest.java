@@ -1,6 +1,7 @@
 package com.tradingjournal.api.service;
 
 import com.tradingjournal.api.dto.StrategyRequest;
+import com.tradingjournal.api.dto.TradePatchRequest;
 import com.tradingjournal.api.dto.TradeQueryRequest;
 import com.tradingjournal.api.dto.TradeRequest;
 import com.tradingjournal.api.dto.TradeResponse;
@@ -151,6 +152,33 @@ class TradeServiceTest {
         when(tradeRepository.findById(99L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> tradeService.update(99L, tradeRequest))
+                .isInstanceOf(ResourceNotFoundException.class);
+    }
+
+    @Test
+    void patch_onlyOverwritesProvidedFields() {
+        Trade existingTrade = tradeWithId(1L, trader, new Strategy());
+        when(tradeRepository.findById(1L)).thenReturn(Optional.of(existingTrade));
+        TradePatchRequest patchRequest = new TradePatchRequest(
+                null, null, null, null, null, null, null, null,
+                new BigDecimal("250.00"), null, null, "Ajuste rápido de pnl"
+        );
+
+        TradeResponse response = tradeService.patch(1L, patchRequest);
+
+        assertThat(response.pnl()).isEqualByComparingTo("250.00");
+        assertThat(response.notes()).isEqualTo("Ajuste rápido de pnl");
+        assertThat(response.contract()).isEqualTo("MNQU26");
+    }
+
+    @Test
+    void patch_throwsResourceNotFound_whenTradeMissing() {
+        when(tradeRepository.findById(99L)).thenReturn(Optional.empty());
+        TradePatchRequest patchRequest = new TradePatchRequest(
+                null, null, null, null, null, null, null, null, null, null, null, null
+        );
+
+        assertThatThrownBy(() -> tradeService.patch(99L, patchRequest))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
