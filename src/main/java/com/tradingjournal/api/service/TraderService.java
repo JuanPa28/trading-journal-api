@@ -1,5 +1,6 @@
 package com.tradingjournal.api.service;
 
+import com.tradingjournal.api.dto.TraderPatchRequest;
 import com.tradingjournal.api.dto.TraderRequest;
 import com.tradingjournal.api.dto.TraderResponse;
 import com.tradingjournal.api.exception.ResourceNotFoundException;
@@ -39,6 +40,15 @@ public class TraderService {
     public TraderResponse update(Long id, TraderRequest request) {
         Trader trader = getOrThrow(id);
         applyRequest(trader, request);
+        return toResponse(trader);
+    }
+
+    public TraderResponse patch(Long id, TraderPatchRequest request) {
+        Trader trader = getOrThrow(id);
+        if (request.fullName() != null) trader.setFullName(request.fullName());
+        if (request.username() != null) trader.setUsername(request.username());
+        if (request.email() != null) trader.setEmail(request.email());
+        if (request.availableFunds() != null) trader.setAvailableFunds(request.availableFunds());
         return toResponse(trader);
     }
 
