@@ -1,5 +1,6 @@
 package com.tradingjournal.api.controller;
 
+import com.tradingjournal.api.dto.TraderPatchRequest;
 import com.tradingjournal.api.dto.TraderRequest;
 import com.tradingjournal.api.dto.TraderResponse;
 import com.tradingjournal.api.service.TraderService;
@@ -38,6 +39,11 @@ public class TraderController {
     @PutMapping("/{id}")
     public TraderResponse update(@PathVariable Long id, @Valid @RequestBody TraderRequest request) {
         return traderService.update(id, request);
+    }
+
+    @PatchMapping("/{id}")
+    public TraderResponse patch(@PathVariable Long id, @Valid @RequestBody TraderPatchRequest request) {
+        return traderService.patch(id, request);
     }
 
     @DeleteMapping("/{id}")
