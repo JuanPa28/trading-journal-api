@@ -1,0 +1,35 @@
+databases:
+  - name: trading-journal-db
+    plan: free
+    databaseName: journal_prod
+    user: journal_admin
+
+services:
+  - type: web
+    name: trading-journal-api
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      # application-prod.yml uses ddl-auto: validate (production-safe). This managed
+      # database starts empty and the project has no migration tool (Flyway/Liquibase)
+      # yet, so this bootstraps the schema once — same approach used for the local
+      # Producción Docker environment (see docker-compose.prod.yml).
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: update
+      - key: DB_USERNAME
+        fromDatabase:
+          name: trading-journal-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: trading-journal-db
+          property: password
+      # Render only exposes a full postgresql:// URI via fromDatabase (no separate
+      # host/port), but Spring needs a jdbc:postgresql:// URL. Set manually after the
+      # database is created — see the deployment guide for exact steps.
+      - key: DB_URL
+        sync: false
