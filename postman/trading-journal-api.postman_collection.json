@@ -79,6 +79,25 @@
           "response": []
         },
         {
+          "name": "Editar un campo del trader (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availableFunds\": 7500.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "traders", "{{traderId}}"]
+            },
+            "description": "Actualización parcial: solo cambia los campos que mandes (aquí solo availableFunds). Cualquier campo omitido (fullName, username, email) se queda igual. A diferencia de PUT, no hace falta mandar el objeto completo."
+          },
+          "response": []
+        },
+        {
           "name": "Eliminar trader",
           "request": {
             "method": "DELETE",
@@ -189,6 +208,25 @@
               "path": ["api", "trades", "{{tradeId}}"]
             },
             "description": "Actualiza un Trade existente. A diferencia de crear, aquí la Strategy existente se reutiliza y se le pisan los campos (no se crea una nueva fila)."
+          },
+          "response": []
+        },
+        {
+          "name": "Editar un campo del trade (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Nota corregida después de revisar el trade\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trades", "{{tradeId}}"]
+            },
+            "description": "Actualización parcial: solo cambia los campos que mandes (aquí solo notes). El resto del trade (precios, fechas, contract, la Strategy, etc.) se queda exactamente igual. No acepta cambiar traderId ni la strategy — solo los campos propios del Trade."
           },
           "response": []
         },
