@@ -1,6 +1,7 @@
 package com.tradingjournal.api.service;
 
 import com.tradingjournal.api.dto.StrategyRequest;
+import com.tradingjournal.api.dto.TradePatchRequest;
 import com.tradingjournal.api.dto.TradeQueryRequest;
 import com.tradingjournal.api.dto.TradeRequest;
 import com.tradingjournal.api.dto.TradeResponse;
@@ -67,6 +68,23 @@ public class TradeService {
         applyStrategy(trade.getStrategy(), request.strategy());
         applyTrade(trade, request);
 
+        return toResponse(trade);
+    }
+
+    public TradeResponse patch(Long id, TradePatchRequest request) {
+        Trade trade = getOrThrow(id);
+        if (request.externalId() != null) trade.setExternalId(request.externalId());
+        if (request.contract() != null) trade.setContract(request.contract());
+        if (request.size() != null) trade.setSize(request.size());
+        if (request.direction() != null) trade.setDirection(request.direction());
+        if (request.entryTime() != null) trade.setEntryTime(request.entryTime());
+        if (request.exitTime() != null) trade.setExitTime(request.exitTime());
+        if (request.entryPrice() != null) trade.setEntryPrice(request.entryPrice());
+        if (request.exitPrice() != null) trade.setExitPrice(request.exitPrice());
+        if (request.pnl() != null) trade.setPnl(request.pnl());
+        if (request.commissions() != null) trade.setCommissions(request.commissions());
+        if (request.fees() != null) trade.setFees(request.fees());
+        if (request.notes() != null) trade.setNotes(request.notes());
         return toResponse(trade);
     }
 
