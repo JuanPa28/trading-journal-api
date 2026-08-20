@@ -1,5 +1,6 @@
 package com.tradingjournal.api.controller;
 
+import com.tradingjournal.api.dto.TraderPatchRequest;
 import com.tradingjournal.api.dto.TraderRequest;
 import com.tradingjournal.api.dto.TraderResponse;
 import com.tradingjournal.api.exception.ResourceNotFoundException;
@@ -100,6 +101,31 @@ class TraderControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("newuser"));
+    }
+
+    @Test
+    void patch_returns200WithOnlyPatchedFieldChanged() throws Exception {
+        TraderPatchRequest patchRequest = new TraderPatchRequest(null, null, null, new BigDecimal("7500.00"));
+        TraderResponse response = new TraderResponse(1L, "Juan Pablo", "juanpa28", "juanpa@example.com", new BigDecimal("7500.00"), LocalDateTime.now());
+        when(traderService.patch(eq(1L), any(TraderPatchRequest.class))).thenReturn(response);
+
+        mockMvc.perform(patch("/api/traders/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.availableFunds").value(7500.00));
+    }
+
+    @Test
+    void patch_returns404_whenTraderMissing() throws Exception {
+        TraderPatchRequest patchRequest = new TraderPatchRequest(null, null, null, BigDecimal.TEN);
+        when(traderService.patch(eq(99L), any(TraderPatchRequest.class)))
+                .thenThrow(new ResourceNotFoundException("Trader not found: 99"));
+
+        mockMvc.perform(patch("/api/traders/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchRequest)))
+                .andExpect(status().isNotFound());
     }
 
     @Test

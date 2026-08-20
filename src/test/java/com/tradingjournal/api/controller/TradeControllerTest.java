@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -77,6 +78,36 @@ class TradeControllerTest {
         when(tradeService.findById(99L)).thenThrow(new ResourceNotFoundException("Trade not found: 99"));
 
         mockMvc.perform(get("/api/trades/99"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void patch_returns200WithOnlyPatchedFieldChanged() throws Exception {
+        TradePatchRequest patchRequest = new TradePatchRequest(
+                null, null, null, null, null, null, null, null,
+                new BigDecimal("250.00"), null, null, null
+        );
+        when(tradeService.patch(eq(1L), any(TradePatchRequest.class)))
+                .thenReturn(tradeResponse(1L, false, new BigDecimal("250.00")));
+
+        mockMvc.perform(patch("/api/trades/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.pnl").value(250.00));
+    }
+
+    @Test
+    void patch_returns404_whenTradeMissing() throws Exception {
+        TradePatchRequest patchRequest = new TradePatchRequest(
+                null, null, null, null, null, null, null, null, null, null, null, "nota"
+        );
+        when(tradeService.patch(eq(99L), any(TradePatchRequest.class)))
+                .thenThrow(new ResourceNotFoundException("Trade not found: 99"));
+
+        mockMvc.perform(patch("/api/trades/99")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(patchRequest)))
                 .andExpect(status().isNotFound());
     }
 
