@@ -9,3 +9,9 @@ spring:
 
 server:
   port: 8080
+
+companions:
+  mari:
+    base-url: ${MARI_BASE_URL:https://statsnostra-produccion.onrender.com}
+  pipe:
+    base-url: ${PIPE_BASE_URL:https://ecommerce-backend-yi4o.onrender.com}
