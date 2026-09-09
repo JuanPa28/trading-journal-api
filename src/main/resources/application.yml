@@ -12,6 +12,6 @@ server:
 
 companions:
   mari:
-    base-url: ${MARI_BASE_URL:https://statsnostra-produccion.onrender.com}
+    base-url: ${MARI_BASE_URL:https://statsnostra-api-599897195726.us-central1.run.app}
   pipe:
-    base-url: ${PIPE_BASE_URL:https://ecommerce-backend-yi4o.onrender.com}
+    base-url: ${PIPE_BASE_URL:http://alb-ecommerce-1653098310.us-east-2.elb.amazonaws.com}

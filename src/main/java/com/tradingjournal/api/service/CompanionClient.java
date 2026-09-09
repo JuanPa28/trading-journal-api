@@ -37,19 +37,19 @@ public class CompanionClient {
     }
 
     public PartidoDto getPartido(Long id) {
-        return safeGet(mariClient, "/partidos/" + id, PartidoDto.class);
+        return safeGet(mariClient, "/api/v1/partidos/" + id, PartidoDto.class);
     }
 
     public PrediccionDto getPrediccion(Long id) {
-        return safeGet(mariClient, "/predicciones/" + id, PrediccionDto.class);
+        return safeGet(mariClient, "/api/v1/predicciones/" + id, PrediccionDto.class);
     }
 
     public CommerceDto getCommerce(Integer nit) {
-        return safeGet(pipeClient, "/commerce/" + nit, CommerceDto.class);
+        return safeGet(pipeClient, "/api/v1/commerce/" + nit, CommerceDto.class);
     }
 
     public ProductDto getProduct(String id) {
-        return safeGet(pipeClient, "/products/" + id, ProductDto.class);
+        return safeGet(pipeClient, "/api/v1/products/" + id, ProductDto.class);
     }
 
     private <T> T safeGet(RestClient client, String uri, Class<T> type) {
