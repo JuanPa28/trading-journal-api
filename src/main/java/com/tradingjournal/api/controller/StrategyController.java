@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/strategies")
+@RequestMapping({"/api/strategies", "/api/v1/strategies"})
 public class StrategyController {
 
     private final StrategyService strategyService;
