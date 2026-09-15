@@ -1,11 +1,13 @@
 package com.tradingjournal.api.service;
 
+import com.tradingjournal.api.config.RequestLoggingFilter;
 import com.tradingjournal.api.dto.companion.CommerceDto;
 import com.tradingjournal.api.dto.companion.PartidoDto;
 import com.tradingjournal.api.dto.companion.PrediccionDto;
 import com.tradingjournal.api.dto.companion.ProductDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -54,7 +56,10 @@ public class CompanionClient {
 
     private <T> T safeGet(RestClient client, String uri, Class<T> type) {
         try {
-            return client.get().uri(uri).retrieve().body(type);
+            String traceId = MDC.get(RequestLoggingFilter.TRACE_ID_MDC_KEY);
+            return client.get().uri(uri)
+                    .header(RequestLoggingFilter.TRACE_ID_HEADER, traceId)
+                    .retrieve().body(type);
         } catch (Exception e) {
             log.warn("No se pudo obtener {} desde la API compañera: {}", uri, e.getMessage());
             return null;
