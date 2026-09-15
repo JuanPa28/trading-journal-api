@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trading-journal-config
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  # Bootstrap del esquema en Oracle Autonomous DB (todavía no hay Flyway/Liquibase).
+  # Mismo simplificación honesta usada en Docker local y en Render.
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+  MARI_BASE_URL: "https://statsnostra-api-599897195726.us-central1.run.app"
+  PIPE_BASE_URL: "http://alb-ecommerce-1653098310.us-east-2.elb.amazonaws.com"
