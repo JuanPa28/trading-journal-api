@@ -52,6 +52,32 @@
         </dependency>
 
         <dependency>
+            <groupId>com.oracle.oci.sdk</groupId>
+            <artifactId>oci-java-sdk-objectstorage</artifactId>
+            <version>3.68.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.oci.sdk</groupId>
+            <artifactId>oci-java-sdk-common</artifactId>
+            <version>3.68.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.oci.sdk</groupId>
+            <artifactId>oci-java-sdk-common-httpclient-jersey3</artifactId>
+            <version>3.68.1</version>
+        </dependency>
+        <!-- El SDK de OCI usa Jackson 2.x internamente (paquete com.fasterxml),
+             distinto del Jackson 3.x (tools.jackson) que usa el resto del
+             proyecto — coexisten en paquetes distintos, sin choque real, pero
+             jackson-databind:2.x necesita jackson-core:2.x explícito porque
+             nada más en el árbol de dependencias lo estaba trayendo. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.21.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>test</scope>

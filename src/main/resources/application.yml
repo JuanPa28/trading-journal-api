@@ -30,3 +30,16 @@ companions:
     base-url: ${MARI_BASE_URL:http://34.57.56.128}
   pipe:
     base-url: ${PIPE_BASE_URL:http://alb-ecommerce-1653098310.us-east-2.elb.amazonaws.com}
+
+# Credenciales de la llave API de OCI — las mismas que usa el resto del
+# proyecto, nunca con valores quemados: siempre vienen de variables de
+# entorno (ver k8s/README.md para cómo se cargan como Secret en el clúster).
+oci:
+  tenancy-id: ${OCI_TENANCY_ID}
+  user-id: ${OCI_USER_ID}
+  fingerprint: ${OCI_FINGERPRINT}
+  private-key: ${OCI_PRIVATE_KEY}
+  region: ${OCI_REGION:sa-bogota-1}
+  object-storage:
+    namespace: ${OCI_OBJECT_STORAGE_NAMESPACE:axxhzvxjrmcl}
+    bucket: ${OCI_OBJECT_STORAGE_BUCKET:trading-journal-attachments}
