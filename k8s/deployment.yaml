@@ -26,6 +26,8 @@ spec:
                 name: trading-journal-config
             - secretRef:
                 name: trading-journal-db-credentials
+            - secretRef:
+                name: trading-journal-oci-credentials
           resources:
             requests:
               cpu: "250m"

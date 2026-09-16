@@ -16,6 +16,15 @@ kubectl create secret generic trading-journal-db-credentials \
   --from-literal=DB_URL='jdbc:oracle:thin:@(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=<tu-service-name>.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))' \
   --from-literal=DB_USERNAME='ADMIN' \
   --from-literal=DB_PASSWORD='<password-del-admin-de-la-BD>'
+
+# Credenciales de la llave API de OCI, para que el componente de Object
+# Storage pueda guardar/leer adjuntos (misma llave API que ya usa el resto
+# del proyecto — ver "My profile → API keys" en la consola)
+kubectl create secret generic trading-journal-oci-credentials \
+  --from-literal=OCI_TENANCY_ID='<tu-tenancy-ocid>' \
+  --from-literal=OCI_USER_ID='<tu-user-ocid>' \
+  --from-literal=OCI_FINGERPRINT='<fingerprint-de-la-llave-api>' \
+  --from-file=OCI_PRIVATE_KEY=/ruta/a/tu/oci_api_key.pem
 ```
 
 Después de crear los secrets, aplicar los manifiestos:
