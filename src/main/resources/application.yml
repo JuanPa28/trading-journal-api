@@ -27,6 +27,6 @@ management:
 
 companions:
   mari:
-    base-url: ${MARI_BASE_URL:https://statsnostra-api-599897195726.us-central1.run.app}
+    base-url: ${MARI_BASE_URL:http://34.57.56.128}
   pipe:
     base-url: ${PIPE_BASE_URL:http://alb-ecommerce-1653098310.us-east-2.elb.amazonaws.com}
