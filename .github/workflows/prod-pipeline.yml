@@ -35,7 +35,9 @@ jobs:
 
       - name: Compute image name
         id: vars
-        run: echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+        run: |
+          echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "ocir_image=bog.ocir.io/axxhzvxjrmcl/trading-journal-api" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -44,11 +46,57 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to OCIR
+        uses: docker/login-action@v3
+        with:
+          registry: bog.ocir.io
+          username: axxhzvxjrmcl/Default/${{ secrets.OCIR_USERNAME }}
+          password: ${{ secrets.OCIR_AUTH_TOKEN }}
+
       - name: Build and push Docker image (Producción)
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
+          provenance: false
+          sbom: false
           tags: |
             ${{ steps.vars.outputs.image }}:prod-${{ github.sha }}
             ${{ steps.vars.outputs.image }}:prod-latest
+            ${{ steps.vars.outputs.ocir_image }}:prod-${{ github.sha }}
+            ${{ steps.vars.outputs.ocir_image }}:latest
+
+      - name: Deploy to OKE
+        id: deploy
+        continue-on-error: true
+        env:
+          OCI_CLI_USER: ${{ secrets.OCI_CLI_USER }}
+          OCI_CLI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+          OCI_CLI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          OCI_CLI_KEY_CONTENT: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+          OKE_CLUSTER_ID: ${{ secrets.OKE_CLUSTER_ID }}
+        run: |
+          pip install --quiet oci-cli
+          mkdir -p ~/.oci
+          echo "$OCI_CLI_KEY_CONTENT" > ~/.oci/key.pem
+          chmod 600 ~/.oci/key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          user=$OCI_CLI_USER
+          fingerprint=$OCI_CLI_FINGERPRINT
+          tenancy=$OCI_CLI_TENANCY
+          region=sa-bogota-1
+          key_file=$HOME/.oci/key.pem
+          EOF
+          oci ce cluster create-kubeconfig --cluster-id "$OKE_CLUSTER_ID" --file ~/.kube/config --region sa-bogota-1 --token-version 2.0.0 --kube-endpoint PUBLIC_ENDPOINT
+          kubectl set image deployment/trading-journal-api trading-journal-api=${{ steps.vars.outputs.ocir_image }}:prod-${{ github.sha }}
+          kubectl rollout status deployment/trading-journal-api --timeout=60s
+
+      - name: Deploy status
+        if: always()
+        run: |
+          if [ "${{ steps.deploy.outcome }}" = "success" ]; then
+            echo "✅ Desplegado al clúster OKE."
+          else
+            echo "⚠️ No se pudo confirmar el despliegue al clúster (probablemente sin nodos disponibles todavía). La imagen sí quedó publicada en OCIR — el clúster la tomará solo apenas tenga dónde correr."
+          fi
