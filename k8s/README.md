@@ -32,3 +32,14 @@ Verificar:
 kubectl get pods
 kubectl get svc trading-journal-api   # EXTERNAL-IP es la URL pública
 ```
+
+## Escalamiento automático (HPA)
+
+`hpa.yaml` mantiene entre 2 y 4 réplicas, escalando cuando el uso de CPU supera el 70%. Necesita el add-on **Kubernetes Metrics Server** habilitado en el clúster (pestaña "Add-ons" del clúster en la consola de OKE) — sin eso, el HPA no tiene de dónde leer el uso de CPU.
+
+```bash
+kubectl apply -f k8s/hpa.yaml
+kubectl get hpa   # columna TARGETS muestra el % de CPU actual vs el objetivo
+```
+
+Para demostrar el escalamiento en vivo: generar carga contra el Service (ej. con `hey` o `ab`) y observar con `kubectl get hpa -w` cómo sube el número de réplicas.
