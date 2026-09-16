@@ -18,8 +18,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,13 +45,13 @@ class TradeV2ControllerTest {
     @Test
     void findById_mergesTradeWithBothCompanionsEntities() throws Exception {
         when(tradeService.findById(1L)).thenReturn(tradeResponse);
-        when(companionClient.getPartido(anyLong())).thenReturn(
+        when(companionClient.getPartido()).thenReturn(
                 new PartidoDto(1L, "Futbol", "Liga Test", "Equipo A", "Equipo B", null, "PROGRAMADO", null, null));
-        when(companionClient.getPrediccion(anyLong())).thenReturn(
+        when(companionClient.getPrediccion()).thenReturn(
                 new PrediccionDto(1L, 1L, 1L, 2, 1, null, true, 3));
-        when(companionClient.getCommerce(any())).thenReturn(
+        when(companionClient.getCommerce()).thenReturn(
                 new CommerceDto(1, "Tienda S.A.S", "Tienda", "Calle 1", "3000000000", "tienda@example.com", null));
-        when(companionClient.getProduct(any())).thenReturn(
+        when(companionClient.getProduct()).thenReturn(
                 new ProductDto("p1", "Prod", "Producto completo", "desc", null, 10, null, 1));
 
         mockMvc.perform(get("/api/v2/trades/1"))
@@ -68,10 +66,10 @@ class TradeV2ControllerTest {
     @Test
     void findById_returnsNullCompanions_whenCompanionApisAreUnreachable() throws Exception {
         when(tradeService.findById(1L)).thenReturn(tradeResponse);
-        when(companionClient.getPartido(anyLong())).thenReturn(null);
-        when(companionClient.getPrediccion(anyLong())).thenReturn(null);
-        when(companionClient.getCommerce(any())).thenReturn(null);
-        when(companionClient.getProduct(any())).thenReturn(null);
+        when(companionClient.getPartido()).thenReturn(null);
+        when(companionClient.getPrediccion()).thenReturn(null);
+        when(companionClient.getCommerce()).thenReturn(null);
+        when(companionClient.getProduct()).thenReturn(null);
 
         mockMvc.perform(get("/api/v2/trades/1"))
                 .andExpect(status().isOk())

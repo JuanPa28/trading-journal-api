@@ -23,10 +23,11 @@ import java.util.List;
 // ni copia de su base de datos. GetAll y el resto de operaciones no llevan
 // agregación, tal como aclaró el profesor.
 //
-// Los IDs de las entidades compañeras son parámetros porque, a diferencia
-// del Trade, no existe una relación de negocio real entre los 3 dominios
-// (trading, apuestas deportivas, ecommerce) — se seleccionan explícitamente,
-// igual que en el ejemplo de la rúbrica (Adoptante/Mascota/Grupo).
+// Cuál registro exacto trae de cada compañero se elige solo (al azar, entre
+// lo que haya en su lista) — no se le pide un id a quien llama. El profesor
+// lo llamó "GET RANDOM": no existe una relación de negocio real entre los 3
+// dominios (trading, apuestas deportivas, ecommerce), así que cualquier
+// registro real de cada uno sirve, mientras no sea un dato quemado.
 @RestController
 @RequestMapping("/api/v2/trades")
 public class TradeV2Controller {
@@ -51,17 +52,12 @@ public class TradeV2Controller {
     }
 
     @GetMapping("/{id}")
-    public TradeV2Response findById(
-            @PathVariable Long id,
-            @RequestParam(defaultValue = "1") Long partidoId,
-            @RequestParam(defaultValue = "1") Long prediccionId,
-            @RequestParam(defaultValue = "1") Integer commerceNit,
-            @RequestParam(defaultValue = "1") String productId) {
+    public TradeV2Response findById(@PathVariable Long id) {
         CompanionEntities companions = new CompanionEntities(
-                companionClient.getPartido(partidoId),
-                companionClient.getPrediccion(prediccionId),
-                companionClient.getCommerce(commerceNit),
-                companionClient.getProduct(productId)
+                companionClient.getPartido(),
+                companionClient.getPrediccion(),
+                companionClient.getCommerce(),
+                companionClient.getProduct()
         );
         return new TradeV2Response(tradeService.findById(id), companions);
     }
