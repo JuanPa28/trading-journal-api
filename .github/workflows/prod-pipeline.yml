@@ -92,11 +92,41 @@ jobs:
           kubectl set image deployment/trading-journal-api trading-journal-api=${{ steps.vars.outputs.ocir_image }}:prod-${{ github.sha }}
           kubectl rollout status deployment/trading-journal-api --timeout=60s
 
-      - name: Deploy status
+      - name: Deploy status (OKE)
         if: always()
         run: |
           if [ "${{ steps.deploy.outcome }}" = "success" ]; then
             echo "✅ Desplegado al clúster OKE."
           else
-            echo "⚠️ No se pudo confirmar el despliegue al clúster (probablemente sin nodos disponibles todavía). La imagen sí quedó publicada en OCIR — el clúster la tomará solo apenas tenga dónde correr."
+            echo "⚠️ No se pudo confirmar el despliegue al clúster OKE (sin nodos disponibles — problema de capacidad ya documentado). La imagen sí quedó publicada en OCIR."
+          fi
+
+      # El cómputo real de esta entrega corre en AKS (Azure) — OCI se quedó sin
+      # capacidad ARM gratis para los nodos de OKE, así que movimos el clúster
+      # a Azure manteniendo la base de datos y el Object Storage en OCI, donde
+      # ya estaban funcionando. Ver k8s/README.md para la explicación completa.
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AZURE_AKS_CLUSTER }}
+
+      - name: Deploy to AKS
+        id: deploy_aks
+        run: |
+          kubectl set image deployment/trading-journal-api trading-journal-api=${{ steps.vars.outputs.ocir_image }}:prod-${{ github.sha }}
+          kubectl rollout status deployment/trading-journal-api --timeout=180s
+
+      - name: Deploy status (AKS)
+        if: always()
+        run: |
+          if [ "${{ steps.deploy_aks.outcome }}" = "success" ]; then
+            echo "✅ Desplegado al clúster AKS."
+          else
+            echo "❌ Falló el despliegue a AKS — revisar el log del paso anterior."
           fi

@@ -1,8 +1,14 @@
-# Despliegue en OKE
+# Despliegue — arquitectura de dos nubes
 
-Los manifiestos de este directorio (`configmap.yaml`, `deployment.yaml`, `service.yaml`) son seguros de commitear — no contienen secretos.
+**El cómputo (el clúster de Kubernetes) corre en Azure (AKS). La base de datos y el Object Storage siguen en OCI**, donde ya estaban funcionando y probados. La API se conecta a ellos por internet, exactamente igual que lo haría desde cualquier otro lugar — no hay nada especial que dependa de estar "dentro" de OCI.
 
-Las credenciales de la base de datos y del registro de imágenes (OCIR) **no se committean**. Se crean directamente en el clúster con estos comandos, una sola vez:
+## Por qué está así
+
+OCI se quedó sin capacidad gratuita de máquinas ARM para los nodos del clúster (OKE) — un problema de disponibilidad de Oracle, documentado con cientos de intentos automáticos fallidos, no un error de configuración nuestro. El profesor aprobó mover el cómputo a Azure (AKS) manteniendo el resto de la arquitectura en OCI tal como estaba. Esto es honesto y explicable en la sustentación: "el cómputo corre en Azure, los datos siguen en OCI donde ya los teníamos probados."
+
+Los manifiestos de Kubernetes (`configmap.yaml`, `deployment.yaml`, `service.yaml`, `hpa.yaml`) son **exactamente los mismos** para cualquiera de las dos nubes — Kubernetes es Kubernetes, no hay nada específico de OCI o Azure en ellos. Solo cambia dónde vive el clúster.
+
+## Secrets (no se committean, se crean directo en el clúster)
 
 ```bash
 # Credenciales para que el clúster pueda descargar la imagen de OCIR
@@ -19,7 +25,7 @@ kubectl create secret generic trading-journal-db-credentials \
 
 # Credenciales de la llave API de OCI, para que el componente de Object
 # Storage pueda guardar/leer adjuntos (misma llave API que ya usa el resto
-# del proyecto — ver "My profile → API keys" en la consola)
+# del proyecto — ver "My profile → API keys" en la consola de OCI)
 kubectl create secret generic trading-journal-oci-credentials \
   --from-literal=OCI_TENANCY_ID='<tu-tenancy-ocid>' \
   --from-literal=OCI_USER_ID='<tu-user-ocid>' \
@@ -27,28 +33,32 @@ kubectl create secret generic trading-journal-oci-credentials \
   --from-file=OCI_PRIVATE_KEY=/ruta/a/tu/oci_api_key.pem
 ```
 
-Después de crear los secrets, aplicar los manifiestos:
+## Aplicar y verificar
 
 ```bash
 kubectl apply -f k8s/configmap.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
-```
+kubectl apply -f k8s/hpa.yaml
 
-Verificar:
-
-```bash
 kubectl get pods
 kubectl get svc trading-journal-api   # EXTERNAL-IP es la URL pública
+kubectl get hpa                        # columna TARGETS muestra el % de CPU actual vs el objetivo
+```
+
+## Conectarte al clúster de AKS
+
+```bash
+az login
+az aks get-credentials --resource-group trading-journal-rg-eastus --name trading-journal-aks
 ```
 
 ## Escalamiento automático (HPA)
 
-`hpa.yaml` mantiene entre 2 y 4 réplicas, escalando cuando el uso de CPU supera el 70%. Necesita el add-on **Kubernetes Metrics Server** habilitado en el clúster (pestaña "Add-ons" del clúster en la consola de OKE) — sin eso, el HPA no tiene de dónde leer el uso de CPU.
-
-```bash
-kubectl apply -f k8s/hpa.yaml
-kubectl get hpa   # columna TARGETS muestra el % de CPU actual vs el objetivo
-```
+`hpa.yaml` mantiene entre 2 y 4 réplicas, escalando cuando el uso de CPU supera el 70%. AKS trae el Metrics Server instalado por defecto (a diferencia de OKE, donde había que activarlo aparte) — el HPA funciona sin configuración adicional.
 
 Para demostrar el escalamiento en vivo: generar carga contra el Service (ej. con `hey` o `ab`) y observar con `kubectl get hpa -w` cómo sube el número de réplicas.
+
+## Nota sobre OKE (OCI)
+
+El clúster de OKE (`trading-journal-cluster`) se quedó creado en OCI, con el control plane activo pero sin nodos (por la falta de capacidad). El pipeline de CI/CD todavía intenta desplegar ahí también (con `continue-on-error`) — si algún día Oracle libera capacidad, se activaría solo, como un plan B gratuito. No es necesario borrarlo ni gestionarlo mientras tanto.
