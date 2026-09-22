@@ -38,6 +38,42 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
+        <!-- Estadística/métricas (tasa de peticiones, errores, latencia p50/p95
+             por endpoint) — expuestas en /actuator/prometheus para que
+             cualquier herramienta SAAS (Grafana Cloud, etc.) las recoja. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+        <!-- Trazas distribuidas: Micrometer Tracing (la forma nativa de
+             Spring Boot) puenteado a OpenTelemetry. El exportador queda en
+             "logging" por defecto (las trazas se ven en los logs, sin
+             depender de que el grupo ya haya elegido un backend) — se
+             cambia a OTLP con una sola propiedad cuando el grupo defina
+             la herramienta SAAS transversal. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <!-- Spring Boot 4 separó la auto-configuración de tracing (el Tracer,
+             el SdkTracerProvider, el cableado de los SpanExporter) en este
+             módulo aparte — sin él, micrometer-tracing-bridge-otel queda
+             en el classpath pero inerte, no crea ningún bean de tracing. -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-micrometer-tracing-opentelemetry</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-logging</artifactId>
+        </dependency>
+        <!-- Ya queda instalado el exportador OTLP también, listo para
+             apuntar a Grafana Cloud (o el que decida el grupo) con solo
+             cambiar management.otlp.tracing.endpoint — sin otro despliegue. -->
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>

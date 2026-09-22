@@ -24,6 +24,30 @@ management:
       enabled: true
     readinessState:
       enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health, prometheus
+  metrics:
+    distribution:
+      # Histograma completo (no percentiles calculados del lado del cliente):
+      # con 2-4 réplicas por el HPA, un p95 calculado dentro de un solo pod
+      # no se puede promediar entre pods sin quedar matemáticamente mal. El
+      # histograma sí se puede agregar entre pods; p50/p95 real se obtienen
+      # en Grafana/PromQL con histogram_quantile(0.95, sum(rate(
+      # http_server_requests_seconds_bucket[5m])) by (le)).
+      percentiles-histogram:
+        http.server.requests: true
+  tracing:
+    sampling:
+      probability: 1.0
+  # Sin endpoint OTLP configurado, no intenta conectarse a nada — las trazas
+  # se ven en los logs (exportador "logging") mientras el grupo define la
+  # herramienta SAAS transversal. Apuntar OTEL_EXPORTER_OTLP_ENDPOINT una vez
+  # esté decidido, sin tocar código.
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:}
 
 companions:
   mari:
