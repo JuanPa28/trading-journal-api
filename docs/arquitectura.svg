@@ -1,0 +1,103 @@
+<svg viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="1400" height="900" fill="#ffffff"/>
+
+  <text x="700" y="40" text-anchor="middle" font-size="24" font-weight="700" fill="#1a1a1a">Trading Journal API — Arquitectura multicloud (Entrega 2)</text>
+  <text x="700" y="64" text-anchor="middle" font-size="14" fill="#555">Cómputo en Azure (AKS) · Datos y Object Storage en OCI · Reusabilidad api/v2 con Mari (GCP) y Pipe (AWS)</text>
+
+  <!-- Cliente -->
+  <rect x="40" y="100" width="180" height="60" rx="8" fill="#eef2ff" stroke="#4f46e5" stroke-width="2"/>
+  <text x="130" y="125" text-anchor="middle" font-size="13" font-weight="600" fill="#3730a3">Cliente / Postman /</text>
+  <text x="130" y="142" text-anchor="middle" font-size="13" font-weight="600" fill="#3730a3">Orquestador de Mari</text>
+
+  <!-- Arrow to LB -->
+  <line x1="220" y1="130" x2="270" y2="130" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Azure box -->
+  <rect x="270" y="90" width="420" height="280" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="480" y="115" text-anchor="middle" font-size="16" font-weight="700" fill="#1e40af">AZURE — Juan Pablo (cómputo)</text>
+  <text x="480" y="132" text-anchor="middle" font-size="11" fill="#3b5bdb">AKS · $200 Free Trial, revisar tras la sustentación</text>
+
+  <rect x="290" y="150" width="380" height="80" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="480" y="170" text-anchor="middle" font-size="13" font-weight="600" fill="#1e3a8a">LoadBalancer Service → Deployment (2-4 pods, HPA)</text>
+  <text x="480" y="188" text-anchor="middle" font-size="11" fill="#1e3a8a">liveness/readiness probes · requests/limits · ConfigMap + 3 Secrets</text>
+  <text x="480" y="206" text-anchor="middle" font-size="11" fill="#1e3a8a">Imagen pulled desde OCIR (bog.ocir.io) — registry en OCI, cluster en Azure</text>
+
+  <rect x="290" y="240" width="180" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="380" y="262" text-anchor="middle" font-size="12" font-weight="600" fill="#1e3a8a">/actuator/prometheus</text>
+  <text x="380" y="278" text-anchor="middle" font-size="10" fill="#1e3a8a">histograma p50/p95 por endpoint</text>
+
+  <rect x="480" y="240" width="190" height="60" rx="6" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="575" y="258" text-anchor="middle" font-size="12" font-weight="600" fill="#1e3a8a">OpenTelemetry tracing</text>
+  <text x="575" y="274" text-anchor="middle" font-size="10" fill="#1e3a8a">logs hoy · OTLP a Grafana listo</text>
+  <text x="575" y="288" text-anchor="middle" font-size="10" fill="#1e3a8a">(1 var. de entorno, sin redeploy)</text>
+
+  <!-- Arrow Azure -> OCI -->
+  <line x1="480" y1="370" x2="480" y2="410" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="500" y="395" font-size="10" fill="#555">JDBC / SDK OCI</text>
+
+  <!-- OCI box -->
+  <rect x="270" y="410" width="420" height="200" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+  <text x="480" y="435" text-anchor="middle" font-size="16" font-weight="700" fill="#9a3412">OCI — Juan Pablo (datos + transversal)</text>
+
+  <rect x="290" y="450" width="180" height="70" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+  <text x="380" y="472" text-anchor="middle" font-size="12" font-weight="600" fill="#7c2d12">Oracle Autonomous DB</text>
+  <text x="380" y="488" text-anchor="middle" font-size="10" fill="#7c2d12">Trader · Strategy · Trade</text>
+  <text x="380" y="502" text-anchor="middle" font-size="10" fill="#7c2d12">walletless TLS</text>
+
+  <rect x="480" y="450" width="190" height="70" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+  <text x="575" y="472" text-anchor="middle" font-size="12" font-weight="600" fill="#7c2d12">Object Storage</text>
+  <text x="575" y="488" text-anchor="middle" font-size="10" fill="#7c2d12">bucket attachments</text>
+  <text x="575" y="502" text-anchor="middle" font-size="10" fill="#7c2d12">componente transversal del grupo</text>
+
+  <rect x="290" y="530" width="380" height="60" rx="6" fill="#ffedd5" stroke="#c2410c"/>
+  <text x="480" y="552" text-anchor="middle" font-size="12" font-weight="600" fill="#7c2d12">OCI Monitoring + Logging (nativo)</text>
+  <text x="480" y="570" text-anchor="middle" font-size="10" fill="#7c2d12">métricas automáticas · logs de acceso al bucket activados</text>
+
+  <!-- CompanionClient arrows out to Mari and Pipe -->
+  <line x1="690" y1="190" x2="900" y2="140" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="760" y="150" font-size="10" fill="#555">HTTP + X-Trace-Id</text>
+  <line x1="690" y1="210" x2="900" y2="430" stroke="#555" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="760" y="330" font-size="10" fill="#555">HTTP + X-Trace-Id</text>
+
+  <!-- Mari GCP -->
+  <rect x="900" y="90" width="440" height="140" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+  <text x="1120" y="115" text-anchor="middle" font-size="16" font-weight="700" fill="#15803d">GCP — Mari</text>
+  <text x="1120" y="134" text-anchor="middle" font-size="11" fill="#166534">Cloud Run — Apostador · Partido · Predicción</text>
+  <rect x="920" y="150" width="400" height="60" rx="6" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="1120" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="#14532d">MS Orquestador (componente transversal de Mari)</text>
+  <text x="1120" y="190" text-anchor="middle" font-size="10" fill="#14532d">coordina el flujo entre las 3 nubes · propaga trace-id</text>
+
+  <!-- Pipe AWS -->
+  <rect x="900" y="350" width="440" height="160" rx="10" fill="#fdf4ff" stroke="#9333ea" stroke-width="2"/>
+  <text x="1120" y="375" text-anchor="middle" font-size="16" font-weight="700" fill="#7e22ce">AWS — Pipe</text>
+  <text x="1120" y="394" text-anchor="middle" font-size="11" fill="#6b21a8">EKS/ELB — Client · Commerce · Product</text>
+  <rect x="920" y="410" width="400" height="60" rx="6" fill="#f3e8ff" stroke="#9333ea"/>
+  <text x="1120" y="432" text-anchor="middle" font-size="12" font-weight="600" fill="#581c87">Caché distribuida (componente transversal de Pipe)</text>
+  <text x="1120" y="450" text-anchor="middle" font-size="10" fill="#581c87">respuestas de entidades de compañeros · TTL + invalidación</text>
+
+  <!-- Group observability layer -->
+  <rect x="40" y="650" width="1300" height="130" rx="10" fill="#fefce8" stroke="#ca8a04" stroke-width="2"/>
+  <text x="690" y="678" text-anchor="middle" font-size="15" font-weight="700" fill="#854d0e">Capa transversal de observabilidad del GRUPO — pendiente de la llamada de hoy</text>
+  <text x="690" y="700" text-anchor="middle" font-size="12" fill="#854d0e">Herramienta SAAS unificada (Grafana Cloud u otra) · logs de las 3 nubes correlacionados por trace-id</text>
+  <text x="690" y="720" text-anchor="middle" font-size="12" fill="#854d0e">métricas de caché (aciertos/fallos) y de cola (pendientes/reprocesados) · al menos 1 alerta disparada en vivo</text>
+  <text x="690" y="742" text-anchor="middle" font-size="12" fill="#854d0e">Cola/mensajería para el reproceso de pasos fallidos entre las 3 nubes</text>
+
+  <!-- Legend -->
+  <text x="40" y="830" font-size="12" fill="#333" font-weight="600">Convención:</text>
+  <rect x="40" y="840" width="16" height="16" fill="#dbeafe" stroke="#2563eb"/>
+  <text x="62" y="853" font-size="11" fill="#333">Azure (cómputo propio)</text>
+  <rect x="230" y="840" width="16" height="16" fill="#ffedd5" stroke="#c2410c"/>
+  <text x="252" y="853" font-size="11" fill="#333">OCI (datos + storage propio)</text>
+  <rect x="450" y="840" width="16" height="16" fill="#dcfce7" stroke="#16a34a"/>
+  <text x="472" y="853" font-size="11" fill="#333">GCP (Mari)</text>
+  <rect x="580" y="840" width="16" height="16" fill="#f3e8ff" stroke="#9333ea"/>
+  <text x="602" y="853" font-size="11" fill="#333">AWS (Pipe)</text>
+  <rect x="700" y="840" width="16" height="16" fill="#fefce8" stroke="#ca8a04"/>
+  <text x="722" y="853" font-size="11" fill="#333">Grupo / pendiente</text>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#555"/>
+    </marker>
+  </defs>
+</svg>

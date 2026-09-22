@@ -1,10 +1,22 @@
 # Trading Journal API
 
-Proyecto semestral de la materia de Desarrollo de Software — **Actividad 1 (primera entrega)**.
+Proyecto semestral de la materia de Desarrollo de Software. **Actividad 2 (Entrega 2, Énfasis DevOps)** — arquitectura multicloud, sobre la base de la Actividad 1 (API RESTful de registro y seguimiento de operaciones de trading).
 
-API RESTful para el registro y seguimiento de operaciones de trading (journal), con checklist de confluencias y métricas por trader.
+Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia nube de cómputo, reutilizando entidades entre las 3 API en tiempo real (sin datos quemados):
 
-## Entidades
+| Integrante | Repositorio | Nube de cómputo | Componente transversal propio |
+|---|---|---|---|
+| **Juan Pablo (este repo)** | `JuanPa28/trading-journal-api` | **Azure (AKS)** — cómputo movido de OCI por falta de capacidad gratuita, datos y storage se quedaron en OCI | **Object Storage** (OCI) |
+| Mariana Pineda ("Mari") | `MarianaPineda0/StatsNostra` | GCP (Cloud Run) | **MS Orquestador** |
+| Juan Felipe ("Pipe") | `jfpa11100/ecommerce-api` | AWS | **Caché distribuida** |
+
+## Diagrama de arquitectura
+
+![Arquitectura multicloud](docs/arquitectura.svg)
+
+**Por qué el cómputo de Juan Pablo está en Azure y no en OCI (la nube originalmente asignada):** OCI se quedó sin capacidad gratuita de máquinas ARM para los nodos de Kubernetes (OKE) — más de 300 intentos automáticos fallidos durante varios días, un problema real de disponibilidad de Oracle, no un error de configuración. El profesor aprobó mover solo el cómputo del clúster a Azure (AKS), dejando la base de datos (Oracle Autonomous DB) y el Object Storage exactamente donde ya estaban funcionando y probados en OCI. El clúster de OKE en OCI se dejó creado (control plane activo, sin nodos) por si Oracle libera capacidad más adelante — el pipeline lo sigue intentando en cada despliegue, sin bloquear nada.
+
+## Entidades propias
 
 - **Trader**: usuario que registra sus operaciones (nombre, usuario, correo, fondos disponibles). Sin autenticación en esta entrega.
 - **Strategy**: checklist de 7 confluencias de trading (HTF PD Array, IFVG, CISD, seguí mis reglas, continuación, reversal, riesgo correcto). Cada Trade crea su propia Strategy — nunca se reutiliza una existente.
@@ -12,58 +24,44 @@ API RESTful para el registro y seguimiento de operaciones de trading (journal), 
 
 ## API
 
-13 endpoints REST: CRUD completo de Trader y Trade, lectura de Strategy, y un endpoint de búsqueda que usa el **verbo HTTP `QUERY` literal** (no un POST disfrazado) — `QUERY /api/trades/query`, filtra por trader y/o resultado (ganadora/perdedora).
+- **`/api/...`** — CRUD original de la Actividad 1 (13 endpoints), incluye el verbo HTTP `QUERY` literal para búsqueda (`QUERY /api/trades/query`).
+- **`/api/v2/...`** — capa nueva de la Entrega 2:
+  - CRUD completo de Trade espejado (`TradeV2Controller`); su `GET /api/v2/trades/{id}` viene enriquecido con **una entidad de Mari** (`Partido` o `Predicción`, elegida al azar de su lista completa — "GET RANDOM") y **una de Pipe** (`Commerce` o `Product`, mismo patrón), obtenidas **en tiempo real por HTTP**, nunca copiadas ni quemadas.
+  - `POST`/`GET /api/v2/attachments` — el componente de Object Storage.
+  - Cada petición entrante genera o recibe un `X-Trace-Id`, que queda en los logs (MDC) y se reenvía a Mari y a Pipe cuando este repo los llama — permite seguir una misma petición a través de las 3 nubes.
 
-Colección de Postman completa, con los 2 ambientes, en [`postman/`](./postman).
+Colección de Postman completa en [`postman/`](./postman).
 
 ## Stack
 
 - Java 21 (Temurin) + Spring Boot 4.1.0
 - Maven
-- PostgreSQL 17
+- **Oracle Autonomous Database** (producción, walletless TLS) / PostgreSQL 17 (local, Docker)
+- **Kubernetes** (AKS) — Deployment (2-4 réplicas vía HPA), Service LoadBalancer, ConfigMap, 3 Secrets, liveness/readiness probes, requests/limits de recursos
+- **OCI Object Storage** — SDK oficial de Java
+- **Observabilidad**: Micrometer + Prometheus (`/actuator/prometheus`, histograma de latencia p50/p95 por endpoint) + OpenTelemetry (trazas distribuidas, exportador a logs hoy, listo para Grafana Cloud con una sola variable de entorno) + monitoreo nativo de OCI (métricas + logs del bucket)
 - Docker / Docker Compose (build multi-stage)
-- JUnit 5 + Mockito + JaCoCo — 51 pruebas, 97.1% de cobertura de líneas
-- GitHub Actions (CI/CD) — 2 pipelines independientes
-
-## Ambientes
-
-2 ambientes locales completamente independientes — BD, puerto y red propios cada uno, pueden correr al mismo tiempo:
-
-| Ambiente | Rama trigger | Base de datos | Puerto app | Puerto Postgres |
-|---|---|---|---|---|
-| Pruebas | `develop` | `journal_test` | `8080` | `5433` |
-| Producción | `main` | `journal_prod` | `8081` | `5434` |
+- JUnit 5 + Mockito + JaCoCo — 68 pruebas, cobertura sobre el 85%
+- GitHub Actions (CI/CD) — build → test → coverage gate → build & push de imagen → despliegue automático a Kubernetes
 
 ## Cómo correr el proyecto
 
-### Con Docker (recomendado)
+### Local (Docker, contra Postgres — para desarrollo)
 
 ```bash
-docker compose -f docker-compose.yml up --build -d       # Ambiente Pruebas
-docker compose -f docker-compose.prod.yml up --build -d  # Ambiente Producción
+docker compose -f docker-compose.yml up --build -d       # Ambiente Pruebas, puerto 8080
+docker compose -f docker-compose.prod.yml up --build -d  # Ambiente Producción, puerto 8081
 ```
 
-Los dos pueden correr a la vez. Probar con:
+### Producción real (Azure AKS + Oracle + OCI)
 
 ```bash
-curl http://localhost:8080/api/traders
-curl http://localhost:8081/api/traders
+az login
+az aks get-credentials --resource-group trading-journal-rg-eastus --name trading-journal-aks
+kubectl get svc trading-journal-api   # columna EXTERNAL-IP es la URL pública actual
 ```
 
-Para apagar:
-
-```bash
-docker compose -f docker-compose.yml down
-docker compose -f docker-compose.prod.yml down
-```
-
-### Local, sin Docker
-
-```bash
-mvn spring-boot:run
-```
-
-(Requiere una instancia de PostgreSQL disponible y las variables de entorno `DB_URL`, `DB_USERNAME`, `DB_PASSWORD`.)
+Ver [`k8s/README.md`](./k8s/README.md) para la lista completa de Secrets y el paso a paso de despliegue manual, y la [Guía Definitiva](https://claude.ai/artifact/FBmQyHwAxxmrAih67gB7oz) para el procedimiento completo pensado para la sustentación (qué abrir, qué correr, cómo probar la conexión cruzada con Mari y Pipe, cómo demostrar una edición de datos en vivo).
 
 ## Pruebas y cobertura
 
@@ -71,12 +69,19 @@ mvn spring-boot:run
 mvn clean verify
 ```
 
-Corre las 51 pruebas y valida el gate de cobertura de JaCoCo — 60% con el perfil `test-env`, 85% con `prod-env` (activo por defecto). Si alguna prueba falla o la cobertura no alcanza el mínimo, el build se detiene con `BUILD FAILURE`.
+60% de cobertura mínima con el perfil `test-env`, 85% con `prod-env` (activo por defecto). Si alguna prueba falla o la cobertura no alcanza el mínimo, el build se detiene con `BUILD FAILURE` antes de publicar cualquier imagen.
 
 ## CI/CD
 
-2 pipelines en GitHub Actions ([`.github/workflows/`](./.github/workflows)): build → pruebas → quality gate de cobertura → publicación de la imagen Docker en GitHub Container Registry. El pipeline nunca publica nada si algún paso anterior falla.
+**No es un requisito de esta entrega** (la rúbrica de Entrega 2 no lo pide explícitamente), pero se mantuvo porque sigue siendo la forma más confiable de desplegar sin pasos manuales — y porque el componente transversal (Object Storage) sí debe "versionarse... con su propio contenedor, su pipeline de despliegue y su documentación de uso" según la rúbrica, y al vivir dentro de esta misma API, hereda el mismo pipeline.
+
+Un solo workflow en GitHub Actions ([`.github/workflows/prod-pipeline.yml`](./.github/workflows/prod-pipeline.yml)), disparado en cada push a `main`:
+
+1. Build + pruebas + gate de cobertura (85%) — se detiene aquí si algo falla.
+2. Construye la imagen Docker y la publica en GHCR y en OCIR.
+3. Intenta desplegar a OKE (OCI) — `continue-on-error`, hoy sin nodos.
+4. Despliega a AKS (Azure) — el despliegue real, confirmado funcionando en cada push.
 
 ## Convención de commits
 
-Este repo usa [GitMoji](https://gitmoji.dev/) en los mensajes de commit — muchos commits pequeños, cada uno enfocado en un solo cambio.
+GitMoji ([gitmoji.dev](https://gitmoji.dev/)) en cada commit — muchos commits pequeños, cada uno enfocado en un solo cambio. Versionado semántico con tags de Git (`v1.0.0` al cierre de la Actividad 1; `v2.0.0` al cierre de esta entrega).
