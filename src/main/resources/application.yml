@@ -53,7 +53,7 @@ companions:
   mari:
     base-url: ${MARI_BASE_URL:http://34.57.56.128}
   pipe:
-    base-url: ${PIPE_BASE_URL:http://k8s-default-ecommerc-233fe225e6-944515052.us-east-2.elb.amazonaws.com}
+    base-url: ${PIPE_BASE_URL:http://k8s-default-ecommerc-233fe225e6-1328693903.us-east-2.elb.amazonaws.com}
 
 # Credenciales de la llave API de OCI — las mismas que usa el resto del
 # proyecto, nunca con valores quemados: siempre vienen de variables de
