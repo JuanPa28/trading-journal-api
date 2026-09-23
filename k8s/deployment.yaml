@@ -28,8 +28,6 @@ spec:
                 name: trading-journal-db-credentials
             - secretRef:
                 name: trading-journal-oci-credentials
-            - secretRef:
-                name: trading-journal-grafana-credentials
           resources:
             requests:
               cpu: "250m"
