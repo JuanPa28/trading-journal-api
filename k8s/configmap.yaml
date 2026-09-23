@@ -7,5 +7,7 @@ data:
   # Bootstrap del esquema en Oracle Autonomous DB (todavía no hay Flyway/Liquibase).
   # Mismo simplificación honesta usada en Docker local y en Render.
   SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
-  MARI_BASE_URL: "https://statsnostra-api-599897195726.us-central1.run.app"
+  MARI_BASE_URL: "http://34.57.56.128"
   PIPE_BASE_URL: "http://k8s-default-ecommerc-233fe225e6-1328693903.us-east-2.elb.amazonaws.com"
+  # Nombre de servicio para OpenTelemetry/Grafana Cloud, acordado con el grupo.
+  OTEL_SERVICE_NAME: "api-oci"

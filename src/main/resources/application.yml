@@ -45,14 +45,22 @@ management:
   # por OTLP a Grafana Cloud, con Basic Auth. Con los 2 endpoints vacíos (por
   # defecto) no intenta conectarse a nada — las trazas se ven en los logs
   # (exportador "logging") y las métricas solo en /actuator/prometheus, hasta
-  # que el grupo apunte las 3 variables de entorno de abajo, sin tocar código.
-  otlp:
+  # que el grupo apunte las variables de entorno de abajo, sin tocar código.
+  #
+  # OJO: management.otlp.tracing.* (usado en las primeras pruebas) está
+  # deprecado "a error" desde Spring Boot 4.0 — se ve en los logs como si
+  # funcionara (el endpoint sí conecta) pero los headers NUNCA se mandan, así
+  # que Grafana responde 401 aunque la credencial sea correcta (confirmado
+  # probando el mismo header con curl directo: 200 OK). La ruta nueva es
+  # management.opentelemetry.tracing.export.otlp.*.
+  opentelemetry:
     tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:}
-      headers:
-        Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
-      resource-attributes:
-        service.name: ${OTEL_SERVICE_NAME:trading-journal-api}
+      export:
+        otlp:
+          endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:}
+          headers:
+            Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
+  otlp:
     metrics:
       export:
         # A diferencia de tracing.endpoint, el registro de métricas OTLP NO se

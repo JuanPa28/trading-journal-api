@@ -8,11 +8,12 @@ import org.springframework.context.annotation.Configuration;
 
 // Sin este bean, tener opentelemetry-exporter-logging en el classpath no hace
 // nada: Spring Boot solo conecta al SdkTracerProvider los SpanExporter que
-// sean beans explícitos. Se apaga solo si se configura un endpoint OTLP
-// (management.otlp.tracing.endpoint), para no exportar las trazas dos veces
-// una vez el grupo decida la herramienta SAAS transversal.
+// sean beans explícitos. Se apaga solo si se configura un endpoint OTLP real
+// (management.opentelemetry.tracing.export.otlp.endpoint — la ruta nueva de
+// Spring Boot 4.1, la vieja management.otlp.tracing.* quedó deprecada), para
+// no exportar las trazas dos veces una vez conectado a Grafana Cloud.
 @Configuration
-@ConditionalOnProperty(name = "management.otlp.tracing.endpoint", havingValue = "", matchIfMissing = true)
+@ConditionalOnProperty(name = "management.opentelemetry.tracing.export.otlp.endpoint", havingValue = "", matchIfMissing = true)
 public class TracingConfig {
 
     @Bean
