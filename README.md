@@ -12,9 +12,15 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 
 ## Diagrama de arquitectura
 
-_Pendiente: diagrama compartido del grupo._
+![Arquitectura multicloud](docs/arquitectura.svg)
+
+**Qué integrante opera cada nube:** Juan Pablo — Azure (cómputo) + OCI (datos y Object Storage). Mariana Pineda ("Mari") — GCP. Juan Felipe ("Pipe") — AWS. (También resumido en la tabla de arriba.)
 
 **Por qué el cómputo de Juan Pablo está en Azure y no en OCI (la nube originalmente asignada):** OCI se quedó sin capacidad gratuita de máquinas ARM para los nodos de Kubernetes (OKE) — más de 300 intentos automáticos fallidos durante varios días, un problema real de disponibilidad de Oracle, no un error de configuración. El profesor aprobó mover solo el cómputo del clúster a Azure (AKS), dejando la base de datos (Oracle Autonomous DB) y el Object Storage exactamente donde ya estaban funcionando y probados en OCI. El clúster de OKE en OCI se dejó creado (control plane activo, sin nodos) por si Oracle libera capacidad más adelante — el pipeline lo sigue intentando en cada despliegue, sin bloquear nada.
+
+## Servicios adicionales (justificación)
+
+El `Service` de Kubernetes tipo `LoadBalancer` (`k8s/service.yaml`) es un **balanceador de carga real**, no solo un enrutador: reparte el tráfico entrante entre las 2-4 réplicas del pod (según el HPA), con una única IP pública estable aunque el número de pods cambie. Cumple el punto de la rúbrica sobre agregar servicios adicionales no mencionados explícitamente en la arquitectura base — en este caso no se agregó un componente nuevo aparte, sino que se reconoce y justifica uno que ya forma parte necesaria del despliegue en Kubernetes.
 
 ## Entidades propias
 
@@ -29,6 +35,7 @@ _Pendiente: diagrama compartido del grupo._
   - CRUD completo espejado para `Trader`, `Strategy` y `Trade` (`TraderV2Controller`, `StrategyV2Controller`, `TradeV2Controller`); el `GetById` de cada una viene enriquecido con **una entidad de Mari** (`Partido` o `Predicción`, elegida al azar de su lista completa — "GET RANDOM") y **una de Pipe** (`Commerce` o `Product`, mismo patrón), obtenidas **en tiempo real por HTTP**, nunca copiadas ni quemadas.
   - `POST`/`GET /api/v2/attachments` — el componente de Object Storage.
   - Cada petición entrante genera o recibe un `X-Trace-Id`, que queda en los logs (MDC) y se reenvía a Mari y a Pipe cuando este repo los llama — permite seguir una misma petición a través de las 3 nubes.
+  - Cada entidad se puede llamar y modificar individualmente en tiempo real (`PUT`/`PATCH` en `/api/v1/...`) — un cambio hecho así (o directo en la base de datos) se refleja de inmediato en la próxima respuesta de `api/v2`, porque nunca se cachea ni se copia el dato, siempre se consulta en el momento.
 
 Colección de Postman completa en [`postman/`](./postman).
 
