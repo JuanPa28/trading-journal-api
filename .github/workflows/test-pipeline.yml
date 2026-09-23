@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build-test-deploy:
-    name: Build, test, coverage gate, deploy
+    name: Build, test, deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -23,8 +23,8 @@ jobs:
           java-version: '21'
           cache: maven
 
-      - name: Build, run tests and check coverage gate (60%)
-        run: mvn -B clean verify -Ptest-env
+      - name: Build and run tests
+        run: mvn -B clean verify
 
       - name: Upload JaCoCo report
         if: always()

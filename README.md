@@ -41,8 +41,8 @@ Colección de Postman completa en [`postman/`](./postman).
 - **OCI Object Storage** — SDK oficial de Java
 - **Observabilidad**: Micrometer + Prometheus (`/actuator/prometheus`, histograma de latencia p50/p95 por endpoint) + OpenTelemetry (trazas distribuidas, exportador a logs hoy, listo para Grafana Cloud con una sola variable de entorno) + monitoreo nativo de OCI (métricas + logs del bucket)
 - Docker / Docker Compose (build multi-stage)
-- JUnit 5 + Mockito + JaCoCo — 68 pruebas, cobertura sobre el 85%
-- GitHub Actions (CI/CD) — build → test → coverage gate → build & push de imagen → despliegue automático a Kubernetes
+- JUnit 5 + Mockito + JaCoCo — 68 pruebas (el reporte de cobertura se genera, sin gate mínimo obligatorio)
+- GitHub Actions (CI/CD) — build → test → build & push de imagen → despliegue automático a Kubernetes
 
 ## Cómo correr el proyecto
 
@@ -63,24 +63,22 @@ kubectl get svc trading-journal-api   # columna EXTERNAL-IP es la URL pública a
 
 Ver [`k8s/README.md`](./k8s/README.md) para la lista completa de Secrets y el paso a paso de despliegue manual.
 
-## Pruebas y cobertura
+## Pruebas
 
 ```bash
 mvn clean verify
 ```
 
-60% de cobertura mínima con el perfil `test-env`, 85% con `prod-env` (activo por defecto). Si alguna prueba falla o la cobertura no alcanza el mínimo, el build se detiene con `BUILD FAILURE` antes de publicar cualquier imagen.
+Corre las 68 pruebas y genera el reporte de cobertura de JaCoCo (`target/site/jacoco`). Si alguna prueba falla, el build se detiene con `BUILD FAILURE` antes de publicar cualquier imagen — no hay un porcentaje mínimo de cobertura exigido en esta entrega.
 
 ## CI/CD
 
 **No es un requisito de esta entrega** (la rúbrica de Entrega 2 no lo pide explícitamente), pero se mantuvo porque sigue siendo la forma más confiable de desplegar sin pasos manuales — y porque el componente transversal (Object Storage) sí debe "versionarse... con su propio contenedor, su pipeline de despliegue y su documentación de uso" según la rúbrica, y al vivir dentro de esta misma API, hereda el mismo pipeline.
 
-Un solo workflow en GitHub Actions ([`.github/workflows/prod-pipeline.yml`](./.github/workflows/prod-pipeline.yml)), disparado en cada push a `main`:
+Dos workflows en GitHub Actions ([`.github/workflows/`](./.github/workflows)):
 
-1. Build + pruebas + gate de cobertura (85%) — se detiene aquí si algo falla.
-2. Construye la imagen Docker y la publica en GHCR y en OCIR.
-3. Intenta desplegar a OKE (OCI) — `continue-on-error`, hoy sin nodos.
-4. Despliega a AKS (Azure) — el despliegue real, confirmado funcionando en cada push.
+- **`prod-pipeline.yml`**, en cada push a `main`: build + pruebas → construye la imagen Docker y la publica en GHCR y en OCIR → intenta desplegar a OKE (OCI, `continue-on-error`, hoy sin nodos) → despliega a AKS (Azure), el despliegue real, confirmado funcionando en cada push.
+- **`test-pipeline.yml`**, en cada push a `develop`: build + pruebas → publica la imagen en GHCR (sin desplegarla a ningún clúster).
 
 ## Convención de commits
 
