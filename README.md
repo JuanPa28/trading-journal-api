@@ -12,7 +12,7 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 
 ## Diagrama de arquitectura
 
-![Arquitectura multicloud](docs/arquitectura.svg)
+_Pendiente: diagrama compartido del grupo._
 
 **Por qué el cómputo de Juan Pablo está en Azure y no en OCI (la nube originalmente asignada):** OCI se quedó sin capacidad gratuita de máquinas ARM para los nodos de Kubernetes (OKE) — más de 300 intentos automáticos fallidos durante varios días, un problema real de disponibilidad de Oracle, no un error de configuración. El profesor aprobó mover solo el cómputo del clúster a Azure (AKS), dejando la base de datos (Oracle Autonomous DB) y el Object Storage exactamente donde ya estaban funcionando y probados en OCI. El clúster de OKE en OCI se dejó creado (control plane activo, sin nodos) por si Oracle libera capacidad más adelante — el pipeline lo sigue intentando en cada despliegue, sin bloquear nada.
 
@@ -26,7 +26,7 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 
 - **`/api/...`** — CRUD original de la Actividad 1 (13 endpoints), incluye el verbo HTTP `QUERY` literal para búsqueda (`QUERY /api/trades/query`).
 - **`/api/v2/...`** — capa nueva de la Entrega 2:
-  - CRUD completo de Trade espejado (`TradeV2Controller`); su `GET /api/v2/trades/{id}` viene enriquecido con **una entidad de Mari** (`Partido` o `Predicción`, elegida al azar de su lista completa — "GET RANDOM") y **una de Pipe** (`Commerce` o `Product`, mismo patrón), obtenidas **en tiempo real por HTTP**, nunca copiadas ni quemadas.
+  - CRUD completo espejado para `Trader`, `Strategy` y `Trade` (`TraderV2Controller`, `StrategyV2Controller`, `TradeV2Controller`); el `GetById` de cada una viene enriquecido con **una entidad de Mari** (`Partido` o `Predicción`, elegida al azar de su lista completa — "GET RANDOM") y **una de Pipe** (`Commerce` o `Product`, mismo patrón), obtenidas **en tiempo real por HTTP**, nunca copiadas ni quemadas.
   - `POST`/`GET /api/v2/attachments` — el componente de Object Storage.
   - Cada petición entrante genera o recibe un `X-Trace-Id`, que queda en los logs (MDC) y se reenvía a Mari y a Pipe cuando este repo los llama — permite seguir una misma petición a través de las 3 nubes.
 
