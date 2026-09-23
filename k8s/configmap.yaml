@@ -8,4 +8,4 @@ data:
   # Mismo simplificación honesta usada en Docker local y en Render.
   SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
   MARI_BASE_URL: "https://statsnostra-api-599897195726.us-central1.run.app"
-  PIPE_BASE_URL: "http://alb-ecommerce-1653098310.us-east-2.elb.amazonaws.com"
+  PIPE_BASE_URL: "http://k8s-default-ecommerc-233fe225e6-1328693903.us-east-2.elb.amazonaws.com"
