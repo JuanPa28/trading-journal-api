@@ -61,7 +61,7 @@ az aks get-credentials --resource-group trading-journal-rg-eastus --name trading
 kubectl get svc trading-journal-api   # columna EXTERNAL-IP es la URL pública actual
 ```
 
-Ver [`k8s/README.md`](./k8s/README.md) para la lista completa de Secrets y el paso a paso de despliegue manual, y la [Guía Definitiva](https://claude.ai/artifact/FBmQyHwAxxmrAih67gB7oz) para el procedimiento completo pensado para la sustentación (qué abrir, qué correr, cómo probar la conexión cruzada con Mari y Pipe, cómo demostrar una edición de datos en vivo).
+Ver [`k8s/README.md`](./k8s/README.md) para la lista completa de Secrets y el paso a paso de despliegue manual.
 
 ## Pruebas y cobertura
 
