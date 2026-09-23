@@ -283,6 +283,88 @@
           "response": []
         },
         {
+          "name": "Crear trader v2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 5000.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/traders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "traders"]
+            },
+            "description": "CRUD idéntico a v1 (mismo TraderService) — solo el GetById se enriquece, este igual que 'Crear trader'."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar traders v2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/traders",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "traders"]
+            },
+            "description": "Sin enriquecer — solo el GetById trae companions, el listado es igual que v1."
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar trader v2",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 7500.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "traders", "{{traderId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Editar un campo del trader v2 (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"availableFunds\": 7500.00\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "traders", "{{traderId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar trader v2",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "traders", "{{traderId}}"]
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Strategy v2 (enriquecido con Mari + Pipe)",
           "request": {
             "method": "GET",
@@ -296,9 +378,104 @@
           "response": []
         },
         {
+          "name": "Listar strategies v2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/strategies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "strategies"]
+            },
+            "description": "Solo lectura, igual que v1 — Strategy nunca se crea/edita directamente, siempre nace junto con un Trade."
+          },
+          "response": []
+        },
+        {
           "name": "Trade v2 (enriquecido con Mari + Pipe)",
           "request": {
             "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "trades", "{{tradeId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Crear trade v2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Buen setup\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "trades"]
+            },
+            "description": "CRUD idéntico a v1 (mismo TradeService) — solo el GetById se enriquece, este igual que 'Crear trade'."
+          },
+          "response": []
+        },
+        {
+          "name": "Listar trades v2",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "trades"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Actualizar trade v2",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29700.00,\n  \"pnl\": 234.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Ajustado el precio de salida\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "trades", "{{tradeId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Editar un campo del trade v2 (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Nota corregida después de revisar el trade\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "trades", "{{tradeId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Eliminar trade v2",
+          "request": {
+            "method": "DELETE",
             "header": [],
             "url": {
               "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
