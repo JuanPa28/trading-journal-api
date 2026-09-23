@@ -81,6 +81,17 @@
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-otlp</artifactId>
         </dependency>
+        <!-- Logs por OTLP hacia Grafana Cloud (Loki, detrás del mismo gateway
+             OTLP que ya usan trazas y métricas). Spring Boot 4.1 sí arma el
+             SdkLoggerProvider + el exportador solo (spring-boot-opentelemetry),
+             pero no conecta Logback a él — este appender es el puente; se
+             instala a mano en OtelLogAppenderInitializer una vez el bean
+             OpenTelemetry de Spring existe (ver esa clase para el porqué). -->
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-logback-appender-1.0</artifactId>
+            <version>2.20.1-alpha</version>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>

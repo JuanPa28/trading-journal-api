@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Extiende (no reemplaza) el logging por defecto de Spring Boot: se incluyen
+  sus propios defaults.xml y console-appender.xml, que ya leen
+  logging.pattern.console desde application.yml — el formato con [traceId=...]
+  sigue exactamente igual que antes. Lo único nuevo es el appender OTEL, que
+  manda los mismos logs a Grafana Cloud (Loki) vía OpenTelemetry, además de
+  la consola.
+-->
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
+        <captureExperimentalAttributes>true</captureExperimentalAttributes>
+        <captureCodeAttributes>true</captureCodeAttributes>
+        <captureMdcAttributes>*</captureMdcAttributes>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="OTEL"/>
+    </root>
+</configuration>

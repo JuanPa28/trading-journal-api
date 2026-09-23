@@ -51,8 +51,25 @@ kubectl create secret generic trading-journal-grafana-credentials \
   --from-literal=MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_HEADERS_AUTHORIZATION='Basic <el-string-que-dio-Pipe>' \
   --from-literal=OTEL_EXPORTER_OTLP_METRICS_ENABLED='true' \
   --from-literal=OTEL_EXPORTER_OTLP_METRICS_ENDPOINT='https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/metrics' \
-  --from-literal=GRAFANA_OTLP_AUTH_HEADER='Basic <el-string-que-dio-Pipe>'
+  --from-literal=GRAFANA_OTLP_AUTH_HEADER='Basic <el-string-que-dio-Pipe>' \
+  --from-literal=MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_ENDPOINT='https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/logs' \
+  --from-literal=MANAGEMENT_OPENTELEMETRY_LOGGING_EXPORT_OTLP_HEADERS_AUTHORIZATION='Basic <el-string-que-dio-Pipe>'
 ```
+
+Los dos últimos son para logs — mismo gateway OTLP, mismo token, solo cambia
+la ruta final (`/v1/logs` en vez de `/v1/traces`). Igual que con tracing,
+Spring Boot 4.1 sí crashea con endpoint vacío en esta ruta nueva (confirmado
+por el mismo patrón de bug en tracing), así que estas dos variables
+**tampoco** tienen default vacío en `application.yml` — solo existen si este
+Secret las trae. A diferencia de las trazas, acá no hizo falta ningún bean
+manual: Spring Boot arma el `SdkLoggerProvider` y el exportador OTLP solo con
+la propiedad presente (`spring-boot-opentelemetry`, módulo nuevo en 4.1). Lo
+que sí hubo que cablear a mano fue el puente Logback → OpenTelemetry: el
+appender `OpenTelemetryAppender` (declarado en `logback-spring.xml`) no tiene
+forma de recibir el bean `OpenTelemetry` de Spring en el propio XML, porque
+Logback arranca antes que el contexto — se instala en código con
+`OpenTelemetryAppender.install(...)` dentro de `OtelLogAppenderInitializer`,
+en el evento `ApplicationReadyEvent`.
 
 ## Aplicar y verificar
 
