@@ -2,14 +2,15 @@
   "info": {
     "_postman_id": "7d39d0bf-dfdf-40f9-b323-f96c3d943fe4",
     "name": "Trading Journal API",
-    "description": "Colección completa de la API REST del Trading Journal (Actividad 1). Incluye las 3 entidades (Trader, Strategy, Trade), el endpoint QUERY con el método HTTP literal, y casos de prueba de validación/errores. Usa las variables de colección o selecciona el environment 'Pruebas' / 'Producción' para cambiar de puerto.",
+    "description": "Colección completa de la API REST del Trading Journal. Incluye las 3 entidades (Trader, Strategy, Trade) de la Actividad 1, el endpoint QUERY con el método HTTP literal, casos de prueba de validación/errores, y la carpeta 'api/v2 (Entrega 2)' con los endpoints enriquecidos (traen entidades de Mari y Pipe en tiempo real) más el componente de Object Storage. Selecciona el environment 'Producción (AKS)' para apuntar al clúster real en Azure.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:8080", "type": "string" },
     { "key": "traderId", "value": "1", "type": "string" },
     { "key": "strategyId", "value": "1", "type": "string" },
-    { "key": "tradeId", "value": "1", "type": "string" }
+    { "key": "tradeId", "value": "1", "type": "string" },
+    { "key": "attachmentId", "value": "", "type": "string" }
   ],
   "item": [
     {
@@ -259,6 +260,84 @@
               "path": ["api", "trades", "query"]
             },
             "description": "Usa el verbo HTTP QUERY literal (no POST). Filtra por traderId y/o won (true = ganadoras, false = perdedoras). Cualquiera de los dos campos puede omitirse o mandarse null."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "api/v2 (Entrega 2)",
+      "item": [
+        {
+          "name": "Trader v2 (enriquecido con Mari + Pipe)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "traders", "{{traderId}}"]
+            },
+            "description": "Igual que 'Obtener trader por ID' pero trae además un 'companions' con una entidad random de Mari (partido/predicción) y una de Pipe (commerce/product), obtenidas en tiempo real por HTTP. Un campo en null significa que esa API compañera no respondió o no tiene datos todavía — no es un error tuyo."
+          },
+          "response": []
+        },
+        {
+          "name": "Strategy v2 (enriquecido con Mari + Pipe)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/strategies/{{strategyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "strategies", "{{strategyId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Trade v2 (enriquecido con Mari + Pipe)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "trades", "{{tradeId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Guardar adjunto (Object Storage)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nota\": \"Comprobante de la operación\",\n  \"tradeId\": {{tradeId}}\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/attachments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "attachments"]
+            },
+            "description": "Guarda cualquier JSON en el bucket real de OCI Object Storage. Devuelve {\"id\": \"<uuid>.json\"} — copia ese id a la variable de colección 'attachmentId' para usarlo en la siguiente petición."
+          },
+          "response": []
+        },
+        {
+          "name": "Recuperar adjunto (Object Storage)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/attachments/{{attachmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v2", "attachments", "{{attachmentId}}"]
+            },
+            "description": "Requiere haber corrido antes 'Guardar adjunto' y haber puesto el id devuelto en la variable de colección 'attachmentId'."
           },
           "response": []
         }
