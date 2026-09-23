@@ -7,7 +7,7 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 | Integrante | Repositorio | Nube de cómputo | Componente transversal propio |
 |---|---|---|---|
 | **Juan Pablo (este repo)** | `JuanPa28/trading-journal-api` | **Azure (AKS)** — cómputo movido de OCI por falta de capacidad gratuita, datos y storage se quedaron en OCI | **Object Storage** (OCI) |
-| Mariana Pineda ("Mari") | `MarianaPineda0/StatsNostra` | GCP (Cloud Run) | **Caché distribuida** |
+| Mariana Pineda ("Mari") | `MarianaPineda0/StatsNostra` | GCP (GKE) | **Caché distribuida** |
 | Juan Felipe ("Pipe") | `jfpa11100/ecommerce-api` | AWS | **MS Orquestador + cola de mensajería** |
 
 ## Diagrama de arquitectura
