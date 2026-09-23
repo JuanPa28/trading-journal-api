@@ -41,22 +41,20 @@ management:
   tracing:
     sampling:
       probability: 1.0
-  # Conexión a Grafana Cloud (OTLP) — EN PAUSA a pedido de Pipe (grupo, 2026-09-23),
-  # todavía no listo de su lado. No tocar / no activar hasta que él avise.
-  #
-  # Nota técnica encontrada al intentarlo: la ruta "nueva" y no-deprecada
-  # (management.opentelemetry.tracing.export.otlp.*) NO se queda inerte con el
-  # endpoint vacío como sí hace esta de abajo — Spring intenta construir el
-  # exportador igual y el pod crashea con "Invalid endpoint, must start with
-  # http:// or https://" (confirmado en un pod real). Por eso, mientras no haya
-  # endpoint real, esta app se queda en la ruta management.otlp.tracing.* — sí
-  # deprecada, pero comprobada segura en vacío — con el trade-off de que sus
-  # headers no se aplican (para eso sirve el bean manual de más abajo). Cuando
-  # el grupo esté listo, cambiar a la ruta nueva Y setear el endpoint al mismo
-  # tiempo en el mismo despliegue, nunca una sin la otra.
+  # Conexión a Grafana Cloud (OTLP) — trazas por management.opentelemetry.*
+  # (la ruta correcta, no deprecada, de Spring Boot 4.1; management.otlp.tracing.*
+  # quedó deprecada "a error" y además, se confirmó, nunca manda el header de
+  # autenticación, así que Grafana respondía 401 aunque la credencial fuera
+  # correcta). A propósito NO se le pone un valor por defecto vacío aquí: la
+  # ruta nueva SÍ intenta construir el exportador igual con "" y el pod
+  # crashea ("Invalid endpoint, must start with http:// or https://",
+  # confirmado en un pod real) — a diferencia de la ruta vieja, que se queda
+  # inerte sola. Por eso el endpoint solo se setea si el Secret de Kubernetes
+  # trae la variable MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT
+  # (binding automático de Spring, sin mapeo manual aquí) — si no está
+  # presente en el entorno, la propiedad queda genuinamente ausente (no
+  # vacía) y TracingConfig usa el exportador a logs en su lugar.
   otlp:
-    tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:}
     metrics:
       export:
         # A diferencia de tracing.endpoint, el registro de métricas OTLP NO se
