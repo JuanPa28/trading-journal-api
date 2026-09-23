@@ -46,7 +46,7 @@ Colección de Postman completa en [`postman/`](./postman).
 - **Oracle Autonomous Database** (producción, walletless TLS) / PostgreSQL 17 (local, Docker)
 - **Kubernetes** (AKS) — Deployment (2-4 réplicas vía HPA), Service LoadBalancer, ConfigMap, 3 Secrets, liveness/readiness probes, requests/limits de recursos
 - **OCI Object Storage** — SDK oficial de Java
-- **Observabilidad**: Micrometer + Prometheus (`/actuator/prometheus`, histograma de latencia p50/p95 por endpoint) + OpenTelemetry (trazas distribuidas, exportador a logs hoy, listo para Grafana Cloud con una sola variable de entorno) + monitoreo nativo de OCI (métricas + logs del bucket)
+- **Observabilidad**: Micrometer + Prometheus (`/actuator/prometheus`, histograma de latencia p50/p95 por endpoint) + OpenTelemetry (trazas y métricas exportadas por OTLP a Grafana Cloud, la herramienta SAAS transversal del grupo) + monitoreo nativo de OCI (métricas + logs del bucket)
 - Docker / Docker Compose (build multi-stage)
 - JUnit 5 + Mockito + JaCoCo — 68 pruebas (el reporte de cobertura se genera, sin gate mínimo obligatorio)
 - GitHub Actions (CI/CD) — build → test → build & push de imagen → despliegue automático a Kubernetes
