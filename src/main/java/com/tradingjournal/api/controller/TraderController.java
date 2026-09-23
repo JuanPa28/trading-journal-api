@@ -10,10 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-// v2 solo espeja v1 aquí: la agregación de entidades de compañeros va únicamente
-// en Trade (ver TradeV2Controller), no en cada entidad.
+// v2 tiene su propio controlador (TraderV2Controller), con el GetById
+// enriquecido con entidades de Mari y Pipe — este solo sirve v1.
 @RestController
-@RequestMapping({"/api/traders", "/api/v1/traders", "/api/v2/traders"})
+@RequestMapping({"/api/traders", "/api/v1/traders"})
 public class TraderController {
 
     private final TraderService traderService;

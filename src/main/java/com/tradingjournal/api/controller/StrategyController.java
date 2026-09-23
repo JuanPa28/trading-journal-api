@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-// v2 solo espeja v1 aquí: la agregación de entidades de compañeros va únicamente
-// en Trade (ver TradeV2Controller), no en cada entidad.
+// v2 tiene su propio controlador (StrategyV2Controller), con el GetById
+// enriquecido con entidades de Mari y Pipe — este solo sirve v1.
 @RestController
-@RequestMapping({"/api/strategies", "/api/v1/strategies", "/api/v2/strategies"})
+@RequestMapping({"/api/strategies", "/api/v1/strategies"})
 public class StrategyController {
 
     private final StrategyService strategyService;
