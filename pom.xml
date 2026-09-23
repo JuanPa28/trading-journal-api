@@ -74,6 +74,13 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-otlp</artifactId>
         </dependency>
+        <!-- Métricas por OTLP hacia Grafana Cloud (además de /actuator/prometheus,
+             que sigue existiendo para scraping local). El equivalente Java del
+             metricReader + OTLPMetricExporter que usa Pipe en su instrumentation.ts. -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-otlp</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.postgresql</groupId>

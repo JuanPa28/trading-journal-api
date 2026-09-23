@@ -41,13 +41,33 @@ management:
   tracing:
     sampling:
       probability: 1.0
-  # Sin endpoint OTLP configurado, no intenta conectarse a nada — las trazas
-  # se ven en los logs (exportador "logging") mientras el grupo define la
-  # herramienta SAAS transversal. Apuntar OTEL_EXPORTER_OTLP_ENDPOINT una vez
-  # esté decidido, sin tocar código.
+  # Equivalente Java del instrumentation.ts de Pipe: exporta trazas Y métricas
+  # por OTLP a Grafana Cloud, con Basic Auth. Con los 2 endpoints vacíos (por
+  # defecto) no intenta conectarse a nada — las trazas se ven en los logs
+  # (exportador "logging") y las métricas solo en /actuator/prometheus, hasta
+  # que el grupo apunte las 3 variables de entorno de abajo, sin tocar código.
   otlp:
     tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:}
+      endpoint: ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:}
+      headers:
+        Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
+      resource-attributes:
+        service.name: ${OTEL_SERVICE_NAME:trading-journal-api}
+    metrics:
+      export:
+        # A diferencia de tracing.endpoint, el registro de métricas OTLP NO se
+        # queda inerte solo — intenta publicar cada 30s aunque la URL esté
+        # vacía, lo que genera un stack trace "URI is not absolute" en cada
+        # intento (confirmado corriendo la app). Por eso lleva su propio
+        # "enabled", apagado por defecto — se prende junto con la URL cuando
+        # el grupo tenga las credenciales de Grafana Cloud.
+        enabled: ${OTEL_EXPORTER_OTLP_METRICS_ENABLED:false}
+        url: ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:}
+        headers:
+          Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
+        step: 30s
+        resource-attributes:
+          service.name: ${OTEL_SERVICE_NAME:trading-journal-api}
 
 companions:
   mari:
