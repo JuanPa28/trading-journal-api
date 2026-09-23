@@ -32,24 +32,25 @@ kubectl create secret generic trading-journal-oci-credentials \
   --from-literal=OCI_FINGERPRINT='<fingerprint-de-la-llave-api>' \
   --from-file=OCI_PRIVATE_KEY=/ruta/a/tu/oci_api_key.pem
 
-# Credenciales de Grafana Cloud (OTLP) — EN PAUSA a pedido de Pipe (grupo,
-# 2026-09-23), todavía no listo de su lado. No crear este secret ni tocar
-# TracingConfig.java hasta que él avise. El valor de GRAFANA_OTLP_AUTH_HEADER
-# es "Basic " + el string que Grafana llama "usuario" en su página de
-# conexión OTLP — ese string YA es el base64 de "instanceId:token", no hay
-# que codificarlo de nuevo.
+# Credenciales de Grafana Cloud (OTLP) — CONECTADO (2026-09-23), verificado
+# en vivo: sin crash, sin 401, un solo exportador de trazas activo (no
+# doble). El valor de los *_AUTH_HEADER es "Basic " + el string que Grafana
+# llama "usuario" en su página de conexión OTLP — ese string YA es el
+# base64 de "instanceId:token", no hay que codificarlo de nuevo.
 #
-# IMPORTANTE al reactivar: además de crear este secret y el secretRef en
-# deployment.yaml, hay que cambiar application.yml de vuelta a la ruta
-# management.opentelemetry.tracing.export.otlp.* (la correcta, no deprecada)
-# EN EL MISMO cambio que se pone el endpoint real — esa ruta nueva no se
-# queda inerte con el endpoint vacío como sí hace management.otlp.tracing.*,
-# crashea el pod con "Invalid endpoint" (ya pasó una vez, confirmado en
-# un pod real). Nunca una sin la otra.
+# El nombre de la primera variable (MANAGEMENT_OPENTELEMETRY_..._ENDPOINT)
+# no es arbitrario: es el binding automático de Spring hacia la propiedad
+# management.opentelemetry.tracing.export.otlp.endpoint — la ruta correcta,
+# no deprecada, de Spring Boot 4.1 (management.otlp.tracing.* SÍ existe
+# pero nunca manda el header de autenticación, aunque parezca conectar).
+# Deliberadamente no tiene default vacío en application.yml: esa ruta
+# nueva no se queda inerte con "" como sí hace la vieja, crashea el pod
+# con "Invalid endpoint" — por eso solo llega con este secret.
 kubectl create secret generic trading-journal-grafana-credentials \
-  --from-literal=OTEL_EXPORTER_OTLP_TRACES_ENDPOINT='https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/traces' \
-  --from-literal=OTEL_EXPORTER_OTLP_METRICS_ENDPOINT='https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/metrics' \
+  --from-literal=MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT='https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/traces' \
+  --from-literal=MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_HEADERS_AUTHORIZATION='Basic <el-string-que-dio-Pipe>' \
   --from-literal=OTEL_EXPORTER_OTLP_METRICS_ENABLED='true' \
+  --from-literal=OTEL_EXPORTER_OTLP_METRICS_ENDPOINT='https://otlp-gateway-prod-us-east-3.grafana.net/otlp/v1/metrics' \
   --from-literal=GRAFANA_OTLP_AUTH_HEADER='Basic <el-string-que-dio-Pipe>'
 ```
 
