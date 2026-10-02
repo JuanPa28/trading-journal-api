@@ -2,6 +2,8 @@
 
 Proyecto semestral de la materia de Desarrollo de Software. **Actividad 2 (Entrega 2, Énfasis DevOps)** — arquitectura multicloud, sobre la base de la Actividad 1 (API RESTful de registro y seguimiento de operaciones de trading).
 
+> **Estado de la infraestructura (octubre de 2026):** tras la sustentación de la Entrega 2 se **eliminó toda la infraestructura en la nube** (clúster AKS en Azure; Autonomous Database, bucket de Object Storage y clúster OKE en OCI), por indicación del profesor. Las URL y las IP públicas que se mencionan más abajo pertenecen a esa entrega y **ya no existen**; el código, los manifiestos de `k8s/` y la colección de Postman se conservan como evidencia, y la versión entregada está en el tag [`v2.0.0`](https://github.com/JuanPa28/trading-journal-api/releases/tag/v2.0.0). La **Entrega 3 (Seguimiento #3, Terraform)** vuelve a crear la infraestructura mediante código, en la carpeta `terraform/`.
+
 Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia nube de cómputo, reutilizando entidades entre las 3 API en tiempo real (sin datos quemados):
 
 | Integrante | Repositorio | Nube de cómputo | Componente transversal propio |
@@ -16,7 +18,7 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 
 **Qué integrante opera cada nube:** Juan Pablo — Azure (cómputo) + OCI (datos y Object Storage). Mariana Pineda ("Mari") — GCP. Juan Felipe ("Pipe") — AWS. (También resumido en la tabla de arriba.)
 
-**Por qué el cómputo de Juan Pablo está en Azure y no en OCI (la nube originalmente asignada):** OCI se quedó sin capacidad gratuita de máquinas ARM para los nodos de Kubernetes (OKE) — más de 300 intentos automáticos fallidos durante varios días, un problema real de disponibilidad de Oracle, no un error de configuración. El profesor aprobó mover solo el cómputo del clúster a Azure (AKS), dejando la base de datos (Oracle Autonomous DB) y el Object Storage exactamente donde ya estaban funcionando y probados en OCI. El clúster de OKE en OCI se dejó creado (control plane activo, sin nodos) por si Oracle libera capacidad más adelante — el pipeline lo sigue intentando en cada despliegue, sin bloquear nada.
+**Por qué el cómputo de Juan Pablo está en Azure y no en OCI (la nube originalmente asignada):** OCI se quedó sin capacidad gratuita de máquinas ARM para los nodos de Kubernetes (OKE) — más de 300 intentos automáticos fallidos durante varios días, un problema real de disponibilidad de Oracle, no un error de configuración. El profesor aprobó mover solo el cómputo del clúster a Azure (AKS), dejando la base de datos (Oracle Autonomous DB) y el Object Storage exactamente donde ya estaban funcionando y probados en OCI. El clúster de OKE en OCI se dejó creado (control plane activo, sin nodos) por si Oracle liberaba capacidad, y el pipeline lo intentaba en cada despliegue sin bloquear nada; nunca llegó a haber capacidad y se eliminó junto con el resto de la infraestructura.
 
 ## Servicios adicionales (justificación)
 
@@ -60,7 +62,9 @@ docker compose -f docker-compose.yml up --build -d       # Ambiente Pruebas, pue
 docker compose -f docker-compose.prod.yml up --build -d  # Ambiente Producción, puerto 8081
 ```
 
-### Producción real (Azure AKS + Oracle + OCI)
+### Producción real de la Entrega 2 (Azure AKS + Oracle + OCI) — ya eliminada
+
+Estos comandos describen cómo se accedía al clúster durante la Entrega 2; el clúster ya no existe (ver la nota de estado al inicio).
 
 ```bash
 az login
@@ -82,10 +86,13 @@ Corre las 68 pruebas y genera el reporte de cobertura de JaCoCo (`target/site/ja
 
 **No es un requisito de esta entrega** (la rúbrica de Entrega 2 no lo pide explícitamente), pero se mantuvo porque sigue siendo la forma más confiable de desplegar sin pasos manuales — y porque el componente transversal (Object Storage) sí debe "versionarse... con su propio contenedor, su pipeline de despliegue y su documentación de uso" según la rúbrica, y al vivir dentro de esta misma API, hereda el mismo pipeline.
 
-Dos workflows en GitHub Actions ([`.github/workflows/`](./.github/workflows)):
+Durante la Entrega 2 hubo dos workflows (`prod-pipeline.yml` y `test-pipeline.yml`): construían, probaban y publicaban la imagen, y desplegaban a AKS en cada push a `main`. **Se retiraron** al eliminarse los clústeres, porque habrían fallado en cada commit; siguen disponibles en el tag `v2.0.0`.
 
-- **`prod-pipeline.yml`**, en cada push a `main`: build + pruebas → construye la imagen Docker y la publica en GHCR y en OCIR → intenta desplegar a OKE (OCI, `continue-on-error`, hoy sin nodos) → despliega a AKS (Azure), el despliegue real, confirmado funcionando en cada push.
-- **`test-pipeline.yml`**, en cada push a `develop`: build + pruebas → publica la imagen en GHCR (sin desplegarla a ningún clúster).
+Hoy hay un workflow en GitHub Actions ([`.github/workflows/`](./.github/workflows)):
+
+- **`ci.yml`**, en cada push a `main` y en cada pull request: compila y corre las pruebas, sin desplegar nada.
+
+El despliegue de la infraestructura y del API de la Entrega 3 lo hará un pipeline de Terraform (carpeta `terraform/`).
 
 ## Convención de commits
 

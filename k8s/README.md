@@ -1,3 +1,5 @@
+> **Histórico de la Entrega 2.** Estos manifiestos describen el despliegue en Azure AKS que se eliminó tras la sustentación (ver el README principal). Se conservan como evidencia; no hay ningún clúster activo.
+
 # Despliegue — arquitectura de dos nubes
 
 **El cómputo (el clúster de Kubernetes) corre en Azure (AKS). La base de datos y el Object Storage siguen en OCI**, donde ya estaban funcionando y probados. La API se conecta a ellos por internet, exactamente igual que lo haría desde cualquier otro lugar — no hay nada especial que dependa de estar "dentro" de OCI.
