@@ -1,0 +1,29 @@
+name: CI
+
+# Solo compila y prueba. No despliega nada: el despliegue de la infraestructura
+# y del API lo hace el pipeline de Terraform (terraform-deploy.yml).
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build and test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Build and run tests
+        run: mvn -B clean verify
