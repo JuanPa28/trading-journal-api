@@ -49,7 +49,7 @@ resource "azurerm_container_group" "api" {
       http_get {
         path   = "/actuator/health/liveness"
         port   = 8080
-        scheme = "Http"
+        scheme = "http"
       }
       initial_delay_seconds = 120
       period_seconds        = 30
@@ -60,7 +60,7 @@ resource "azurerm_container_group" "api" {
       http_get {
         path   = "/actuator/health/readiness"
         port   = 8080
-        scheme = "Http"
+        scheme = "http"
       }
       initial_delay_seconds = 60
       period_seconds        = 15
