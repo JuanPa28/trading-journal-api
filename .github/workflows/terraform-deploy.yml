@@ -1,0 +1,179 @@
+name: Terraform - Desplegar o destruir
+
+# Pipeline de la Entrega 3: crea la infraestructura con Terraform (OCI + Azure),
+# instala el API en ella y comprueba que responde. También la destruye.
+# Se ejecuta a mano (Actions > Terraform - Desplegar o destruir > Run workflow)
+# para no crear recursos —ni gastar crédito— en cada push.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "apply = crear/actualizar y desplegar el API; destroy = eliminar toda la infraestructura"
+        type: choice
+        options: [apply, destroy]
+        default: apply
+  pull_request:
+    paths: ["terraform/**"]
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: terraform
+  cancel-in-progress: false
+
+env:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  TF_VAR_oci_tenancy_ocid: ${{ secrets.OCI_CLI_TENANCY }}
+  TF_VAR_oci_compartment_ocid: ${{ secrets.OCI_CLI_TENANCY }}
+  TF_VAR_oci_user_ocid: ${{ secrets.OCI_CLI_USER }}
+  TF_VAR_oci_fingerprint: ${{ secrets.OCI_CLI_FINGERPRINT }}
+  TF_VAR_oci_private_key: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+  TF_VAR_db_admin_password: ${{ secrets.DB_ADMIN_PASSWORD }}
+  TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
+  TF_VAR_azure_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+  ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+  ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+  ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+jobs:
+  validate:
+    name: Validar Terraform
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Formato
+        run: terraform fmt -check -recursive
+
+      - name: Validar sintaxis
+        run: |
+          terraform init -backend=false
+          terraform validate
+
+  build-image:
+    name: Construir y publicar la imagen del API
+    needs: validate
+    if: github.event_name == 'workflow_dispatch' && inputs.action == 'apply'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Compilar y probar
+        run: mvn -B clean verify
+
+      - name: Calcular nombre de la imagen
+        id: vars
+        run: |
+          echo "image=ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "tag=tf-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+
+  terraform:
+    name: Terraform ${{ inputs.action }}
+    needs: [validate, build-image]
+    # build-image se omite cuando la acción es destroy: igual debe correr este job.
+    if: always() && needs.validate.result == 'success' && github.event_name == 'workflow_dispatch' && (needs.build-image.result == 'success' || needs.build-image.result == 'skipped')
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Configurar OCI (CLI y backend de estado)
+        working-directory: .
+        env:
+          OCI_USER: ${{ secrets.OCI_CLI_USER }}
+          OCI_TENANCY: ${{ secrets.OCI_CLI_TENANCY }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          OCI_KEY: ${{ secrets.OCI_CLI_KEY_CONTENT }}
+        run: |
+          pip install --quiet oci-cli
+          mkdir -p ~/.oci
+          printf '%s\n' "$OCI_KEY" > ~/.oci/key.pem
+          chmod 600 ~/.oci/key.pem
+          cat > ~/.oci/config <<EOF
+          [DEFAULT]
+          user=$OCI_USER
+          fingerprint=$OCI_FINGERPRINT
+          tenancy=$OCI_TENANCY
+          region=sa-bogota-1
+          key_file=$HOME/.oci/key.pem
+          EOF
+
+      - name: Crear el bucket de estado (si no existe)
+        run: bash scripts/bootstrap-state.sh
+
+      - name: Inicializar
+        run: terraform init
+
+      - name: Plan
+        if: inputs.action == 'apply'
+        run: terraform plan -var "api_image_tag=${{ needs.build-image.outputs.tag }}"
+
+      - name: Apply (crear la infraestructura e instalar el API)
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve -var "api_image_tag=${{ needs.build-image.outputs.tag }}"
+
+      - name: Esperar a que el API responda
+        if: inputs.action == 'apply'
+        run: |
+          URL="$(terraform output -raw api_health_url)"
+          echo "Comprobando $URL"
+          for i in $(seq 1 40); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$URL" || true)"
+            echo "intento $i: HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "✅ API arriba en $(terraform output -raw api_url)"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "❌ El API no respondió a tiempo"
+          exit 1
+
+      - name: Vaciar el bucket de adjuntos
+        if: inputs.action == 'destroy'
+        run: |
+          BUCKET="$(terraform output -raw bucket_name 2>/dev/null || true)"
+          if [ -n "$BUCKET" ]; then bash scripts/empty-bucket.sh "$BUCKET"; else echo "Sin bucket en el estado: nada que vaciar."; fi
+
+      - name: Destroy (eliminar toda la infraestructura)
+        if: inputs.action == 'destroy'
+        run: terraform destroy -auto-approve
