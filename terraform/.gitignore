@@ -12,3 +12,4 @@ terraform.tfvars
 !*.example.tfvars
 *.pem
 *.key
+tfplan
