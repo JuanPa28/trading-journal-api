@@ -12,7 +12,20 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 | Mariana Pineda ("Mari") | `MarianaPineda0/StatsNostra` | GCP (GKE) | **Caché distribuida** |
 | Juan Felipe ("Pipe") | `jfpa11100/ecommerce-api` | AWS | **MS Orquestador + cola de mensajería** |
 
-## Diagrama de arquitectura
+## Entrega 3 — Infraestructura como código (Terraform)
+
+La carpeta [`terraform/`](./terraform) crea, con un comando o con un pipeline, toda la infraestructura que el API necesita, y la elimina cuando ya no se usa. La arquitectura sigue la división de la Entrega 2: **datos en Oracle Cloud** y **cómputo en Azure**.
+
+![Arquitectura con Terraform](docs/arquitectura-terraform.svg)
+
+- **7 servicios en nube, uno por archivo `.tf`:** Autonomous Database, Object Storage, Notifications y Monitoring en OCI; Resource Group, Log Analytics y Container Instances (donde corre el API) en Azure.
+- **Pipeline nuevo** ([`terraform-deploy.yml`](.github/workflows/terraform-deploy.yml)): *Actions → Terraform - Desplegar o destruir → Run workflow*. Con `apply` valida, compila y prueba, publica la imagen, crea la infraestructura, **instala el API** y comprueba que responde; con `destroy` elimina todo.
+- **Eliminar la infraestructura al terminar la sustentación:** `destroy` en el pipeline, o `make destroy` / `bash scripts/destroy.sh` desde `terraform/`.
+- **Evidencias de ejecución** (logs del pipeline, pruebas contra el API desplegado, inventario de ambas nubes): [`terraform/evidencias`](./terraform/evidencias).
+
+Cómo desplegar desde cero, los secrets necesarios, costos y seguridad: [`terraform/README.md`](./terraform/README.md).
+
+## Diagrama de arquitectura de la Entrega 2
 
 ![Arquitectura multicloud](docs/arquitectura.svg)
 
@@ -92,8 +105,8 @@ Hoy hay un workflow en GitHub Actions ([`.github/workflows/`](./.github/workflow
 
 - **`ci.yml`**, en cada push a `main` y en cada pull request: compila y corre las pruebas, sin desplegar nada.
 
-El despliegue de la infraestructura y del API de la Entrega 3 lo hará un pipeline de Terraform (carpeta `terraform/`).
+El despliegue de la infraestructura y del API de la Entrega 3 lo hace el pipeline [`terraform-deploy.yml`](.github/workflows/terraform-deploy.yml) (manual, con las acciones `apply` y `destroy`); ver la sección de la Entrega 3 más arriba.
 
 ## Convención de commits
 
-GitMoji ([gitmoji.dev](https://gitmoji.dev/)) en cada commit — muchos commits pequeños, cada uno enfocado en un solo cambio. Versionado semántico con tags de Git (`v1.0.0` al cierre de la Actividad 1; `v2.0.0` al cierre de esta entrega).
+GitMoji ([gitmoji.dev](https://gitmoji.dev/)) en cada commit — muchos commits pequeños, cada uno enfocado en un solo cambio. Versionado semántico con tags de Git (`v1.0.0` al cierre de la Actividad 1, `v2.0.0` al de la Entrega 2 y `v3.0.0` al de la Entrega 3).
