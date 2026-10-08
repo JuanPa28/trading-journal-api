@@ -1,0 +1,20 @@
+# terraform output (los valores sensibles se ocultan)
+alerts_topic_id = "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaf4ivvwesblbb335yc27dpe5phkm3w7pyd2cugs2bh43q"
+api_health_url = "http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080/actuator/health"
+api_url = "http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080"
+azure_resource_group = "trading-journal-dev-rg"
+bucket_name = "trading-journal-dev-attachments"
+database_id = "ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaatcawe4yjrydgxjqqojjk4dy7xhwpixmb7k6qypmak64a"
+database_jdbc_url = <sensitive>
+database_name = "trading-journal-dev-db"
+
+# terraform state list
+data.oci_objectstorage_namespace.current
+azurerm_container_group.api
+azurerm_log_analytics_workspace.main
+azurerm_resource_group.main
+oci_database_autonomous_database.main
+oci_monitoring_alarm.db_cpu
+oci_objectstorage_bucket.attachments
+oci_ons_notification_topic.alerts
+oci_ons_subscription.email

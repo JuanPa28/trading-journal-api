@@ -1,0 +1,20 @@
+# Prueba de punta a punta del API desplegado por Terraform — 2026-10-08 10:44
+# URL: http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080
+
+$ curl /actuator/health
+{"groups":["liveness","readiness"],"status":"UP"}
+
+$ curl -X POST /api/traders   (escribe en la Autonomous Database de OCI)
+{"id":2,"fullName":"Evidencia Terraform","username":"tf_evidencia","email":"evidencia@test.com","availableFunds":3000,"createdAt":"2026-10-08T15:44:25.789716684"}
+[HTTP 201]
+
+$ curl /api/v2/traders/1       (lee de Oracle; companions en null porque las APIs de Mari y Pipe ya no estan arriba)
+{"trader":{"id":1,"fullName":"Pipeline Terraform","username":"tf_pipeline","email":"pipe@test.com","availableFunds":2500,"createdAt":"2026-10-08T15:38:28.47832645"},"companions":{"partido":null,"prediccion":null,"commerce":null,"product":null}}
+[HTTP 200]
+
+$ curl -X POST /api/v2/attachments   (guarda en el bucket de OCI Object Storage)
+{"id":"e141ef80-c598-4d22-924b-d06defff7625.json"}
+
+$ curl /api/v2/attachments/e141ef80-c598-4d22-924b-d06defff7625.json
+{"evidencia":"adjunto guardado en OCI Object Storage"}
+[HTTP 200]

@@ -1,0 +1,823 @@
+# Pipeline 'Terraform - Desplegar o destruir' — accion DESTROY (eliminar toda la infraestructura)
+# Ejecucion: https://github.com/JuanPa28/trading-journal-api/actions/runs/37800222558
+
+[Crear el bucket de estado (si no existe)] ##[group]Run bash scripts/bootstrap-state.sh
+[Crear el bucket de estado (si no existe)] bash scripts/bootstrap-state.sh
+[Crear el bucket de estado (si no existe)] shell: /usr/bin/bash -e {0}
+[Crear el bucket de estado (si no existe)] env:
+[Crear el bucket de estado (si no existe)]   TF_IN_AUTOMATION: true
+[Crear el bucket de estado (si no existe)]   TF_INPUT: false
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_tenancy_ocid: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_compartment_ocid: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_user_ocid: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_fingerprint: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_private_key: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_db_admin_password: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_alert_email: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_azure_subscription_id: ***
+[Crear el bucket de estado (si no existe)]   ARM_CLIENT_ID: ***
+[Crear el bucket de estado (si no existe)]   ARM_CLIENT_SECRET: ***
+[Crear el bucket de estado (si no existe)]   ARM_TENANT_ID: ***
+[Crear el bucket de estado (si no existe)]   ARM_SUBSCRIPTION_ID: ***
+[Crear el bucket de estado (si no existe)] ##[endgroup]
+[Crear el bucket de estado (si no existe)] WARNING: Permissions on /home/runner/.oci/config are too open. 
+[Crear el bucket de estado (si no existe)] To fix this please try executing the following command: 
+[Crear el bucket de estado (si no existe)] oci setup repair-file-permissions --file /home/runner/.oci/config 
+[Crear el bucket de estado (si no existe)] Alternatively to hide this warning, you may set the environment variable, OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING: 
+[Crear el bucket de estado (si no existe)] export OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING=True
+[Crear el bucket de estado (si no existe)] 
+[Crear el bucket de estado (si no existe)] El bucket de estado 'trading-journal-tfstate' ya existe.
+[Inicializar] ##[group]Run terraform init
+[Inicializar] terraform init
+[Inicializar] shell: /usr/bin/bash -e {0}
+[Inicializar] env:
+[Inicializar]   TF_IN_AUTOMATION: true
+[Inicializar]   TF_INPUT: false
+[Inicializar]   TF_VAR_oci_tenancy_ocid: ***
+[Inicializar]   TF_VAR_oci_compartment_ocid: ***
+[Inicializar]   TF_VAR_oci_user_ocid: ***
+[Inicializar]   TF_VAR_oci_fingerprint: ***
+[Inicializar]   TF_VAR_oci_private_key: ***
+[Inicializar]   TF_VAR_db_admin_password: ***
+[Inicializar]   TF_VAR_alert_email: ***
+[Inicializar]   TF_VAR_azure_subscription_id: ***
+[Inicializar]   ARM_CLIENT_ID: ***
+[Inicializar]   ARM_CLIENT_SECRET: ***
+[Inicializar]   ARM_TENANT_ID: ***
+[Inicializar]   ARM_SUBSCRIPTION_ID: ***
+[Inicializar] ##[endgroup]
+[Inicializar] Initializing the backend...
+[Inicializar] 
+[Inicializar] Successfully configured the backend "oci"! Terraform will automatically
+[Inicializar] use this backend unless the backend configuration changes.
+[Inicializar] 
+[Inicializar] Initializing provider plugins...
+[Inicializar] - Reusing previous version of oracle/oci from the dependency lock file
+[Inicializar] - Reusing previous version of hashicorp/azurerm from the dependency lock file
+[Inicializar] - Installing oracle/oci v7.32.0...
+[Inicializar] - Installed oracle/oci v7.32.0 (signed by a HashiCorp partner, key ID 1533A49284137CEB)
+[Inicializar] - Installing hashicorp/azurerm v4.81.0...
+[Inicializar] - Installed hashicorp/azurerm v4.81.0 (signed by HashiCorp)
+[Inicializar] Partner and community providers are signed by their developers.
+[Inicializar] If you'd like to know more about provider signing, you can read about it here:
+[Inicializar] https://developer.hashicorp.com/terraform/cli/plugins/signing
+[Inicializar] 
+[Inicializar] Terraform has been successfully initialized!
+[Vaciar el bucket de adjuntos] ##[group]Run BUCKET="$(terraform output -raw bucket_name 2>/dev/null || true)"
+[Vaciar el bucket de adjuntos] BUCKET="$(terraform output -raw bucket_name 2>/dev/null || true)"
+[Vaciar el bucket de adjuntos] if [ -n "$BUCKET" ]; then bash scripts/empty-bucket.sh "$BUCKET"; else echo "Sin bucket en el estado: nada que vaciar."; fi
+[Vaciar el bucket de adjuntos] shell: /usr/bin/bash -e {0}
+[Vaciar el bucket de adjuntos] env:
+[Vaciar el bucket de adjuntos]   TF_IN_AUTOMATION: true
+[Vaciar el bucket de adjuntos]   TF_INPUT: false
+[Vaciar el bucket de adjuntos]   TF_VAR_oci_tenancy_ocid: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_oci_compartment_ocid: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_oci_user_ocid: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_oci_fingerprint: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_oci_private_key: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_db_admin_password: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_alert_email: ***
+[Vaciar el bucket de adjuntos]   TF_VAR_azure_subscription_id: ***
+[Vaciar el bucket de adjuntos]   ARM_CLIENT_ID: ***
+[Vaciar el bucket de adjuntos]   ARM_CLIENT_SECRET: ***
+[Vaciar el bucket de adjuntos]   ARM_TENANT_ID: ***
+[Vaciar el bucket de adjuntos]   ARM_SUBSCRIPTION_ID: ***
+[Vaciar el bucket de adjuntos] ##[endgroup]
+[Vaciar el bucket de adjuntos] WARNING: Permissions on /home/runner/.oci/config are too open. 
+[Vaciar el bucket de adjuntos] To fix this please try executing the following command: 
+[Vaciar el bucket de adjuntos] oci setup repair-file-permissions --file /home/runner/.oci/config 
+[Vaciar el bucket de adjuntos] Alternatively to hide this warning, you may set the environment variable, OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING: 
+[Vaciar el bucket de adjuntos] export OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING=True
+[Vaciar el bucket de adjuntos] 
+[Vaciar el bucket de adjuntos] WARNING: Permissions on /home/runner/.oci/config are too open. 
+[Vaciar el bucket de adjuntos] To fix this please try executing the following command: 
+[Vaciar el bucket de adjuntos] oci setup repair-file-permissions --file /home/runner/.oci/config 
+[Vaciar el bucket de adjuntos] Alternatively to hide this warning, you may set the environment variable, OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING: 
+[Vaciar el bucket de adjuntos] export OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING=True
+[Vaciar el bucket de adjuntos] 
+[Vaciar el bucket de adjuntos] Deleted object item
+[Vaciar el bucket de adjuntos] Bucket 'trading-journal-dev-attachments' vacío.
+[Destroy (eliminar toda la infraestructura)] ##[group]Run terraform destroy -auto-approve
+[Destroy (eliminar toda la infraestructura)] terraform destroy -auto-approve
+[Destroy (eliminar toda la infraestructura)] shell: /usr/bin/bash -e {0}
+[Destroy (eliminar toda la infraestructura)] env:
+[Destroy (eliminar toda la infraestructura)]   TF_IN_AUTOMATION: true
+[Destroy (eliminar toda la infraestructura)]   TF_INPUT: false
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_oci_tenancy_ocid: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_oci_compartment_ocid: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_oci_user_ocid: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_oci_fingerprint: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_oci_private_key: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_db_admin_password: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_alert_email: ***
+[Destroy (eliminar toda la infraestructura)]   TF_VAR_azure_subscription_id: ***
+[Destroy (eliminar toda la infraestructura)]   ARM_CLIENT_ID: ***
+[Destroy (eliminar toda la infraestructura)]   ARM_CLIENT_SECRET: ***
+[Destroy (eliminar toda la infraestructura)]   ARM_TENANT_ID: ***
+[Destroy (eliminar toda la infraestructura)]   ARM_SUBSCRIPTION_ID: ***
+[Destroy (eliminar toda la infraestructura)] ##[endgroup]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Refreshing state... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq]
+[Destroy (eliminar toda la infraestructura)] data.oci_objectstorage_namespace.current: Reading...
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Refreshing state... [id=ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaab64jhvaxj44eb57x2p5koojwyyeml4riwarw2o2l7mqa]
+[Destroy (eliminar toda la infraestructura)] data.oci_objectstorage_namespace.current: Read complete after 0s [id=ObjectStorageNamespaceDataSource-2365950485]
+[Destroy (eliminar toda la infraestructura)] oci_objectstorage_bucket.attachments: Refreshing state... [id=n/axxhzvxjrmcl/b/trading-journal-dev-attachments]
+[Destroy (eliminar toda la infraestructura)] oci_ons_subscription.email: Refreshing state... [id=ocid1.onssubscription.oc1.sa-bogota-1.aaaaaaaa76bkqis6wzqleaea5lk53a4wumhnk6po7itbjj4wvs5gqfzm3zpa]
+[Destroy (eliminar toda la infraestructura)] oci_monitoring_alarm.db_cpu: Refreshing state... [id=ocid1.alarm.oc1.sa-bogota-1.amaaaaaakei73jaa5ymky72uxkgg46ytb7owhm6agu5yl23ohz75zram6esa]
+[Destroy (eliminar toda la infraestructura)] azurerm_resource_group.main: Refreshing state... [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg]
+[Destroy (eliminar toda la infraestructura)] azurerm_log_analytics_workspace.main: Refreshing state... [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.OperationalInsights/workspaces/trading-journal-dev-logs]
+[Destroy (eliminar toda la infraestructura)] azurerm_container_group.api: Refreshing state... [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.ContainerInstance/containerGroups/trading-journal-dev-api]
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)] Terraform used the selected providers to generate the following execution
+[Destroy (eliminar toda la infraestructura)] plan. Resource actions are indicated with the following symbols:
+[Destroy (eliminar toda la infraestructura)]   - destroy
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)] Terraform will perform the following actions:
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # azurerm_container_group.api will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "azurerm_container_group" "api" {
+[Destroy (eliminar toda la infraestructura)]       - dns_name_label              = "trading-journal-dev-api-826c31" -> null
+[Destroy (eliminar toda la infraestructura)]       - dns_name_label_reuse_policy = "Unsecure" -> null
+[Destroy (eliminar toda la infraestructura)]       - exposed_port                = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - port     = 8080
+[Destroy (eliminar toda la infraestructura)]               - protocol = "TCP"
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - fqdn                        = "trading-journal-dev-api-826c31.eastus.azurecontainer.io" -> null
+[Destroy (eliminar toda la infraestructura)]       - id                          = "/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.ContainerInstance/containerGroups/trading-journal-dev-api" -> null
+[Destroy (eliminar toda la infraestructura)]       - ip_address                  = "172.214.123.167" -> null
+[Destroy (eliminar toda la infraestructura)]       - ip_address_type             = "Public" -> null
+[Destroy (eliminar toda la infraestructura)]       - location                    = "eastus" -> null
+[Destroy (eliminar toda la infraestructura)]       - name                        = "trading-journal-dev-api" -> null
+[Destroy (eliminar toda la infraestructura)]       - os_type                     = "Linux" -> null
+[Destroy (eliminar toda la infraestructura)]       - resource_group_name         = "trading-journal-dev-rg" -> null
+[Destroy (eliminar toda la infraestructura)]       - restart_policy              = "Always" -> null
+[Destroy (eliminar toda la infraestructura)]       - sku                         = "Standard" -> null
+[Destroy (eliminar toda la infraestructura)]       - subnet_ids                  = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - tags                        = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - zones                       = [] -> null
+[Destroy (eliminar toda la infraestructura)]         # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - container {
+[Destroy (eliminar toda la infraestructura)]           - commands                     = [] -> null
+[Destroy (eliminar toda la infraestructura)]           - cpu                          = 1 -> null
+[Destroy (eliminar toda la infraestructura)]           - cpu_limit                    = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - environment_variables        = {
+[Destroy (eliminar toda la infraestructura)]               - "DB_URL"                        = "jdbc:oracle:thin:@(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]               - "DB_USERNAME"                   = "ADMIN"
+[Destroy (eliminar toda la infraestructura)]               - "MARI_BASE_URL"                 = "http://34.57.56.128"
+[Destroy (eliminar toda la infraestructura)]               - "OCI_FINGERPRINT"               = "***"
+[Destroy (eliminar toda la infraestructura)]               - "OCI_OBJECT_STORAGE_BUCKET"     = "trading-journal-dev-attachments"
+[Destroy (eliminar toda la infraestructura)]               - "OCI_OBJECT_STORAGE_NAMESPACE"  = "axxhzvxjrmcl"
+[Destroy (eliminar toda la infraestructura)]               - "OCI_REGION"                    = "sa-bogota-1"
+[Destroy (eliminar toda la infraestructura)]               - "OCI_TENANCY_ID"                = "***"
+[Destroy (eliminar toda la infraestructura)]               - "OCI_USER_ID"                   = "***"
+[Destroy (eliminar toda la infraestructura)]               - "OTEL_SERVICE_NAME"             = "api-oci"
+[Destroy (eliminar toda la infraestructura)]               - "PIPE_BASE_URL"                 = "http://k8s-default-ecommerc-233fe225e6-1328693903.us-east-2.elb.amazonaws.com"
+[Destroy (eliminar toda la infraestructura)]               - "SPRING_JPA_HIBERNATE_DDL_AUTO" = "update"
+[Destroy (eliminar toda la infraestructura)]               - "SPRING_PROFILES_ACTIVE"        = "prod"
+[Destroy (eliminar toda la infraestructura)]             } -> null
+[Destroy (eliminar toda la infraestructura)]           - image                        = "ghcr.io/juanpa28/trading-journal-api:prod-latest" -> null
+[Destroy (eliminar toda la infraestructura)]           - memory                       = 2 -> null
+[Destroy (eliminar toda la infraestructura)]           - memory_limit                 = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                         = "api" -> null
+[Destroy (eliminar toda la infraestructura)]           - secure_environment_variables = (sensitive value) -> null
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]           - liveness_probe {
+[Destroy (eliminar toda la infraestructura)]               - exec                  = [] -> null
+[Destroy (eliminar toda la infraestructura)]               - failure_threshold     = 5 -> null
+[Destroy (eliminar toda la infraestructura)]               - initial_delay_seconds = 120 -> null
+[Destroy (eliminar toda la infraestructura)]               - period_seconds        = 30 -> null
+[Destroy (eliminar toda la infraestructura)]               - success_threshold     = 0 -> null
+[Destroy (eliminar toda la infraestructura)]               - timeout_seconds       = 0 -> null
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]               - http_get {
+[Destroy (eliminar toda la infraestructura)]                   - http_headers = {} -> null
+[Destroy (eliminar toda la infraestructura)]                   - path         = "/actuator/health/liveness" -> null
+[Destroy (eliminar toda la infraestructura)]                   - port         = 8080 -> null
+[Destroy (eliminar toda la infraestructura)]                   - scheme       = "http" -> null
+[Destroy (eliminar toda la infraestructura)]                 }
+[Destroy (eliminar toda la infraestructura)]             }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]           - ports {
+[Destroy (eliminar toda la infraestructura)]               - port     = 8080 -> null
+[Destroy (eliminar toda la infraestructura)]               - protocol = "TCP" -> null
+[Destroy (eliminar toda la infraestructura)]             }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]           - readiness_probe {
+[Destroy (eliminar toda la infraestructura)]               - exec                  = [] -> null
+[Destroy (eliminar toda la infraestructura)]               - failure_threshold     = 5 -> null
+[Destroy (eliminar toda la infraestructura)]               - initial_delay_seconds = 60 -> null
+[Destroy (eliminar toda la infraestructura)]               - period_seconds        = 15 -> null
+[Destroy (eliminar toda la infraestructura)]               - success_threshold     = 0 -> null
+[Destroy (eliminar toda la infraestructura)]               - timeout_seconds       = 0 -> null
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]               - http_get {
+[Destroy (eliminar toda la infraestructura)]                   - http_headers = {} -> null
+[Destroy (eliminar toda la infraestructura)]                   - path         = "/actuator/health/readiness" -> null
+[Destroy (eliminar toda la infraestructura)]                   - port         = 8080 -> null
+[Destroy (eliminar toda la infraestructura)]                   - scheme       = "http" -> null
+[Destroy (eliminar toda la infraestructura)]                 }
+[Destroy (eliminar toda la infraestructura)]             }
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - diagnostics {
+[Destroy (eliminar toda la infraestructura)]           - log_analytics {
+[Destroy (eliminar toda la infraestructura)]               - metadata      = {} -> null
+[Destroy (eliminar toda la infraestructura)]               - workspace_id  = "f29dac9e-c3f2-4f5f-a689-4b796d030b05" -> null
+[Destroy (eliminar toda la infraestructura)]               - workspace_key = (sensitive value) -> null
+[Destroy (eliminar toda la infraestructura)]                 # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)]             }
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # azurerm_log_analytics_workspace.main will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "azurerm_log_analytics_workspace" "main" {
+[Destroy (eliminar toda la infraestructura)]       - allow_resource_only_permissions         = true -> null
+[Destroy (eliminar toda la infraestructura)]       - cmk_for_query_forced                    = false -> null
+[Destroy (eliminar toda la infraestructura)]       - daily_quota_gb                          = -1 -> null
+[Destroy (eliminar toda la infraestructura)]       - id                                      = "/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.OperationalInsights/workspaces/trading-journal-dev-logs" -> null
+[Destroy (eliminar toda la infraestructura)]       - immediate_data_purge_on_30_days_enabled = false -> null
+[Destroy (eliminar toda la infraestructura)]       - internet_ingestion_enabled              = true -> null
+[Destroy (eliminar toda la infraestructura)]       - internet_query_enabled                  = true -> null
+[Destroy (eliminar toda la infraestructura)]       - local_authentication_disabled           = false -> null
+[Destroy (eliminar toda la infraestructura)]       - local_authentication_enabled            = true -> null
+[Destroy (eliminar toda la infraestructura)]       - location                                = "eastus" -> null
+[Destroy (eliminar toda la infraestructura)]       - name                                    = "trading-journal-dev-logs" -> null
+[Destroy (eliminar toda la infraestructura)]       - primary_shared_key                      = (sensitive value) -> null
+[Destroy (eliminar toda la infraestructura)]       - resource_group_name                     = "trading-journal-dev-rg" -> null
+[Destroy (eliminar toda la infraestructura)]       - retention_in_days                       = 30 -> null
+[Destroy (eliminar toda la infraestructura)]       - secondary_shared_key                    = (sensitive value) -> null
+[Destroy (eliminar toda la infraestructura)]       - sku                                     = "PerGB2018" -> null
+[Destroy (eliminar toda la infraestructura)]       - tags                                    = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - workspace_id                            = "f29dac9e-c3f2-4f5f-a689-4b796d030b05" -> null
+[Destroy (eliminar toda la infraestructura)]         # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # azurerm_resource_group.main will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "azurerm_resource_group" "main" {
+[Destroy (eliminar toda la infraestructura)]       - id         = "/subscriptions/***/resourceGroups/trading-journal-dev-rg" -> null
+[Destroy (eliminar toda la infraestructura)]       - location   = "eastus" -> null
+[Destroy (eliminar toda la infraestructura)]       - name       = "trading-journal-dev-rg" -> null
+[Destroy (eliminar toda la infraestructura)]       - tags       = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]         # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # oci_database_autonomous_database.main will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "oci_database_autonomous_database" "main" {
+[Destroy (eliminar toda la infraestructura)]       - actual_used_data_storage_size_in_tbs       = 0.005884289741516113 -> null
+[Destroy (eliminar toda la infraestructura)]       - additional_attributes                      = {} -> null
+[Destroy (eliminar toda la infraestructura)]       - admin_password                             = (sensitive value) -> null
+[Destroy (eliminar toda la infraestructura)]       - allocated_storage_size_in_tbs              = 0.009765625 -> null
+[Destroy (eliminar toda la infraestructura)]       - apex_details                               = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - ords_version = "26.3.0.272.1811"
+[Destroy (eliminar toda la infraestructura)]                 # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - autonomous_maintenance_schedule_type       = "REGULAR" -> null
+[Destroy (eliminar toda la infraestructura)]       - availability_domain                        = "jLYx:SA-BOGOTA-1-AD-1" -> null
+[Destroy (eliminar toda la infraestructura)]       - available_upgrade_versions                 = [
+[Destroy (eliminar toda la infraestructura)]           - "23ai",
+[Destroy (eliminar toda la infraestructura)]           - "26ai",
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - backup_config                              = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - manual_backup_type        = "NONE"
+[Destroy (eliminar toda la infraestructura)]                 # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - backup_retention_period_in_days            = 60 -> null
+[Destroy (eliminar toda la infraestructura)]       - character_set                              = "AL32UTF8" -> null
+[Destroy (eliminar toda la infraestructura)]       - clone_table_space_list                     = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - compartment_id                             = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - compute_count                              = 1 -> null
+[Destroy (eliminar toda la infraestructura)]       - compute_model                              = "ECPU" -> null
+[Destroy (eliminar toda la infraestructura)]       - connection_strings                         = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - all_connection_strings = {
+[Destroy (eliminar toda la infraestructura)]                   - "HIGH"     = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_high.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]                   - "LOW"      = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_low.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]                   - "MEDIUM"   = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_medium.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]                   - "TP"       = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_tp.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]                   - "TPURGENT" = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_tpurgent.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]                 }
+[Destroy (eliminar toda la infraestructura)]               - high                   = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_high.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]               - low                    = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_low.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]               - medium                 = "adb.sa-bogota-1.oraclecloud.com:1522/ge873fba3fce6b0_tradingjournal_medium.adb.oraclecloud.com"
+[Destroy (eliminar toda la infraestructura)]               - profiles               = [
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "HIGH"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_high"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "SERVER"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "MEDIUM"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_medium"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "SERVER"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "LOW"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_low"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "SERVER"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_low.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "TP"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_tp"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "SERVER"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_tp.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "TPURGENT"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_tpurgent"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "SERVER"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1521)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_tpurgent.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "HIGH"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_high"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "MUTUAL"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_high.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "MEDIUM"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_medium"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "MUTUAL"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_medium.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "LOW"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_low"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "MUTUAL"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_low.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "TP"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_tp"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "MUTUAL"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_tp.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - consumer_group     = "TPURGENT"
+[Destroy (eliminar toda la infraestructura)]                       - display_name       = "tradingjournal_tpurgent"
+[Destroy (eliminar toda la infraestructura)]                       - host_format        = "FQDN"
+[Destroy (eliminar toda la infraestructura)]                       - is_regional        = false
+[Destroy (eliminar toda la infraestructura)]                       - protocol           = "TCPS"
+[Destroy (eliminar toda la infraestructura)]                       - session_mode       = "DIRECT"
+[Destroy (eliminar toda la infraestructura)]                       - syntax_format      = "LONG"
+[Destroy (eliminar toda la infraestructura)]                       - tls_authentication = "MUTUAL"
+[Destroy (eliminar toda la infraestructura)]                       - value              = "(description= (retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port=1522)(host=adb.sa-bogota-1.oraclecloud.com))(connect_data=(service_name=ge873fba3fce6b0_tradingjournal_tpurgent.adb.oraclecloud.com))(security=(ssl_server_dn_match=yes)))"
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                 ]
+[Destroy (eliminar toda la infraestructura)]                 # (1 unchanged attribute hidden)
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - connection_urls                            = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - apex_url                             = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/ords/apex"
+[Destroy (eliminar toda la infraestructura)]               - database_transforms_url              = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/odi"
+[Destroy (eliminar toda la infraestructura)]               - graph_studio_url                     = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/graphstudio"
+[Destroy (eliminar toda la infraestructura)]               - machine_learning_notebook_url        = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/oml"
+[Destroy (eliminar toda la infraestructura)]               - machine_learning_user_management_url = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/omlusers/"
+[Destroy (eliminar toda la infraestructura)]               - mongo_db_url                         = "mongodb://[user:password@]GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com:27017/[user]?authMechanism=PLAIN&authSource=$external&ssl=true&retryWrites=false&loadBalanced=true"
+[Destroy (eliminar toda la infraestructura)]               - ords_url                             = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/ords/"
+[Destroy (eliminar toda la infraestructura)]               - sql_dev_web_url                      = "https://GE873FBA3FCE6B0-TRADINGJOURNAL.adb.sa-bogota-1.oraclecloudapps.com/ords/sql-developer"
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - cpu_core_count                             = 0 -> null
+[Destroy (eliminar toda la infraestructura)]       - data_safe_status                           = "NOT_REGISTERED" -> null
+[Destroy (eliminar toda la infraestructura)]       - data_storage_size_in_gb                    = 20 -> null
+[Destroy (eliminar toda la infraestructura)]       - db_name                                    = "TRADINGJOURNAL" -> null
+[Destroy (eliminar toda la infraestructura)]       - db_version                                 = "19c" -> null
+[Destroy (eliminar toda la infraestructura)]       - db_workload                                = "OLTP" -> null
+[Destroy (eliminar toda la infraestructura)]       - defined_tags                               = {
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedBy" = "default/***"
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedOn" = "2026-10-08T14:30:52.471Z"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - display_name                               = "trading-journal-dev-db" -> null
+[Destroy (eliminar toda la infraestructura)]       - encryption_key_history_entry               = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - encryption_key = [
+[Destroy (eliminar toda la infraestructura)]                   - {
+[Destroy (eliminar toda la infraestructura)]                       - autonomous_database_provider = "ORACLE_MANAGED"
+[Destroy (eliminar toda la infraestructura)]                         # (17 unchanged attributes hidden)
+[Destroy (eliminar toda la infraestructura)]                     },
+[Destroy (eliminar toda la infraestructura)]                 ]
+[Destroy (eliminar toda la infraestructura)]               - time_activated = "2026-10-08 14:31:43.235 +0000 UTC"
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - encryption_key_location_details            = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - freeform_tags                              = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - id                                         = "ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaab64jhvaxj44eb57x2p5koojwyyeml4riwarw2o2l7mqa" -> null
+[Destroy (eliminar toda la infraestructura)]       - is_auto_scaling_enabled                    = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_auto_scaling_for_storage_enabled        = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_backup_retention_locked                 = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_data_guard_enabled                      = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_dedicated                               = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_free_tier                               = true -> null
+[Destroy (eliminar toda la infraestructura)]       - is_local_data_guard_enabled                = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_mtls_connection_required                = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_preview                                 = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_reconnect_clone_enabled                 = false -> null
+[Destroy (eliminar toda la infraestructura)]       - is_remote_data_guard_enabled               = false -> null
+[Destroy (eliminar toda la infraestructura)]       - key_history_entry                          = [
+[Destroy (eliminar toda la infraestructura)]           - {
+[Destroy (eliminar toda la infraestructura)]               - id                 = "ORACLE_MANAGED_KEY"
+[Destroy (eliminar toda la infraestructura)]               - time_activated     = "2026-10-08 14:31:43.235 +0000 UTC"
+[Destroy (eliminar toda la infraestructura)]                 # (2 unchanged attributes hidden)
+[Destroy (eliminar toda la infraestructura)]             },
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - kms_key_id                                 = "ORACLE_MANAGED_KEY" -> null
+[Destroy (eliminar toda la infraestructura)]       - license_model                              = "LICENSE_INCLUDED" -> null
+[Destroy (eliminar toda la infraestructura)]       - local_standby_db                           = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - maintenance_target_component               = "Dictionary" -> null
+[Destroy (eliminar toda la infraestructura)]       - ncharacter_set                             = "AL16UTF16" -> null
+[Destroy (eliminar toda la infraestructura)]       - nsg_ids                                    = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - open_mode                                  = "READ_WRITE" -> null
+[Destroy (eliminar toda la infraestructura)]       - operations_insights_status                 = "NOT_ENABLED" -> null
+[Destroy (eliminar toda la infraestructura)]       - peer_db_ids                                = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - permission_level                           = "UNRESTRICTED" -> null
+[Destroy (eliminar toda la infraestructura)]       - provisionable_cpus                         = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - public_connection_urls                     = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - remote_disaster_recovery_configuration     = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - security_attributes                        = {} -> null
+[Destroy (eliminar toda la infraestructura)]       - standby_db                                 = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - standby_whitelisted_ips                    = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - state                                      = "AVAILABLE" -> null
+[Destroy (eliminar toda la infraestructura)]       - supported_regions_to_clone_to              = [
+[Destroy (eliminar toda la infraestructura)]           - "IAD",
+[Destroy (eliminar toda la infraestructura)]           - "SCL",
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - system_tags                                = {
+[Destroy (eliminar toda la infraestructura)]           - "orcl-cloud.free-tier-retained" = "true"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - time_created                               = "2026-10-08 14:30:52.487 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_earliest_available_db_version_upgrade = "2026-10-08 15:40:00 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_latest_available_db_version_upgrade   = "2026-11-07 15:10:00 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_maintenance_begin                     = "2026-10-09 22:00:00 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_maintenance_end                       = "2026-10-10 00:00:00 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - total_backup_storage_size_in_gbs           = 1 -> null
+[Destroy (eliminar toda la infraestructura)]       - vanity_connection_urls                     = [] -> null
+[Destroy (eliminar toda la infraestructura)]       - whitelisted_ips                            = [
+[Destroy (eliminar toda la infraestructura)]           - "0.0.0.0/0",
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]         # (10 unchanged attributes hidden)
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - autonomous_database_maintenance_window {
+[Destroy (eliminar toda la infraestructura)]           - maintenance_end_time   = "00:00" -> null
+[Destroy (eliminar toda la infraestructura)]           - maintenance_start_time = "22:00" -> null
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]           - day_of_week {
+[Destroy (eliminar toda la infraestructura)]               - name = "FRIDAY" -> null
+[Destroy (eliminar toda la infraestructura)]             }
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = false -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "DLA" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "APEX" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "DATABASE_ACTIONS" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "MONGODB_API" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "ORDS" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 2 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 30 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "DATA_TRANSFORMS" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 2 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 60 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "GRAPH_STUDIO" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 2 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 60 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "OML" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]       - db_tools_details {
+[Destroy (eliminar toda la infraestructura)]           - compute_count            = 2 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_enabled               = true -> null
+[Destroy (eliminar toda la infraestructura)]           - max_idle_time_in_minutes = 60 -> null
+[Destroy (eliminar toda la infraestructura)]           - name                     = "SPATIAL_STUDIO" -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - encryption_key {
+[Destroy (eliminar toda la infraestructura)]           - autonomous_database_provider = "ORACLE_MANAGED" -> null
+[Destroy (eliminar toda la infraestructura)]             # (17 unchanged attributes hidden)
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - resource_pool_summary {
+[Destroy (eliminar toda la infraestructura)]           - available_compute_capacity        = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - available_storage_capacity_in_tbs = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - is_disabled                       = true -> null
+[Destroy (eliminar toda la infraestructura)]           - pool_size                         = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - pool_storage_size_in_tbs          = 0 -> null
+[Destroy (eliminar toda la infraestructura)]           - total_compute_capacity            = 0 -> null
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]       - vanity_url_details {
+[Destroy (eliminar toda la infraestructura)]           - is_disabled          = true -> null
+[Destroy (eliminar toda la infraestructura)]             # (2 unchanged attributes hidden)
+[Destroy (eliminar toda la infraestructura)]         }
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # oci_monitoring_alarm.db_cpu will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "oci_monitoring_alarm" "db_cpu" {
+[Destroy (eliminar toda la infraestructura)]       - body                                          = "La CPU de la base de datos trading-journal-dev-db superó el 80 % por más de 5 minutos." -> null
+[Destroy (eliminar toda la infraestructura)]       - compartment_id                                = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - defined_tags                                  = {
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedBy" = "default/***"
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedOn" = "2026-10-08T14:31:53.227Z"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - destinations                                  = [
+[Destroy (eliminar toda la infraestructura)]           - "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq",
+[Destroy (eliminar toda la infraestructura)]         ] -> null
+[Destroy (eliminar toda la infraestructura)]       - display_name                                  = "trading-journal-dev-db-cpu-alta" -> null
+[Destroy (eliminar toda la infraestructura)]       - evaluation_slack_duration                     = "PT3M" -> null
+[Destroy (eliminar toda la infraestructura)]       - freeform_tags                                 = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - id                                            = "ocid1.alarm.oc1.sa-bogota-1.amaaaaaakei73jaa5ymky72uxkgg46ytb7owhm6agu5yl23ohz75zram6esa" -> null
+[Destroy (eliminar toda la infraestructura)]       - is_enabled                                    = true -> null
+[Destroy (eliminar toda la infraestructura)]       - is_notifications_per_metric_dimension_enabled = false -> null
+[Destroy (eliminar toda la infraestructura)]       - message_format                                = "RAW" -> null
+[Destroy (eliminar toda la infraestructura)]       - metric_compartment_id                         = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - metric_compartment_id_in_subtree              = false -> null
+[Destroy (eliminar toda la infraestructura)]       - namespace                                     = "oci_autonomous_database" -> null
+[Destroy (eliminar toda la infraestructura)]       - notification_title                            = "trading-journal-dev-db-cpu-alta" -> null
+[Destroy (eliminar toda la infraestructura)]       - notification_version                          = "1.X" -> null
+[Destroy (eliminar toda la infraestructura)]       - pending_duration                              = "PT5M" -> null
+[Destroy (eliminar toda la infraestructura)]       - query                                         = "CpuUtilization[1m]{resourceId = \"ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaab64jhvaxj44eb57x2p5koojwyyeml4riwarw2o2l7mqa\"}.mean() > 80" -> null
+[Destroy (eliminar toda la infraestructura)]       - resolution                                    = "1m" -> null
+[Destroy (eliminar toda la infraestructura)]       - rule_name                                     = "base" -> null
+[Destroy (eliminar toda la infraestructura)]       - severity                                      = "WARNING" -> null
+[Destroy (eliminar toda la infraestructura)]       - state                                         = "ACTIVE" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_created                                  = "2026-10-08 14:31:53.354 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_updated                                  = "2026-10-08 14:31:53.354 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # oci_objectstorage_bucket.attachments will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "oci_objectstorage_bucket" "attachments" {
+[Destroy (eliminar toda la infraestructura)]       - access_type           = "NoPublicAccess" -> null
+[Destroy (eliminar toda la infraestructura)]       - approximate_count     = "1" -> null
+[Destroy (eliminar toda la infraestructura)]       - approximate_size      = "39" -> null
+[Destroy (eliminar toda la infraestructura)]       - auto_tiering          = "Disabled" -> null
+[Destroy (eliminar toda la infraestructura)]       - bucket_id             = "ocid1.bucket.oc1.sa-bogota-1.aaaaaaaa5cshlfcv7aultl6qzmzxnjbdg2kmf7kdrihdm3x7v7tfuqqbylxq" -> null
+[Destroy (eliminar toda la infraestructura)]       - compartment_id        = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - created_by            = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - defined_tags          = {
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedBy" = "default/***"
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedOn" = "2026-10-08T14:30:51.813Z"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - etag                  = "14e53a79-c89e-43a8-9bbb-4692ba876ed1" -> null
+[Destroy (eliminar toda la infraestructura)]       - freeform_tags         = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - id                    = "n/axxhzvxjrmcl/b/trading-journal-dev-attachments" -> null
+[Destroy (eliminar toda la infraestructura)]       - is_read_only          = false -> null
+[Destroy (eliminar toda la infraestructura)]       - metadata              = {} -> null
+[Destroy (eliminar toda la infraestructura)]       - name                  = "trading-journal-dev-attachments" -> null
+[Destroy (eliminar toda la infraestructura)]       - namespace             = "axxhzvxjrmcl" -> null
+[Destroy (eliminar toda la infraestructura)]       - object_events_enabled = false -> null
+[Destroy (eliminar toda la infraestructura)]       - replication_enabled   = false -> null
+[Destroy (eliminar toda la infraestructura)]       - storage_tier          = "Standard" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_created          = "2026-10-08 14:30:51.818 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - versioning            = "Disabled" -> null
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # oci_ons_notification_topic.alerts will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "oci_ons_notification_topic" "alerts" {
+[Destroy (eliminar toda la infraestructura)]       - api_endpoint   = "https://cell1.notification.sa-bogota-1.oci.oraclecloud.com" -> null
+[Destroy (eliminar toda la infraestructura)]       - compartment_id = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - defined_tags   = {
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedBy" = "default/***"
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedOn" = "2026-10-08T14:30:51.833Z"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - description    = "Alertas de trading-journal-dev" -> null
+[Destroy (eliminar toda la infraestructura)]       - etag           = "93712bab" -> null
+[Destroy (eliminar toda la infraestructura)]       - freeform_tags  = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - id             = "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq" -> null
+[Destroy (eliminar toda la infraestructura)]       - name           = "trading-journal-dev-alerts" -> null
+[Destroy (eliminar toda la infraestructura)]       - state          = "ACTIVE" -> null
+[Destroy (eliminar toda la infraestructura)]       - time_created   = "2026-10-08 14:30:51.891 +0000 UTC" -> null
+[Destroy (eliminar toda la infraestructura)]       - topic_id       = "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq" -> null
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)]   # oci_ons_subscription.email will be destroyed
+[Destroy (eliminar toda la infraestructura)]   - resource "oci_ons_subscription" "email" {
+[Destroy (eliminar toda la infraestructura)]       - compartment_id  = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - created_time    = "1791469852116" -> null
+[Destroy (eliminar toda la infraestructura)]       - defined_tags    = {
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedBy" = "default/***"
+[Destroy (eliminar toda la infraestructura)]           - "Oracle-Tags.CreatedOn" = "2026-10-08T14:30:52.104Z"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - delivery_policy = jsonencode(
+[Destroy (eliminar toda la infraestructura)]             {
+[Destroy (eliminar toda la infraestructura)]               - backoffRetryPolicy      = {
+[Destroy (eliminar toda la infraestructura)]                   - initialDelayInFailureRetry = 60000
+[Destroy (eliminar toda la infraestructura)]                   - maxRetryDuration           = 7200000
+[Destroy (eliminar toda la infraestructura)]                   - policyType                 = "EXPONENTIAL"
+[Destroy (eliminar toda la infraestructura)]                 }
+[Destroy (eliminar toda la infraestructura)]               - maxReceiveRatePerSecond = 0
+[Destroy (eliminar toda la infraestructura)]             }
+[Destroy (eliminar toda la infraestructura)]         ) -> null
+[Destroy (eliminar toda la infraestructura)]       - endpoint        = "***" -> null
+[Destroy (eliminar toda la infraestructura)]       - etag            = "a5248efb" -> null
+[Destroy (eliminar toda la infraestructura)]       - freeform_tags   = {
+[Destroy (eliminar toda la infraestructura)]           - "course"      = "enfasis-devops"
+[Destroy (eliminar toda la infraestructura)]           - "environment" = "dev"
+[Destroy (eliminar toda la infraestructura)]           - "managed_by"  = "terraform"
+[Destroy (eliminar toda la infraestructura)]           - "owner"       = "juan-pablo"
+[Destroy (eliminar toda la infraestructura)]           - "project"     = "trading-journal"
+[Destroy (eliminar toda la infraestructura)]         } -> null
+[Destroy (eliminar toda la infraestructura)]       - id              = "ocid1.onssubscription.oc1.sa-bogota-1.aaaaaaaa76bkqis6wzqleaea5lk53a4wumhnk6po7itbjj4wvs5gqfzm3zpa" -> null
+[Destroy (eliminar toda la infraestructura)]       - protocol        = "EMAIL" -> null
+[Destroy (eliminar toda la infraestructura)]       - state           = "PENDING" -> null
+[Destroy (eliminar toda la infraestructura)]       - topic_id        = "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq" -> null
+[Destroy (eliminar toda la infraestructura)]     }
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)] Plan: 0 to add, 0 to change, 8 to destroy.
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)] Changes to Outputs:
+[Destroy (eliminar toda la infraestructura)]   - alerts_topic_id      = "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq" -> null
+[Destroy (eliminar toda la infraestructura)]   - api_health_url       = "http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080/actuator/health" -> null
+[Destroy (eliminar toda la infraestructura)]   - api_url              = "http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080" -> null
+[Destroy (eliminar toda la infraestructura)]   - azure_resource_group = "trading-journal-dev-rg" -> null
+[Destroy (eliminar toda la infraestructura)]   - bucket_name          = "trading-journal-dev-attachments" -> null
+[Destroy (eliminar toda la infraestructura)]   - database_id          = "ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaab64jhvaxj44eb57x2p5koojwyyeml4riwarw2o2l7mqa" -> null
+[Destroy (eliminar toda la infraestructura)]   - database_jdbc_url    = (sensitive value) -> null
+[Destroy (eliminar toda la infraestructura)]   - database_name        = "trading-journal-dev-db" -> null
+[Destroy (eliminar toda la infraestructura)] oci_ons_subscription.email: Destroying... [id=ocid1.onssubscription.oc1.sa-bogota-1.aaaaaaaa76bkqis6wzqleaea5lk53a4wumhnk6po7itbjj4wvs5gqfzm3zpa]
+[Destroy (eliminar toda la infraestructura)] oci_monitoring_alarm.db_cpu: Destroying... [id=ocid1.alarm.oc1.sa-bogota-1.amaaaaaakei73jaa5ymky72uxkgg46ytb7owhm6agu5yl23ohz75zram6esa]
+[Destroy (eliminar toda la infraestructura)] oci_ons_subscription.email: Destruction complete after 0s
+[Destroy (eliminar toda la infraestructura)] oci_monitoring_alarm.db_cpu: Destruction complete after 0s
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaybbb2he7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq]
+[Destroy (eliminar toda la infraestructura)] azurerm_container_group.api: Destroying... [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.ContainerInstance/containerGroups/trading-journal-dev-api]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 00m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_container_group.api: Still destroying... [id=/subscriptions/4ec84f2b-cf89-48a8-8754-...ontainerGroups/trading-journal-dev-api, 00m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_container_group.api: Destruction complete after 12s
+[Destroy (eliminar toda la infraestructura)] oci_objectstorage_bucket.attachments: Destroying... [id=n/axxhzvxjrmcl/b/trading-journal-dev-attachments]
+[Destroy (eliminar toda la infraestructura)] azurerm_log_analytics_workspace.main: Destroying... [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.OperationalInsights/workspaces/trading-journal-dev-logs]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaab64jhvaxj44eb57x2p5koojwyyeml4riwarw2o2l7mqa]
+[Destroy (eliminar toda la infraestructura)] oci_objectstorage_bucket.attachments: Destruction complete after 2s
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 00m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_log_analytics_workspace.main: Still destroying... [id=/subscriptions/4ec84f2b-cf89-48a8-8754-...ts/workspaces/trading-journal-dev-logs, 00m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 00m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_log_analytics_workspace.main: Destruction complete after 11s
+[Destroy (eliminar toda la infraestructura)] azurerm_resource_group.main: Destroying... [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 00m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 00m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_resource_group.main: Still destroying... [id=/subscriptions/4ec84f2b-cf89-48a8-8754-.../resourceGroups/trading-journal-dev-rg, 00m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 00m40s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 00m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_resource_group.main: Still destroying... [id=/subscriptions/4ec84f2b-cf89-48a8-8754-.../resourceGroups/trading-journal-dev-rg, 00m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] azurerm_resource_group.main: Destruction complete after 21s
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 00m50s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 00m40s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 01m00s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 00m50s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 01m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 01m00s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 01m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Still destroying... [id=ocid1.autonomousdatabase.oc1.sa-bogota-...axj44eb57x2p5koojwyyeml4riwarw2o2l7mqa, 01m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 01m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_database_autonomous_database.main: Destruction complete after 1m15s
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 01m40s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 01m50s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 02m00s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 02m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 02m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 02m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 02m40s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 02m50s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 03m00s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 03m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 03m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 03m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 03m40s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 03m50s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 04m00s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 04m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 04m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 04m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 04m40s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 04m50s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 05m00s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 05m10s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 05m20s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Still destroying... [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaa...e7ig4ls4lgkko5pk5uu2quhw6rq5jbiflpcvjq, 05m30s elapsed]
+[Destroy (eliminar toda la infraestructura)] oci_ons_notification_topic.alerts: Destruction complete after 5m38s
+[Destroy (eliminar toda la infraestructura)] 
+[Destroy (eliminar toda la infraestructura)] Destroy complete! Resources: 8 destroyed.

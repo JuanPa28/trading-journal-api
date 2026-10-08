@@ -1,0 +1,34 @@
+# Recursos que existen en cada nube, consultados directamente (OCI CLI y Azure CLI) — 2026-10-08 10:44
+
+## OCI (sa-bogota-1)
+- Autonomous Database:
++-----------+--------+------------------------+----------------+
+| estado    | gratis | nombre                 | tls_sin_wallet |
++-----------+--------+------------------------+----------------+
+| AVAILABLE | True   | trading-journal-dev-db | False          |
++-----------+--------+------------------------+----------------+
+- Object Storage (buckets):
++---------------------------------+
+| Column1                         |
++---------------------------------+
+| trading-journal-dev-attachments |
+| trading-journal-tfstate         |
++---------------------------------+
+- Notifications (topicos):
++--------+----------------------------+
+| estado | nombre                     |
++--------+----------------------------+
+| ACTIVE | trading-journal-dev-alerts |
++--------+----------------------------+
+- Monitoring (alarmas):
++------------+---------------------------------+-----------+
+| habilitada | nombre                          | severidad |
++------------+---------------------------------+-----------+
+| True       | trading-journal-dev-db-cpu-alta | WARNING   |
++------------+---------------------------------+-----------+
+
+## Azure
+Nombre                    Tipo
+------------------------  -------------------------------------------
+trading-journal-dev-logs  Microsoft.OperationalInsights/workspaces
+trading-journal-dev-api   Microsoft.ContainerInstance/containerGroups

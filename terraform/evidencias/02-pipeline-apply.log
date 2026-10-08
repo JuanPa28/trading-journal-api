@@ -1,0 +1,1000 @@
+# Pipeline 'Terraform - Desplegar o destruir' — accion APPLY (crear todo desde cero)
+# Ejecucion: https://github.com/JuanPa28/trading-journal-api/actions/runs/37801302939
+# Se omiten los pasos de preparacion del runner; se conservan Crear bucket de estado, Inicializar, Plan, Apply y Esperar.
+
+[Crear el bucket de estado (si no existe)] ##[group]Run bash scripts/bootstrap-state.sh
+[Crear el bucket de estado (si no existe)] bash scripts/bootstrap-state.sh
+[Crear el bucket de estado (si no existe)] shell: /usr/bin/bash -e {0}
+[Crear el bucket de estado (si no existe)] env:
+[Crear el bucket de estado (si no existe)]   TF_IN_AUTOMATION: true
+[Crear el bucket de estado (si no existe)]   TF_INPUT: false
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_tenancy_ocid: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_compartment_ocid: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_user_ocid: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_fingerprint: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_oci_private_key: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_db_admin_password: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_alert_email: ***
+[Crear el bucket de estado (si no existe)]   TF_VAR_azure_subscription_id: ***
+[Crear el bucket de estado (si no existe)]   ARM_CLIENT_ID: ***
+[Crear el bucket de estado (si no existe)]   ARM_CLIENT_SECRET: ***
+[Crear el bucket de estado (si no existe)]   ARM_TENANT_ID: ***
+[Crear el bucket de estado (si no existe)]   ARM_SUBSCRIPTION_ID: ***
+[Crear el bucket de estado (si no existe)] ##[endgroup]
+[Crear el bucket de estado (si no existe)] WARNING: Permissions on /home/runner/.oci/config are too open. 
+[Crear el bucket de estado (si no existe)] To fix this please try executing the following command: 
+[Crear el bucket de estado (si no existe)] oci setup repair-file-permissions --file /home/runner/.oci/config 
+[Crear el bucket de estado (si no existe)] Alternatively to hide this warning, you may set the environment variable, OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING: 
+[Crear el bucket de estado (si no existe)] export OCI_CLI_SUPPRESS_FILE_PERMISSIONS_WARNING=True
+[Crear el bucket de estado (si no existe)] 
+[Crear el bucket de estado (si no existe)] El bucket de estado 'trading-journal-tfstate' ya existe.
+[Inicializar] ##[group]Run terraform init
+[Inicializar] terraform init
+[Inicializar] shell: /usr/bin/bash -e {0}
+[Inicializar] env:
+[Inicializar]   TF_IN_AUTOMATION: true
+[Inicializar]   TF_INPUT: false
+[Inicializar]   TF_VAR_oci_tenancy_ocid: ***
+[Inicializar]   TF_VAR_oci_compartment_ocid: ***
+[Inicializar]   TF_VAR_oci_user_ocid: ***
+[Inicializar]   TF_VAR_oci_fingerprint: ***
+[Inicializar]   TF_VAR_oci_private_key: ***
+[Inicializar]   TF_VAR_db_admin_password: ***
+[Inicializar]   TF_VAR_alert_email: ***
+[Inicializar]   TF_VAR_azure_subscription_id: ***
+[Inicializar]   ARM_CLIENT_ID: ***
+[Inicializar]   ARM_CLIENT_SECRET: ***
+[Inicializar]   ARM_TENANT_ID: ***
+[Inicializar]   ARM_SUBSCRIPTION_ID: ***
+[Inicializar] ##[endgroup]
+[Inicializar] Initializing the backend...
+[Inicializar] 
+[Inicializar] Successfully configured the backend "oci"! Terraform will automatically
+[Inicializar] use this backend unless the backend configuration changes.
+[Inicializar] 
+[Inicializar] Initializing provider plugins...
+[Inicializar] - Reusing previous version of hashicorp/azurerm from the dependency lock file
+[Inicializar] - Reusing previous version of oracle/oci from the dependency lock file
+[Inicializar] - Installing hashicorp/azurerm v4.81.0...
+[Inicializar] - Installed hashicorp/azurerm v4.81.0 (signed by HashiCorp)
+[Inicializar] - Installing oracle/oci v7.32.0...
+[Inicializar] - Installed oracle/oci v7.32.0 (signed by a HashiCorp partner, key ID 1533A49284137CEB)
+[Inicializar] Partner and community providers are signed by their developers.
+[Inicializar] If you'd like to know more about provider signing, you can read about it here:
+[Inicializar] https://developer.hashicorp.com/terraform/cli/plugins/signing
+[Inicializar] 
+[Inicializar] Terraform has been successfully initialized!
+[Plan] ##[group]Run terraform plan -var "api_image_tag=tf-d738e5abe1770efe442c28d24c28522af0c861a4"
+[Plan] terraform plan -var "api_image_tag=tf-d738e5abe1770efe442c28d24c28522af0c861a4"
+[Plan] shell: /usr/bin/bash -e {0}
+[Plan] env:
+[Plan]   TF_IN_AUTOMATION: true
+[Plan]   TF_INPUT: false
+[Plan]   TF_VAR_oci_tenancy_ocid: ***
+[Plan]   TF_VAR_oci_compartment_ocid: ***
+[Plan]   TF_VAR_oci_user_ocid: ***
+[Plan]   TF_VAR_oci_fingerprint: ***
+[Plan]   TF_VAR_oci_private_key: ***
+[Plan]   TF_VAR_db_admin_password: ***
+[Plan]   TF_VAR_alert_email: ***
+[Plan]   TF_VAR_azure_subscription_id: ***
+[Plan]   ARM_CLIENT_ID: ***
+[Plan]   ARM_CLIENT_SECRET: ***
+[Plan]   ARM_TENANT_ID: ***
+[Plan]   ARM_SUBSCRIPTION_ID: ***
+[Plan] ##[endgroup]
+[Plan] data.oci_objectstorage_namespace.current: Reading...
+[Plan] data.oci_objectstorage_namespace.current: Read complete after 1s [id=ObjectStorageNamespaceDataSource-2365950485]
+[Plan] 
+[Plan] Terraform used the selected providers to generate the following execution
+[Plan] plan. Resource actions are indicated with the following symbols:
+[Plan]   + create
+[Plan] 
+[Plan] Terraform will perform the following actions:
+[Plan] 
+[Plan]   # azurerm_container_group.api will be created
+[Plan]   + resource "azurerm_container_group" "api" {
+[Plan]       + dns_name_label              = "trading-journal-dev-api-826c31"
+[Plan]       + dns_name_label_reuse_policy = "Unsecure"
+[Plan]       + exposed_port                = (known after apply)
+[Plan]       + fqdn                        = (known after apply)
+[Plan]       + id                          = (known after apply)
+[Plan]       + ip_address                  = (known after apply)
+[Plan]       + ip_address_type             = "Public"
+[Plan]       + location                    = "eastus"
+[Plan]       + name                        = "trading-journal-dev-api"
+[Plan]       + network_profile_id          = (known after apply)
+[Plan]       + os_type                     = "Linux"
+[Plan]       + resource_group_name         = "trading-journal-dev-rg"
+[Plan]       + restart_policy              = "Always"
+[Plan]       + sku                         = "Standard"
+[Plan]       + tags                        = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan] 
+[Plan]       + container {
+[Plan]           + commands                     = (known after apply)
+[Plan]           + cpu                          = 1
+[Plan]           + environment_variables        = (known after apply)
+[Plan]           + image                        = "ghcr.io/juanpa28/trading-journal-api:tf-d738e5abe1770efe442c28d24c28522af0c861a4"
+[Plan]           + memory                       = 2
+[Plan]           + name                         = "api"
+[Plan]           + secure_environment_variables = (sensitive value)
+[Plan] 
+[Plan]           + liveness_probe {
+[Plan]               + failure_threshold     = 5
+[Plan]               + initial_delay_seconds = 120
+[Plan]               + period_seconds        = 30
+[Plan] 
+[Plan]               + http_get {
+[Plan]                   + path   = "/actuator/health/liveness"
+[Plan]                   + port   = 8080
+[Plan]                   + scheme = "http"
+[Plan]                 }
+[Plan]             }
+[Plan] 
+[Plan]           + ports {
+[Plan]               + port     = 8080
+[Plan]               + protocol = "TCP"
+[Plan]             }
+[Plan] 
+[Plan]           + readiness_probe {
+[Plan]               + failure_threshold     = 5
+[Plan]               + initial_delay_seconds = 60
+[Plan]               + period_seconds        = 15
+[Plan] 
+[Plan]               + http_get {
+[Plan]                   + path   = "/actuator/health/readiness"
+[Plan]                   + port   = 8080
+[Plan]                   + scheme = "http"
+[Plan]                 }
+[Plan]             }
+[Plan]         }
+[Plan] 
+[Plan]       + diagnostics {
+[Plan]           + log_analytics {
+[Plan]               + workspace_id  = (known after apply)
+[Plan]               + workspace_key = (sensitive value)
+[Plan]             }
+[Plan]         }
+[Plan]     }
+[Plan] 
+[Plan]   # azurerm_log_analytics_workspace.main will be created
+[Plan]   + resource "azurerm_log_analytics_workspace" "main" {
+[Plan]       + allow_resource_only_permissions = true
+[Plan]       + daily_quota_gb                  = -1
+[Plan]       + id                              = (known after apply)
+[Plan]       + internet_ingestion_enabled      = true
+[Plan]       + internet_query_enabled          = true
+[Plan]       + local_authentication_disabled   = (known after apply)
+[Plan]       + local_authentication_enabled    = true
+[Plan]       + location                        = "eastus"
+[Plan]       + name                            = "trading-journal-dev-logs"
+[Plan]       + primary_shared_key              = (sensitive value)
+[Plan]       + resource_group_name             = "trading-journal-dev-rg"
+[Plan]       + retention_in_days               = 30
+[Plan]       + secondary_shared_key            = (sensitive value)
+[Plan]       + sku                             = "PerGB2018"
+[Plan]       + tags                            = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]       + workspace_id                    = (known after apply)
+[Plan]     }
+[Plan] 
+[Plan]   # azurerm_resource_group.main will be created
+[Plan]   + resource "azurerm_resource_group" "main" {
+[Plan]       + id       = (known after apply)
+[Plan]       + location = "eastus"
+[Plan]       + name     = "trading-journal-dev-rg"
+[Plan]       + tags     = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]     }
+[Plan] 
+[Plan]   # oci_database_autonomous_database.main will be created
+[Plan]   + resource "oci_database_autonomous_database" "main" {
+[Plan]       + actual_used_data_storage_size_in_tbs           = (known after apply)
+[Plan]       + additional_attributes                          = (known after apply)
+[Plan]       + admin_password                                 = (sensitive value)
+[Plan]       + allocated_storage_size_in_tbs                  = (known after apply)
+[Plan]       + apex_details                                   = (known after apply)
+[Plan]       + are_primary_whitelisted_ips_used               = (known after apply)
+[Plan]       + auto_refresh_frequency_in_seconds              = (known after apply)
+[Plan]       + auto_refresh_point_lag_in_seconds              = (known after apply)
+[Plan]       + autonomous_container_database_id               = (known after apply)
+[Plan]       + autonomous_database_backup_id                  = (known after apply)
+[Plan]       + autonomous_database_id                         = (known after apply)
+[Plan]       + autonomous_maintenance_schedule_type           = (known after apply)
+[Plan]       + availability_domain                            = (known after apply)
+[Plan]       + available_upgrade_versions                     = (known after apply)
+[Plan]       + backup_config                                  = (known after apply)
+[Plan]       + backup_retention_period_in_days                = (known after apply)
+[Plan]       + byol_compute_count_limit                       = (known after apply)
+[Plan]       + character_set                                  = (known after apply)
+[Plan]       + clone_table_space_list                         = (known after apply)
+[Plan]       + clone_type                                     = (known after apply)
+[Plan]       + cluster_placement_group_id                     = (known after apply)
+[Plan]       + compartment_id                                 = "***"
+[Plan]       + compute_count                                  = (known after apply)
+[Plan]       + compute_model                                  = (known after apply)
+[Plan]       + connection_strings                             = (known after apply)
+[Plan]       + connection_urls                                = (known after apply)
+[Plan]       + cpu_core_count                                 = (known after apply)
+[Plan]       + data_safe_status                               = (known after apply)
+[Plan]       + data_storage_size_in_gb                        = (known after apply)
+[Plan]       + data_storage_size_in_tbs                       = (known after apply)
+[Plan]       + database_edition                               = (known after apply)
+[Plan]       + database_management_status                     = (known after apply)
+[Plan]       + dataguard_region_type                          = (known after apply)
+[Plan]       + db_name                                        = "TRADINGJOURNAL"
+[Plan]       + db_version                                     = (known after apply)
+[Plan]       + db_workload                                    = "OLTP"
+[Plan]       + defined_tags                                   = (known after apply)
+[Plan]       + disaster_recovery_region_type                  = (known after apply)
+[Plan]       + disaster_recovery_type                         = (known after apply)
+[Plan]       + display_name                                   = "trading-journal-dev-db"
+[Plan]       + encryption_key_history_entry                   = (known after apply)
+[Plan]       + encryption_key_location_details                = (known after apply)
+[Plan]       + failed_data_recovery_in_seconds                = (known after apply)
+[Plan]       + freeform_tags                                  = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]       + id                                             = (known after apply)
+[Plan]       + in_memory_area_in_gbs                          = (known after apply)
+[Plan]       + in_memory_percentage                           = (known after apply)
+[Plan]       + infrastructure_type                            = (known after apply)
+[Plan]       + is_access_control_enabled                      = (known after apply)
+[Plan]       + is_auto_scaling_enabled                        = (known after apply)
+[Plan]       + is_auto_scaling_for_storage_enabled            = (known after apply)
+[Plan]       + is_backup_retention_locked                     = (known after apply)
+[Plan]       + is_data_guard_enabled                          = (known after apply)
+[Plan]       + is_dedicated                                   = (known after apply)
+[Plan]       + is_dev_tier                                    = (known after apply)
+[Plan]       + is_disable_db_version_upgrade_schedule         = (known after apply)
+[Plan]       + is_free_tier                                   = true
+[Plan]       + is_local_data_guard_enabled                    = (known after apply)
+[Plan]       + is_mtls_connection_required                    = false
+[Plan]       + is_preview                                     = (known after apply)
+[Plan]       + is_preview_version_with_service_terms_accepted = (known after apply)
+[Plan]       + is_reconnect_clone_enabled                     = (known after apply)
+[Plan]       + is_refreshable_clone                           = (known after apply)
+[Plan]       + is_remote_data_guard_enabled                   = (known after apply)
+[Plan]       + is_replicate_automatic_backups                 = (known after apply)
+[Plan]       + is_schedule_db_version_upgrade_to_earliest     = (known after apply)
+[Plan]       + key_history_entry                              = (known after apply)
+[Plan]       + key_store_id                                   = (known after apply)
+[Plan]       + key_store_wallet_name                          = (known after apply)
+[Plan]       + kms_key_id                                     = (known after apply)
+[Plan]       + kms_key_lifecycle_details                      = (known after apply)
+[Plan]       + kms_key_version_id                             = (known after apply)
+[Plan]       + license_model                                  = (known after apply)
+[Plan]       + lifecycle_details                              = (known after apply)
+[Plan]       + local_adg_auto_failover_max_data_loss_limit    = (known after apply)
+[Plan]       + local_adg_resource_pool_leader_id              = (known after apply)
+[Plan]       + local_disaster_recovery_type                   = (known after apply)
+[Plan]       + local_standby_db                               = (known after apply)
+[Plan]       + maintenance_target_component                   = (known after apply)
+[Plan]       + max_cpu_core_count                             = (known after apply)
+[Plan]       + memory_per_compute_unit_in_gbs                 = (known after apply)
+[Plan]       + memory_per_oracle_compute_unit_in_gbs          = (known after apply)
+[Plan]       + ncharacter_set                                 = (known after apply)
+[Plan]       + net_services_architecture                      = (known after apply)
+[Plan]       + next_long_term_backup_time_stamp               = (known after apply)
+[Plan]       + nsg_ids                                        = (known after apply)
+[Plan]       + ocpu_count                                     = (known after apply)
+[Plan]       + open_mode                                      = (known after apply)
+[Plan]       + operations_insights_status                     = (known after apply)
+[Plan]       + peer_db_id                                     = (known after apply)
+[Plan]       + peer_db_ids                                    = (known after apply)
+[Plan]       + permission_level                               = (known after apply)
+[Plan]       + private_endpoint                               = (known after apply)
+[Plan]       + private_endpoint_ip                            = (known after apply)
+[Plan]       + private_endpoint_label                         = (known after apply)
+[Plan]       + provisionable_cpus                             = (known after apply)
+[Plan]       + public_connection_urls                         = (known after apply)
+[Plan]       + public_endpoint                                = (known after apply)
+[Plan]       + refreshable_mode                               = (known after apply)
+[Plan]       + refreshable_status                             = (known after apply)
+[Plan]       + remote_disaster_recovery_configuration         = (known after apply)
+[Plan]       + remote_disaster_recovery_type                  = (known after apply)
+[Plan]       + resource_pool_leader_id                        = (known after apply)
+[Plan]       + role                                           = (known after apply)
+[Plan]       + secret_id                                      = (known after apply)
+[Plan]       + secret_version_number                          = (known after apply)
+[Plan]       + security_attributes                            = (known after apply)
+[Plan]       + service_console_url                            = (known after apply)
+[Plan]       + shrink_adb_trigger                             = (known after apply)
+[Plan]       + source                                         = (known after apply)
+[Plan]       + source_id                                      = (known after apply)
+[Plan]       + standby_db                                     = (known after apply)
+[Plan]       + standby_whitelisted_ips                        = (known after apply)
+[Plan]       + state                                          = (known after apply)
+[Plan]       + subnet_id                                      = (known after apply)
+[Plan]       + subscription_id                                = (known after apply)
+[Plan]       + supported_regions_to_clone_to                  = (known after apply)
+[Plan]       + system_tags                                    = (known after apply)
+[Plan]       + time_created                                   = (known after apply)
+[Plan]       + time_data_guard_role_changed                   = (known after apply)
+[Plan]       + time_deletion_of_free_autonomous_database      = (known after apply)
+[Plan]       + time_disaster_recovery_role_changed            = (known after apply)
+[Plan]       + time_earliest_available_db_version_upgrade     = (known after apply)
+[Plan]       + time_latest_available_db_version_upgrade       = (known after apply)
+[Plan]       + time_local_data_guard_enabled                  = (known after apply)
+[Plan]       + time_maintenance_begin                         = (known after apply)
+[Plan]       + time_maintenance_end                           = (known after apply)
+[Plan]       + time_maintenance_pause_until                   = (known after apply)
+[Plan]       + time_of_auto_refresh_start                     = (known after apply)
+[Plan]       + time_of_joining_resource_pool                  = (known after apply)
+[Plan]       + time_of_last_failover                          = (known after apply)
+[Plan]       + time_of_last_refresh                           = (known after apply)
+[Plan]       + time_of_last_refresh_point                     = (known after apply)
+[Plan]       + time_of_last_switchover                        = (known after apply)
+[Plan]       + time_of_next_refresh                           = (known after apply)
+[Plan]       + time_reclamation_of_free_autonomous_database   = (known after apply)
+[Plan]       + time_scheduled_db_version_upgrade              = (known after apply)
+[Plan]       + time_undeleted                                 = (known after apply)
+[Plan]       + time_until_reconnect_clone_enabled             = (known after apply)
+[Plan]       + timestamp                                      = (known after apply)
+[Plan]       + total_backup_storage_size_in_gbs               = (known after apply)
+[Plan]       + use_latest_available_backup_time_stamp         = (known after apply)
+[Plan]       + used_data_storage_size_in_gbs                  = (known after apply)
+[Plan]       + used_data_storage_size_in_tbs                  = (known after apply)
+[Plan]       + vanity_connection_urls                         = (known after apply)
+[Plan]       + vault_id                                       = (known after apply)
+[Plan]       + whitelisted_ips                                = [
+[Plan]           + "0.0.0.0/0",
+[Plan]         ]
+[Plan] 
+[Plan]       + autonomous_database_maintenance_window (known after apply)
+[Plan] 
+[Plan]       + customer_contacts (known after apply)
+[Plan] 
+[Plan]       + db_tools_details (known after apply)
+[Plan] 
+[Plan]       + encryption_key (known after apply)
+[Plan] 
+[Plan]       + long_term_backup_schedule (known after apply)
+[Plan] 
+[Plan]       + resource_pool_summary (known after apply)
+[Plan] 
+[Plan]       + scheduled_operations (known after apply)
+[Plan] 
+[Plan]       + transportable_tablespace (known after apply)
+[Plan] 
+[Plan]       + vanity_url_details (known after apply)
+[Plan]     }
+[Plan] 
+[Plan]   # oci_monitoring_alarm.db_cpu will be created
+[Plan]   + resource "oci_monitoring_alarm" "db_cpu" {
+[Plan]       + alarm_summary                                 = (known after apply)
+[Plan]       + body                                          = "La CPU de la base de datos trading-journal-dev-db superó el 80 % por más de 5 minutos."
+[Plan]       + compartment_id                                = "***"
+[Plan]       + defined_tags                                  = (known after apply)
+[Plan]       + destinations                                  = (known after apply)
+[Plan]       + display_name                                  = "trading-journal-dev-db-cpu-alta"
+[Plan]       + evaluation_slack_duration                     = (known after apply)
+[Plan]       + freeform_tags                                 = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]       + id                                            = (known after apply)
+[Plan]       + is_enabled                                    = true
+[Plan]       + is_notifications_per_metric_dimension_enabled = (known after apply)
+[Plan]       + message_format                                = (known after apply)
+[Plan]       + metric_compartment_id                         = "***"
+[Plan]       + metric_compartment_id_in_subtree              = (known after apply)
+[Plan]       + namespace                                     = "oci_autonomous_database"
+[Plan]       + notification_title                            = (known after apply)
+[Plan]       + notification_version                          = (known after apply)
+[Plan]       + pending_duration                              = "PT5M"
+[Plan]       + query                                         = (known after apply)
+[Plan]       + repeat_notification_duration                  = (known after apply)
+[Plan]       + resolution                                    = (known after apply)
+[Plan]       + resource_group                                = (known after apply)
+[Plan]       + rule_name                                     = (known after apply)
+[Plan]       + severity                                      = "WARNING"
+[Plan]       + state                                         = (known after apply)
+[Plan]       + time_created                                  = (known after apply)
+[Plan]       + time_updated                                  = (known after apply)
+[Plan] 
+[Plan]       + overrides (known after apply)
+[Plan] 
+[Plan]       + suppression (known after apply)
+[Plan]     }
+[Plan] 
+[Plan]   # oci_objectstorage_bucket.attachments will be created
+[Plan]   + resource "oci_objectstorage_bucket" "attachments" {
+[Plan]       + access_type                  = "NoPublicAccess"
+[Plan]       + approximate_count            = (known after apply)
+[Plan]       + approximate_size             = (known after apply)
+[Plan]       + auto_tiering                 = (known after apply)
+[Plan]       + bucket_id                    = (known after apply)
+[Plan]       + compartment_id               = "***"
+[Plan]       + created_by                   = (known after apply)
+[Plan]       + defined_tags                 = (known after apply)
+[Plan]       + etag                         = (known after apply)
+[Plan]       + freeform_tags                = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]       + id                           = (known after apply)
+[Plan]       + is_read_only                 = (known after apply)
+[Plan]       + kms_key_id                   = (known after apply)
+[Plan]       + name                         = "trading-journal-dev-attachments"
+[Plan]       + namespace                    = "axxhzvxjrmcl"
+[Plan]       + object_events_enabled        = (known after apply)
+[Plan]       + object_lifecycle_policy_etag = (known after apply)
+[Plan]       + replication_enabled          = (known after apply)
+[Plan]       + storage_tier                 = "Standard"
+[Plan]       + time_created                 = (known after apply)
+[Plan]       + versioning                   = "Disabled"
+[Plan]     }
+[Plan] 
+[Plan]   # oci_ons_notification_topic.alerts will be created
+[Plan]   + resource "oci_ons_notification_topic" "alerts" {
+[Plan]       + api_endpoint   = (known after apply)
+[Plan]       + compartment_id = "***"
+[Plan]       + defined_tags   = (known after apply)
+[Plan]       + description    = "Alertas de trading-journal-dev"
+[Plan]       + etag           = (known after apply)
+[Plan]       + freeform_tags  = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]       + id             = (known after apply)
+[Plan]       + name           = "trading-journal-dev-alerts"
+[Plan]       + short_topic_id = (known after apply)
+[Plan]       + state          = (known after apply)
+[Plan]       + time_created   = (known after apply)
+[Plan]       + topic_id       = (known after apply)
+[Plan]     }
+[Plan] 
+[Plan]   # oci_ons_subscription.email will be created
+[Plan]   + resource "oci_ons_subscription" "email" {
+[Plan]       + compartment_id  = "***"
+[Plan]       + created_time    = (known after apply)
+[Plan]       + defined_tags    = (known after apply)
+[Plan]       + delivery_policy = (known after apply)
+[Plan]       + endpoint        = "***"
+[Plan]       + etag            = (known after apply)
+[Plan]       + freeform_tags   = {
+[Plan]           + "environment" = "dev"
+[Plan]           + "managed_by"  = "terraform"
+[Plan]           + "project"     = "trading-journal"
+[Plan]         }
+[Plan]       + id              = (known after apply)
+[Plan]       + protocol        = "EMAIL"
+[Plan]       + state           = (known after apply)
+[Plan]       + topic_id        = (known after apply)
+[Plan]     }
+[Plan] 
+[Plan] Plan: 8 to add, 0 to change, 0 to destroy.
+[Plan] 
+[Plan] Changes to Outputs:
+[Plan]   + alerts_topic_id      = (known after apply)
+[Plan]   + api_health_url       = (known after apply)
+[Plan]   + api_url              = (known after apply)
+[Plan]   + azure_resource_group = "trading-journal-dev-rg"
+[Plan]   + bucket_name          = "trading-journal-dev-attachments"
+[Plan]   + database_id          = (known after apply)
+[Plan]   + database_jdbc_url    = (sensitive value)
+[Plan]   + database_name        = "trading-journal-dev-db"
+[Apply (crear la infraestructura e instalar el API)] ##[group]Run terraform apply -auto-approve -var "api_image_tag=tf-d738e5abe1770efe442c28d24c28522af0c861a4"
+[Apply (crear la infraestructura e instalar el API)] terraform apply -auto-approve -var "api_image_tag=tf-d738e5abe1770efe442c28d24c28522af0c861a4"
+[Apply (crear la infraestructura e instalar el API)] shell: /usr/bin/bash -e {0}
+[Apply (crear la infraestructura e instalar el API)] env:
+[Apply (crear la infraestructura e instalar el API)]   TF_IN_AUTOMATION: true
+[Apply (crear la infraestructura e instalar el API)]   TF_INPUT: false
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_oci_tenancy_ocid: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_oci_compartment_ocid: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_oci_user_ocid: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_oci_fingerprint: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_oci_private_key: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_db_admin_password: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_alert_email: ***
+[Apply (crear la infraestructura e instalar el API)]   TF_VAR_azure_subscription_id: ***
+[Apply (crear la infraestructura e instalar el API)]   ARM_CLIENT_ID: ***
+[Apply (crear la infraestructura e instalar el API)]   ARM_CLIENT_SECRET: ***
+[Apply (crear la infraestructura e instalar el API)]   ARM_TENANT_ID: ***
+[Apply (crear la infraestructura e instalar el API)]   ARM_SUBSCRIPTION_ID: ***
+[Apply (crear la infraestructura e instalar el API)] ##[endgroup]
+[Apply (crear la infraestructura e instalar el API)] data.oci_objectstorage_namespace.current: Reading...
+[Apply (crear la infraestructura e instalar el API)] data.oci_objectstorage_namespace.current: Read complete after 1s [id=ObjectStorageNamespaceDataSource-2365950485]
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] Terraform used the selected providers to generate the following execution
+[Apply (crear la infraestructura e instalar el API)] plan. Resource actions are indicated with the following symbols:
+[Apply (crear la infraestructura e instalar el API)]   + create
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] Terraform will perform the following actions:
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # azurerm_container_group.api will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "azurerm_container_group" "api" {
+[Apply (crear la infraestructura e instalar el API)]       + dns_name_label              = "trading-journal-dev-api-826c31"
+[Apply (crear la infraestructura e instalar el API)]       + dns_name_label_reuse_policy = "Unsecure"
+[Apply (crear la infraestructura e instalar el API)]       + exposed_port                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + fqdn                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + id                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + ip_address                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + ip_address_type             = "Public"
+[Apply (crear la infraestructura e instalar el API)]       + location                    = "eastus"
+[Apply (crear la infraestructura e instalar el API)]       + name                        = "trading-journal-dev-api"
+[Apply (crear la infraestructura e instalar el API)]       + network_profile_id          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + os_type                     = "Linux"
+[Apply (crear la infraestructura e instalar el API)]       + resource_group_name         = "trading-journal-dev-rg"
+[Apply (crear la infraestructura e instalar el API)]       + restart_policy              = "Always"
+[Apply (crear la infraestructura e instalar el API)]       + sku                         = "Standard"
+[Apply (crear la infraestructura e instalar el API)]       + tags                        = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + container {
+[Apply (crear la infraestructura e instalar el API)]           + commands                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]           + cpu                          = 1
+[Apply (crear la infraestructura e instalar el API)]           + environment_variables        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]           + image                        = "ghcr.io/juanpa28/trading-journal-api:tf-d738e5abe1770efe442c28d24c28522af0c861a4"
+[Apply (crear la infraestructura e instalar el API)]           + memory                       = 2
+[Apply (crear la infraestructura e instalar el API)]           + name                         = "api"
+[Apply (crear la infraestructura e instalar el API)]           + secure_environment_variables = (sensitive value)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]           + liveness_probe {
+[Apply (crear la infraestructura e instalar el API)]               + failure_threshold     = 5
+[Apply (crear la infraestructura e instalar el API)]               + initial_delay_seconds = 120
+[Apply (crear la infraestructura e instalar el API)]               + period_seconds        = 30
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]               + http_get {
+[Apply (crear la infraestructura e instalar el API)]                   + path   = "/actuator/health/liveness"
+[Apply (crear la infraestructura e instalar el API)]                   + port   = 8080
+[Apply (crear la infraestructura e instalar el API)]                   + scheme = "http"
+[Apply (crear la infraestructura e instalar el API)]                 }
+[Apply (crear la infraestructura e instalar el API)]             }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]           + ports {
+[Apply (crear la infraestructura e instalar el API)]               + port     = 8080
+[Apply (crear la infraestructura e instalar el API)]               + protocol = "TCP"
+[Apply (crear la infraestructura e instalar el API)]             }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]           + readiness_probe {
+[Apply (crear la infraestructura e instalar el API)]               + failure_threshold     = 5
+[Apply (crear la infraestructura e instalar el API)]               + initial_delay_seconds = 60
+[Apply (crear la infraestructura e instalar el API)]               + period_seconds        = 15
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]               + http_get {
+[Apply (crear la infraestructura e instalar el API)]                   + path   = "/actuator/health/readiness"
+[Apply (crear la infraestructura e instalar el API)]                   + port   = 8080
+[Apply (crear la infraestructura e instalar el API)]                   + scheme = "http"
+[Apply (crear la infraestructura e instalar el API)]                 }
+[Apply (crear la infraestructura e instalar el API)]             }
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + diagnostics {
+[Apply (crear la infraestructura e instalar el API)]           + log_analytics {
+[Apply (crear la infraestructura e instalar el API)]               + workspace_id  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]               + workspace_key = (sensitive value)
+[Apply (crear la infraestructura e instalar el API)]             }
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # azurerm_log_analytics_workspace.main will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "azurerm_log_analytics_workspace" "main" {
+[Apply (crear la infraestructura e instalar el API)]       + allow_resource_only_permissions = true
+[Apply (crear la infraestructura e instalar el API)]       + daily_quota_gb                  = -1
+[Apply (crear la infraestructura e instalar el API)]       + id                              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + internet_ingestion_enabled      = true
+[Apply (crear la infraestructura e instalar el API)]       + internet_query_enabled          = true
+[Apply (crear la infraestructura e instalar el API)]       + local_authentication_disabled   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + local_authentication_enabled    = true
+[Apply (crear la infraestructura e instalar el API)]       + location                        = "eastus"
+[Apply (crear la infraestructura e instalar el API)]       + name                            = "trading-journal-dev-logs"
+[Apply (crear la infraestructura e instalar el API)]       + primary_shared_key              = (sensitive value)
+[Apply (crear la infraestructura e instalar el API)]       + resource_group_name             = "trading-journal-dev-rg"
+[Apply (crear la infraestructura e instalar el API)]       + retention_in_days               = 30
+[Apply (crear la infraestructura e instalar el API)]       + secondary_shared_key            = (sensitive value)
+[Apply (crear la infraestructura e instalar el API)]       + sku                             = "PerGB2018"
+[Apply (crear la infraestructura e instalar el API)]       + tags                            = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]       + workspace_id                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # azurerm_resource_group.main will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "azurerm_resource_group" "main" {
+[Apply (crear la infraestructura e instalar el API)]       + id       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + location = "eastus"
+[Apply (crear la infraestructura e instalar el API)]       + name     = "trading-journal-dev-rg"
+[Apply (crear la infraestructura e instalar el API)]       + tags     = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # oci_database_autonomous_database.main will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "oci_database_autonomous_database" "main" {
+[Apply (crear la infraestructura e instalar el API)]       + actual_used_data_storage_size_in_tbs           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + additional_attributes                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + admin_password                                 = (sensitive value)
+[Apply (crear la infraestructura e instalar el API)]       + allocated_storage_size_in_tbs                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + apex_details                                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + are_primary_whitelisted_ips_used               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + auto_refresh_frequency_in_seconds              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + auto_refresh_point_lag_in_seconds              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + autonomous_container_database_id               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + autonomous_database_backup_id                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + autonomous_database_id                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + autonomous_maintenance_schedule_type           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + availability_domain                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + available_upgrade_versions                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + backup_config                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + backup_retention_period_in_days                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + byol_compute_count_limit                       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + character_set                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + clone_table_space_list                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + clone_type                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + cluster_placement_group_id                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + compartment_id                                 = "***"
+[Apply (crear la infraestructura e instalar el API)]       + compute_count                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + compute_model                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + connection_strings                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + connection_urls                                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + cpu_core_count                                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + data_safe_status                               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + data_storage_size_in_gb                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + data_storage_size_in_tbs                       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + database_edition                               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + database_management_status                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + dataguard_region_type                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + db_name                                        = "TRADINGJOURNAL"
+[Apply (crear la infraestructura e instalar el API)]       + db_version                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + db_workload                                    = "OLTP"
+[Apply (crear la infraestructura e instalar el API)]       + defined_tags                                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + disaster_recovery_region_type                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + disaster_recovery_type                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + display_name                                   = "trading-journal-dev-db"
+[Apply (crear la infraestructura e instalar el API)]       + encryption_key_history_entry                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + encryption_key_location_details                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + failed_data_recovery_in_seconds                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + freeform_tags                                  = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]       + id                                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + in_memory_area_in_gbs                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + in_memory_percentage                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + infrastructure_type                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_access_control_enabled                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_auto_scaling_enabled                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_auto_scaling_for_storage_enabled            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_backup_retention_locked                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_data_guard_enabled                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_dedicated                                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_dev_tier                                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_disable_db_version_upgrade_schedule         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_free_tier                                   = true
+[Apply (crear la infraestructura e instalar el API)]       + is_local_data_guard_enabled                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_mtls_connection_required                    = false
+[Apply (crear la infraestructura e instalar el API)]       + is_preview                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_preview_version_with_service_terms_accepted = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_reconnect_clone_enabled                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_refreshable_clone                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_remote_data_guard_enabled                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_replicate_automatic_backups                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_schedule_db_version_upgrade_to_earliest     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + key_history_entry                              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + key_store_id                                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + key_store_wallet_name                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + kms_key_id                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + kms_key_lifecycle_details                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + kms_key_version_id                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + license_model                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + lifecycle_details                              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + local_adg_auto_failover_max_data_loss_limit    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + local_adg_resource_pool_leader_id              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + local_disaster_recovery_type                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + local_standby_db                               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + maintenance_target_component                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + max_cpu_core_count                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + memory_per_compute_unit_in_gbs                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + memory_per_oracle_compute_unit_in_gbs          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + ncharacter_set                                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + net_services_architecture                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + next_long_term_backup_time_stamp               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + nsg_ids                                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + ocpu_count                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + open_mode                                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + operations_insights_status                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + peer_db_id                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + peer_db_ids                                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + permission_level                               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + private_endpoint                               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + private_endpoint_ip                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + private_endpoint_label                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + provisionable_cpus                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + public_connection_urls                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + public_endpoint                                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + refreshable_mode                               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + refreshable_status                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + remote_disaster_recovery_configuration         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + remote_disaster_recovery_type                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + resource_pool_leader_id                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + role                                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + secret_id                                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + secret_version_number                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + security_attributes                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + service_console_url                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + shrink_adb_trigger                             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + source                                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + source_id                                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + standby_db                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + standby_whitelisted_ips                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + state                                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + subnet_id                                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + subscription_id                                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + supported_regions_to_clone_to                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + system_tags                                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_created                                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_data_guard_role_changed                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_deletion_of_free_autonomous_database      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_disaster_recovery_role_changed            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_earliest_available_db_version_upgrade     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_latest_available_db_version_upgrade       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_local_data_guard_enabled                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_maintenance_begin                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_maintenance_end                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_maintenance_pause_until                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_auto_refresh_start                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_joining_resource_pool                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_last_failover                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_last_refresh                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_last_refresh_point                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_last_switchover                        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_of_next_refresh                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_reclamation_of_free_autonomous_database   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_scheduled_db_version_upgrade              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_undeleted                                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_until_reconnect_clone_enabled             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + timestamp                                      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + total_backup_storage_size_in_gbs               = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + use_latest_available_backup_time_stamp         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + used_data_storage_size_in_gbs                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + used_data_storage_size_in_tbs                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + vanity_connection_urls                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + vault_id                                       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + whitelisted_ips                                = [
+[Apply (crear la infraestructura e instalar el API)]           + "0.0.0.0/0",
+[Apply (crear la infraestructura e instalar el API)]         ]
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + autonomous_database_maintenance_window (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + customer_contacts (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + db_tools_details (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + encryption_key (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + long_term_backup_schedule (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + resource_pool_summary (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + scheduled_operations (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + transportable_tablespace (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + vanity_url_details (known after apply)
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # oci_monitoring_alarm.db_cpu will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "oci_monitoring_alarm" "db_cpu" {
+[Apply (crear la infraestructura e instalar el API)]       + alarm_summary                                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + body                                          = "La CPU de la base de datos trading-journal-dev-db superó el 80 % por más de 5 minutos."
+[Apply (crear la infraestructura e instalar el API)]       + compartment_id                                = "***"
+[Apply (crear la infraestructura e instalar el API)]       + defined_tags                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + destinations                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + display_name                                  = "trading-journal-dev-db-cpu-alta"
+[Apply (crear la infraestructura e instalar el API)]       + evaluation_slack_duration                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + freeform_tags                                 = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]       + id                                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_enabled                                    = true
+[Apply (crear la infraestructura e instalar el API)]       + is_notifications_per_metric_dimension_enabled = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + message_format                                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + metric_compartment_id                         = "***"
+[Apply (crear la infraestructura e instalar el API)]       + metric_compartment_id_in_subtree              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + namespace                                     = "oci_autonomous_database"
+[Apply (crear la infraestructura e instalar el API)]       + notification_title                            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + notification_version                          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + pending_duration                              = "PT5M"
+[Apply (crear la infraestructura e instalar el API)]       + query                                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + repeat_notification_duration                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + resolution                                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + resource_group                                = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + rule_name                                     = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + severity                                      = "WARNING"
+[Apply (crear la infraestructura e instalar el API)]       + state                                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_created                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_updated                                  = (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + overrides (known after apply)
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]       + suppression (known after apply)
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # oci_objectstorage_bucket.attachments will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "oci_objectstorage_bucket" "attachments" {
+[Apply (crear la infraestructura e instalar el API)]       + access_type                  = "NoPublicAccess"
+[Apply (crear la infraestructura e instalar el API)]       + approximate_count            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + approximate_size             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + auto_tiering                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + bucket_id                    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + compartment_id               = "***"
+[Apply (crear la infraestructura e instalar el API)]       + created_by                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + defined_tags                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + etag                         = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + freeform_tags                = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]       + id                           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + is_read_only                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + kms_key_id                   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + name                         = "trading-journal-dev-attachments"
+[Apply (crear la infraestructura e instalar el API)]       + namespace                    = "axxhzvxjrmcl"
+[Apply (crear la infraestructura e instalar el API)]       + object_events_enabled        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + object_lifecycle_policy_etag = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + replication_enabled          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + storage_tier                 = "Standard"
+[Apply (crear la infraestructura e instalar el API)]       + time_created                 = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + versioning                   = "Disabled"
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # oci_ons_notification_topic.alerts will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "oci_ons_notification_topic" "alerts" {
+[Apply (crear la infraestructura e instalar el API)]       + api_endpoint   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + compartment_id = "***"
+[Apply (crear la infraestructura e instalar el API)]       + defined_tags   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + description    = "Alertas de trading-journal-dev"
+[Apply (crear la infraestructura e instalar el API)]       + etag           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + freeform_tags  = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]       + id             = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + name           = "trading-journal-dev-alerts"
+[Apply (crear la infraestructura e instalar el API)]       + short_topic_id = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + state          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + time_created   = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + topic_id       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)]   # oci_ons_subscription.email will be created
+[Apply (crear la infraestructura e instalar el API)]   + resource "oci_ons_subscription" "email" {
+[Apply (crear la infraestructura e instalar el API)]       + compartment_id  = "***"
+[Apply (crear la infraestructura e instalar el API)]       + created_time    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + defined_tags    = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + delivery_policy = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + endpoint        = "***"
+[Apply (crear la infraestructura e instalar el API)]       + etag            = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + freeform_tags   = {
+[Apply (crear la infraestructura e instalar el API)]           + "environment" = "dev"
+[Apply (crear la infraestructura e instalar el API)]           + "managed_by"  = "terraform"
+[Apply (crear la infraestructura e instalar el API)]           + "project"     = "trading-journal"
+[Apply (crear la infraestructura e instalar el API)]         }
+[Apply (crear la infraestructura e instalar el API)]       + id              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + protocol        = "EMAIL"
+[Apply (crear la infraestructura e instalar el API)]       + state           = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]       + topic_id        = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]     }
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] Plan: 8 to add, 0 to change, 0 to destroy.
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] Changes to Outputs:
+[Apply (crear la infraestructura e instalar el API)]   + alerts_topic_id      = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]   + api_health_url       = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]   + api_url              = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]   + azure_resource_group = "trading-journal-dev-rg"
+[Apply (crear la infraestructura e instalar el API)]   + bucket_name          = "trading-journal-dev-attachments"
+[Apply (crear la infraestructura e instalar el API)]   + database_id          = (known after apply)
+[Apply (crear la infraestructura e instalar el API)]   + database_jdbc_url    = (sensitive value)
+[Apply (crear la infraestructura e instalar el API)]   + database_name        = "trading-journal-dev-db"
+[Apply (crear la infraestructura e instalar el API)] oci_ons_notification_topic.alerts: Creating...
+[Apply (crear la infraestructura e instalar el API)] oci_objectstorage_bucket.attachments: Creating...
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Creating...
+[Apply (crear la infraestructura e instalar el API)] oci_objectstorage_bucket.attachments: Creation complete after 0s [id=n/axxhzvxjrmcl/b/trading-journal-dev-attachments]
+[Apply (crear la infraestructura e instalar el API)] oci_ons_notification_topic.alerts: Creation complete after 1s [id=ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaf4ivvwesblbb335yc27dpe5phkm3w7pyd2cugs2bh43q]
+[Apply (crear la infraestructura e instalar el API)] oci_ons_subscription.email: Creating...
+[Apply (crear la infraestructura e instalar el API)] oci_ons_subscription.email: Creation complete after 0s [id=ocid1.onssubscription.oc1.sa-bogota-1.aaaaaaaa6jibxmd7ix5cgf3jbluczlbkf7inc57rm3scxeuuwgqij7kc2aba]
+[Apply (crear la infraestructura e instalar el API)] azurerm_resource_group.main: Creating...
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [00m10s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_resource_group.main: Still creating... [00m10s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [00m20s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_resource_group.main: Still creating... [00m20s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [00m30s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_resource_group.main: Creation complete after 25s [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg]
+[Apply (crear la infraestructura e instalar el API)] azurerm_log_analytics_workspace.main: Creating...
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [00m40s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_log_analytics_workspace.main: Still creating... [00m10s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [00m50s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_log_analytics_workspace.main: Still creating... [00m20s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [01m00s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_log_analytics_workspace.main: Still creating... [00m30s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Still creating... [01m10s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_database_autonomous_database.main: Creation complete after 1m11s [id=ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaatcawe4yjrydgxjqqojjk4dy7xhwpixmb7k6qypmak64a]
+[Apply (crear la infraestructura e instalar el API)] oci_monitoring_alarm.db_cpu: Creating...
+[Apply (crear la infraestructura e instalar el API)] azurerm_log_analytics_workspace.main: Still creating... [00m40s elapsed]
+[Apply (crear la infraestructura e instalar el API)] oci_monitoring_alarm.db_cpu: Creation complete after 1s [id=ocid1.alarm.oc1.sa-bogota-1.amaaaaaakei73jaab45jxseyjhtttx2aitnawqlscygvexwomfxmujczo56q]
+[Apply (crear la infraestructura e instalar el API)] azurerm_log_analytics_workspace.main: Creation complete after 44s [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.OperationalInsights/workspaces/trading-journal-dev-logs]
+[Apply (crear la infraestructura e instalar el API)] azurerm_container_group.api: Creating...
+[Apply (crear la infraestructura e instalar el API)] azurerm_container_group.api: Still creating... [00m10s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_container_group.api: Still creating... [00m20s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_container_group.api: Still creating... [00m30s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_container_group.api: Still creating... [00m40s elapsed]
+[Apply (crear la infraestructura e instalar el API)] azurerm_container_group.api: Creation complete after 45s [id=/subscriptions/***/resourceGroups/trading-journal-dev-rg/providers/Microsoft.ContainerInstance/containerGroups/trading-journal-dev-api]
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] Apply complete! Resources: 8 added, 0 changed, 0 destroyed.
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] Outputs:
+[Apply (crear la infraestructura e instalar el API)] 
+[Apply (crear la infraestructura e instalar el API)] alerts_topic_id = "ocid1.onstopic.oc1.sa-bogota-1.amaaaaaakei73jaaf4ivvwesblbb335yc27dpe5phkm3w7pyd2cugs2bh43q"
+[Apply (crear la infraestructura e instalar el API)] api_health_url = "http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080/actuator/health"
+[Apply (crear la infraestructura e instalar el API)] api_url = "http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080"
+[Apply (crear la infraestructura e instalar el API)] azure_resource_group = "trading-journal-dev-rg"
+[Apply (crear la infraestructura e instalar el API)] bucket_name = "trading-journal-dev-attachments"
+[Apply (crear la infraestructura e instalar el API)] database_id = "ocid1.autonomousdatabase.oc1.sa-bogota-1.anrgcljrkei73jaatcawe4yjrydgxjqqojjk4dy7xhwpixmb7k6qypmak64a"
+[Apply (crear la infraestructura e instalar el API)] database_jdbc_url = <sensitive>
+[Apply (crear la infraestructura e instalar el API)] database_name = "trading-journal-dev-db"
+[Esperar a que el API responda] ##[group]Run URL="$(terraform output -raw api_health_url)"
+[Esperar a que el API responda] URL="$(terraform output -raw api_health_url)"
+[Esperar a que el API responda] echo "Comprobando $URL"
+[Esperar a que el API responda] for i in $(seq 1 40); do
+[Esperar a que el API responda]   code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "$URL" || true)"
+[Esperar a que el API responda]   echo "intento $i: HTTP $code"
+[Esperar a que el API responda]   if [ "$code" = "200" ]; then
+[Esperar a que el API responda]     echo "✅ API arriba en $(terraform output -raw api_url)"
+[Esperar a que el API responda]     exit 0
+[Esperar a que el API responda]   fi
+[Esperar a que el API responda]   sleep 15
+[Esperar a que el API responda] done
+[Esperar a que el API responda] echo "❌ El API no respondió a tiempo"
+[Esperar a que el API responda] exit 1
+[Esperar a que el API responda] shell: /usr/bin/bash -e {0}
+[Esperar a que el API responda] env:
+[Esperar a que el API responda]   TF_IN_AUTOMATION: true
+[Esperar a que el API responda]   TF_INPUT: false
+[Esperar a que el API responda]   TF_VAR_oci_tenancy_ocid: ***
+[Esperar a que el API responda]   TF_VAR_oci_compartment_ocid: ***
+[Esperar a que el API responda]   TF_VAR_oci_user_ocid: ***
+[Esperar a que el API responda]   TF_VAR_oci_fingerprint: ***
+[Esperar a que el API responda]   TF_VAR_oci_private_key: ***
+[Esperar a que el API responda]   TF_VAR_db_admin_password: ***
+[Esperar a que el API responda]   TF_VAR_alert_email: ***
+[Esperar a que el API responda]   TF_VAR_azure_subscription_id: ***
+[Esperar a que el API responda]   ARM_CLIENT_ID: ***
+[Esperar a que el API responda]   ARM_CLIENT_SECRET: ***
+[Esperar a que el API responda]   ARM_TENANT_ID: ***
+[Esperar a que el API responda]   ARM_SUBSCRIPTION_ID: ***
+[Esperar a que el API responda] ##[endgroup]
+[Esperar a que el API responda] Comprobando http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080/actuator/health
+[Esperar a que el API responda] intento 1: HTTP 000
+[Esperar a que el API responda] intento 2: HTTP 000
+[Esperar a que el API responda] intento 3: HTTP 200
+[Esperar a que el API responda] ✅ API arriba en http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080
