@@ -3,5 +3,4 @@ target/
 .idea/
 *.iml
 .mvn/
-.claude/
 *.log
