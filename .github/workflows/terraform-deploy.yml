@@ -136,6 +136,7 @@ jobs:
           region=sa-bogota-1
           key_file=$HOME/.oci/key.pem
           EOF
+          chmod 600 ~/.oci/config
 
       - name: Crear el bucket de estado (si no existe)
         run: bash scripts/bootstrap-state.sh
