@@ -4,6 +4,10 @@ Terraform crea y destruye, con un solo comando o con un pipeline, toda la infrae
 
 ## Arquitectura
 
+![Arquitectura con Terraform](../docs/arquitectura-terraform.svg)
+
+En texto:
+
 ```text
                          GitHub Actions (terraform-deploy.yml)
                                       │  terraform apply
@@ -40,7 +44,9 @@ terraform/
 │   └── dev.example.tfvars   # plantilla de variables (la real, dev.auto.tfvars, no se sube a Git)
 ├── scripts/
 │   ├── bootstrap-state.sh   # crea una vez el bucket del estado remoto
+│   ├── destroy.sh           # elimina toda la infraestructura (no necesita make)
 │   └── empty-bucket.sh      # vacía el bucket de adjuntos antes de destruir
+├── evidencias/              # logs y pruebas de la ejecución real (ver su README)
 ├── alarm.tf                 # OCI Monitoring
 ├── api.tf                   # Azure Container Instances
 ├── backend.tf               # estado remoto en OCI Object Storage
@@ -113,11 +119,14 @@ Con `apply` hace, en orden:
 
 ## Eliminar la infraestructura
 
-Al terminar la sustentación hay tres formas, todas equivalentes:
+Al terminar la sustentación hay cuatro formas, todas equivalentes:
 
 ```bash
 # Desde tu máquina (vacía el bucket de adjuntos y destruye todo)
 make destroy
+
+# Lo mismo, sin make (por ejemplo en Windows con Git Bash)
+bash scripts/destroy.sh
 ```
 
 ```bash
@@ -132,6 +141,10 @@ El bucket del estado (`trading-journal-tfstate`) **no** se elimina: Terraform lo
 `oci os bucket delete --namespace-name <namespace> --bucket-name trading-journal-tfstate --force`.
 
 > El bucket de adjuntos se vacía antes del `destroy` porque OCI no permite borrar un bucket con objetos.
+
+## Evidencias de ejecución
+
+En [`evidencias/`](evidencias/) están los logs del pipeline (crear todo desde cero y destruirlo), las salidas de Terraform, las pruebas contra el API desplegado y el inventario de recursos consultado a OCI y Azure.
 
 ## Seguridad y costos
 
