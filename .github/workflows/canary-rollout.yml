@@ -1,0 +1,171 @@
+name: Canary - Desplegar y promover
+
+# Pipeline de la Entrega 4 (Canary Deployments) sobre Google Cloud Run.
+# Construye la versión estable y la canary como imágenes inmutables (por digest),
+# las despliega como dos revisiones del mismo servicio y avanza el tráfico por
+# etapas (0 % -> 10 % -> 50 % -> 100 %), decidiendo con los umbrales de
+# canary/slo.json. Si se viola un umbral, revierte a 100 % stable.
+# Se ejecuta a mano para no gastar la capa gratuita en cada push.
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "rollout = construir, desplegar y promover; teardown = eliminar el servicio y las imágenes"
+        type: choice
+        options: [rollout, teardown]
+        default: rollout
+      stable_ref:
+        description: "Tag de la versión estable"
+        default: v3.1.0
+      canary_ref:
+        description: "Tag de la versión canary"
+        default: v4.0.0
+      bake_seconds:
+        description: "Segundos de medición por etapa (0 usa los tiempos reales de canary/slo.json)"
+        default: "60"
+      fault_error_rate:
+        description: "Fracción de errores 500 que se inyecta al canary (0 = ninguno, 0.4 = 40 %)"
+        default: "0"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: canary
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GCP_REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev
+  REPOSITORY: trading-journal
+
+jobs:
+  tools:
+    name: Probar las herramientas del canary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Pruebas de la puerta de calidad
+        run: python -m unittest discover -s canary/tests -v
+
+  build:
+    name: Construir imagen ${{ matrix.track }}
+    needs: tools
+    if: inputs.action == 'rollout'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        track: [stable, canary]
+    steps:
+      - name: Elegir la versión de este track
+        id: version
+        env:
+          TRACK: ${{ matrix.track }}
+          STABLE_REF: ${{ inputs.stable_ref }}
+          CANARY_REF: ${{ inputs.canary_ref }}
+        run: |
+          if [ "$TRACK" = "stable" ]; then REF="$STABLE_REF"; else REF="$CANARY_REF"; fi
+          echo "ref=$REF" >> "$GITHUB_OUTPUT"
+          echo "version=${REF#v}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.version.outputs.ref }}
+
+      - uses: google-github-actions/auth@v2
+        id: auth
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
+      - name: Construir y publicar (la imagen queda fijada por digest)
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api:${{ matrix.track }}-${{ steps.version.outputs.version }}
+
+      - name: Guardar la referencia inmutable
+        run: echo "${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.REPOSITORY }}/api@${{ steps.push.outputs.digest }}" > image-${{ matrix.track }}.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.track }}
+          path: image-${{ matrix.track }}.txt
+
+  rollout:
+    name: Desplegar y promover por etapas
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: image-*
+          merge-multiple: true
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Desplegar, medir cada etapa y decidir
+        # Las entradas llegan por entorno para no interpolar texto del usuario dentro del script.
+        env:
+          OCI_TENANCY_ID: ${{ secrets.OCI_CLI_TENANCY }}
+          OCI_USER_ID: ${{ secrets.OCI_CLI_USER }}
+          OCI_FINGERPRINT: ${{ secrets.OCI_CLI_FINGERPRINT }}
+          STABLE_REF: ${{ inputs.stable_ref }}
+          CANARY_REF: ${{ inputs.canary_ref }}
+          BAKE_SECONDS: ${{ inputs.bake_seconds }}
+          FAULT_ERROR_RATE: ${{ inputs.fault_error_rate }}
+        run: |
+          python canary/rollout.py run \
+            --stable-image "$(cat image-stable.txt)" --stable-version "${STABLE_REF#v}" \
+            --canary-image "$(cat image-canary.txt)" --canary-version "${CANARY_REF#v}" \
+            --bake-seconds "$BAKE_SECONDS" \
+            --fault-error-rate "$FAULT_ERROR_RATE" \
+            --report canary/reports/informe.json
+
+      - name: Guardar el informe de la ejecución
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-canary
+          path: canary/reports/informe.json
+          if-no-files-found: ignore
+
+  teardown:
+    name: Eliminar el servicio y las imágenes
+    if: inputs.action == 'teardown'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: bash canary/scripts/teardown.sh
