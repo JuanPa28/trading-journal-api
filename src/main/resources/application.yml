@@ -29,6 +29,11 @@ management:
       exposure:
         include: health, prometheus
   metrics:
+    # Toda métrica lleva la versión y el track que la produjo, para comparar
+    # canary contra stable en el tablero sin depender de la plataforma.
+    tags:
+      version: ${APP_VERSION:dev}
+      track: ${APP_TRACK:stable}
     distribution:
       # Histograma completo (no percentiles calculados del lado del cliente):
       # con 2-4 réplicas por el HPA, un p95 calculado dentro de un solo pod
