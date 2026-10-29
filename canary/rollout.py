@@ -216,12 +216,14 @@ def run_flow(args) -> int:
     report = {"started": datetime.now(timezone.utc).isoformat(), "stable": args.stable_version,
               "canary": args.canary_version, "fault_error_rate": args.fault_error_rate, "stages": []}
 
-    stable_rev = f"{SERVICE}-{revision_suffix('stable', args.stable_version)}"
-    if not args.skip_stable_deploy:
-        stable_rev = deploy("stable", args.stable_image, args.stable_version)
     extra = "faulty" if args.fault_error_rate or args.fault_latency_ms else ""
-    canary_rev = deploy("canary", args.canary_image, args.canary_version, extra,
-                        args.fault_error_rate, args.fault_latency_ms)
+    if args.reuse_revisions:
+        print("Se reutilizan las revisiones ya desplegadas (stable y canary).")
+        canary_rev = f"{SERVICE}-{revision_suffix('canary', args.canary_version, extra)}"
+    else:
+        deploy("stable", args.stable_image, args.stable_version)
+        canary_rev = deploy("canary", args.canary_image, args.canary_version, extra,
+                            args.fault_error_rate, args.fault_latency_ms)
     set_traffic(0)
 
     if DRY_RUN:
@@ -316,7 +318,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--concurrency", type=int, default=12)
     p.add_argument("--fault-error-rate", type=float, default=0.0, help="inyecta errores 500 en el canary")
     p.add_argument("--fault-latency-ms", type=int, default=0, help="inyecta latencia en el canary")
-    p.add_argument("--skip-stable-deploy", action="store_true")
+    p.add_argument("--reuse-revisions", action="store_true", help="no despliega: usa las revisiones que ya existen")
     p.add_argument("--report", help="archivo JSON donde guardar el informe")
 
     args = parser.parse_args(argv)
