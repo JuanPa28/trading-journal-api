@@ -89,3 +89,9 @@ oci:
   object-storage:
     namespace: ${OCI_OBJECT_STORAGE_NAMESPACE:axxhzvxjrmcl}
     bucket: ${OCI_OBJECT_STORAGE_BUCKET:trading-journal-attachments}
+
+# Identidad de la instancia para el Canary Deployment. Los inyecta el despliegue
+# (la misma imagen se promueve de canary a stable sin reconstruirse).
+app:
+  version: ${APP_VERSION:dev}
+  track: ${APP_TRACK:stable}
