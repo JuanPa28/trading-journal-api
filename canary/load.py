@@ -83,16 +83,16 @@ def run_load(base_url: str, duration: float, concurrency: int = 16, headers: dic
 
     def one_request():
         roll = random.random()
-        if roll < 0.15 or not trade_ids:
+        # Mezcla de lecturas por id y creaciones. No se usa el listado completo de
+        # trades: crece con la propia carga y su costo dominaría la comparación.
+        if roll < 0.12 or not trade_ids:
             body = dict(TRADE_BODY, traderId=trader_id)
             result = call("POST", f"{base_url}/api/trades", body, headers)
             if result[0] == 201:
                 with lock:
                     trade_ids.append(json.loads(result[4])["id"])
-        elif roll < 0.45:
+        elif roll < 0.62:
             result = call("GET", f"{base_url}/api/trades/{random.choice(trade_ids)}", None, headers)
-        elif roll < 0.75:
-            result = call("GET", f"{base_url}/api/trades", None, headers)
         else:
             result = call("GET", f"{base_url}/api/traders/{trader_id}", None, headers)
         status, track, version, ms, _ = result
