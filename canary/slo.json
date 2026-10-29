@@ -1,0 +1,54 @@
+{
+  "_comment": "Umbrales de decisión del Canary Deployment, definidos ANTES de desplegar. Los lee canary/gate.py en cada etapa: PROMOTE si todo se cumple, HOLD si faltan datos o hay una señal blanda, ABORT si se viola un umbral duro (rollback inmediato a 0 % de canary).",
+
+  "stages": [
+    {
+      "name": "etapa-1",
+      "canary_percent": 10,
+      "bake_seconds_real": 900,
+      "min_canary_requests": 60
+    },
+    {
+      "name": "etapa-2",
+      "canary_percent": 50,
+      "bake_seconds_real": 1800,
+      "min_canary_requests": 150
+    },
+    {
+      "name": "etapa-3",
+      "canary_percent": 100,
+      "bake_seconds_real": 3600,
+      "min_canary_requests": 150
+    }
+  ],
+
+  "smoke": {
+    "_comment": "Etapa 0: 0 % de tráfico público; se prueba solo por la URL de la revisión (tag).",
+    "requests": 30,
+    "max_error_rate": 0.0
+  },
+
+  "abort": {
+    "_comment": "Violaciones duras: provocan rollback inmediato.",
+    "max_canary_error_rate": 0.02,
+    "max_error_rate_over_stable": 0.01,
+    "max_p95_ratio_over_stable": 1.30,
+    "min_p95_margin_ms": 150
+  },
+
+  "hold": {
+    "_comment": "Señales blandas: se pausa y se vuelve a medir, sin revertir.",
+    "max_p99_ratio_over_stable": 1.50,
+    "min_p99_margin_ms": 300,
+    "max_cpu_utilization": 0.90,
+    "max_memory_utilization": 0.90
+  },
+
+  "sample_size": {
+    "_comment": "No se decide con muestras pequeñas: si el canary no alcanza el mínimo de peticiones de la etapa, la decisión es HOLD y se extiende la medición.",
+    "min_stable_requests": 30,
+    "max_extra_bake_rounds": 3
+  },
+
+  "expected_share_tolerance": 0.35
+}
