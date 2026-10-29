@@ -21,6 +21,8 @@ public record TradeResponse(
         BigDecimal commissions,
         BigDecimal fees,
         String notes,
-        boolean open
+        boolean open,
+        Integer setupScore,
+        String setupGrade
 ) {
 }

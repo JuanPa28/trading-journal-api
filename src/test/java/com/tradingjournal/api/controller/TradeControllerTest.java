@@ -155,7 +155,7 @@ class TradeControllerTest {
                 open ? null : LocalDateTime.of(2026, 8, 10, 8, 41),
                 new BigDecimal("29770.25"), new BigDecimal("29726.75"),
                 pnl, new BigDecimal("1.00"), new BigDecimal("1.44"),
-                "Buen setup", open
+                "Buen setup", open, 4, "B"
         );
     }
 }

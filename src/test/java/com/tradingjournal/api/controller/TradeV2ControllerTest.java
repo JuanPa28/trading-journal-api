@@ -40,7 +40,7 @@ class TradeV2ControllerTest {
 
     private final TradeResponse tradeResponse = new TradeResponse(
             1L, 1L, strategyResponse, "ext-1", "MNQU26", 2, Direction.LONG,
-            LocalDateTime.now(), null, new BigDecimal("19500.25"), null, null, null, null, null, true);
+            LocalDateTime.now(), null, new BigDecimal("19500.25"), null, null, null, null, null, true, 4, "B");
 
     @Test
     void findById_mergesTradeWithBothCompanionsEntities() throws Exception {

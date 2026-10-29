@@ -44,6 +44,7 @@ public class TradeService {
         trade.setTrader(trader);
         trade.setStrategy(strategy);
         applyTrade(trade, request);
+        trade.setSetupScore(strategy.confluenceCount());
 
         return toResponse(tradeRepository.save(trade));
     }
@@ -67,6 +68,7 @@ public class TradeService {
 
         applyStrategy(trade.getStrategy(), request.strategy());
         applyTrade(trade, request);
+        trade.setSetupScore(trade.getStrategy().confluenceCount());
 
         return toResponse(trade);
     }
@@ -145,6 +147,11 @@ public class TradeService {
     }
 
     private TradeResponse toResponse(Trade trade) {
+        // Las filas creadas por la versión estable no traen el puntaje guardado:
+        // se calcula al leer, sin escribirlo, para no depender de ninguna migración.
+        Integer score = trade.getSetupScore() != null
+                ? trade.getSetupScore()
+                : (trade.getStrategy() != null ? trade.getStrategy().confluenceCount() : null);
         return new TradeResponse(
                 trade.getId(),
                 trade.getTrader().getId(),
@@ -161,7 +168,17 @@ public class TradeService {
                 trade.getCommissions(),
                 trade.getFees(),
                 trade.getNotes(),
-                trade.isOpen()
+                trade.isOpen(),
+                score,
+                grade(score)
         );
+    }
+
+    // Calificación del setup según el puntaje de confluencias: A (6-7), B (4-5), C (0-3).
+    private static String grade(Integer score) {
+        if (score == null) {
+            return null;
+        }
+        return score >= 6 ? "A" : score >= 4 ? "B" : "C";
     }
 }
