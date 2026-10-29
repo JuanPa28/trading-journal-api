@@ -101,6 +101,8 @@ def runtime_env(track: str, version: str, fault_error_rate: float = 0.0, fault_l
     env = {
         "SPRING_PROFILES_ACTIVE": "prod",
         "SPRING_JPA_HIBERNATE_DDL_AUTO": "update",
+        # La base Always Free admite pocas sesiones: pool chico por instancia y pocas instancias.
+        "SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE": "4",
         "DB_USERNAME": "ADMIN",
         "APP_VERSION": version,
         "APP_TRACK": track,
@@ -131,7 +133,7 @@ def deploy(track: str, image: str, version: str, extra: str = "", fault_error_ra
                 "--revision-suffix", suffix, "--tag", track,
                 "--service-account", RUNTIME_SA, "--allow-unauthenticated",
                 "--port", "8080", "--memory", "1Gi", "--cpu", "1", "--cpu-boost",
-                "--min-instances", "0", "--max-instances", "3", "--concurrency", "40", "--timeout", "60",
+                "--min-instances", "0", "--max-instances", "2", "--concurrency", "40", "--timeout", "60",
                 "--env-vars-file", env_file.name,
                 "--set-secrets", "DB_PASSWORD=db-password:latest,DB_URL=db-url:latest,OCI_PRIVATE_KEY=oci-private-key:latest",
                 "--quiet"]
@@ -311,7 +313,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--canary-image", required=True)
     p.add_argument("--canary-version", required=True)
     p.add_argument("--bake-seconds", type=int, default=0, help="medición por etapa (0 usa los tiempos reales de slo.json)")
-    p.add_argument("--concurrency", type=int, default=16)
+    p.add_argument("--concurrency", type=int, default=12)
     p.add_argument("--fault-error-rate", type=float, default=0.0, help="inyecta errores 500 en el canary")
     p.add_argument("--fault-latency-ms", type=int, default=0, help="inyecta latencia en el canary")
     p.add_argument("--skip-stable-deploy", action="store_true")
