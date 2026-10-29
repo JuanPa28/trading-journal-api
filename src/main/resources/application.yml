@@ -100,3 +100,10 @@ oci:
 app:
   version: ${APP_VERSION:dev}
   track: ${APP_TRACK:stable}
+
+# Inyección de fallos (solo surte efecto en el track canary). Se activa al
+# desplegar una revisión con estas variables, para simular una regresión.
+fault:
+  error-rate: ${FAULT_ERROR_RATE:0}
+  latency-ms: ${FAULT_LATENCY_MS:0}
+  header-enabled: ${FAULT_HEADER_ENABLED:false}
