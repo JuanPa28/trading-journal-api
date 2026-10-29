@@ -69,6 +69,12 @@ public class Trade {
     @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String notes;
 
+    // Expand/Contract: columna NUEVA y NULLABLE. La versión estable no la conoce
+    // y sigue insertando filas sin ella, así que volver atrás (rollback) nunca
+    // deja la base en un estado que la versión anterior no pueda leer.
+    @Column(name = "setup_score")
+    private Integer setupScore;
+
     @Transient
     public boolean isOpen() {
         return exitTime == null;
@@ -165,6 +171,14 @@ public class Trade {
 
     public void setExitPrice(BigDecimal exitPrice) {
         this.exitPrice = exitPrice;
+    }
+
+    public Integer getSetupScore() {
+        return setupScore;
+    }
+
+    public void setSetupScore(Integer setupScore) {
+        this.setupScore = setupScore;
     }
 
     public BigDecimal getPnl() {
