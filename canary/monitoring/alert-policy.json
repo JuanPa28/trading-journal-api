@@ -1,0 +1,35 @@
+{
+  "displayName": "Canary: errores 5xx por encima del umbral",
+  "documentation": {
+    "content": "El canary devuelve errores 5xx por encima del umbral definido en canary/slo.json. La puerta de calidad del pipeline revierte el tráfico a stable; si no corre, ejecutar: python canary/rollout.py rollback",
+    "mimeType": "text/markdown"
+  },
+  "combiner": "OR",
+  "conditions": [
+    {
+      "displayName": "Más de 0,5 errores 5xx por segundo en una revisión canary",
+      "conditionThreshold": {
+        "filter": "metric.type=\"run.googleapis.com/request_count\" AND resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"api\" AND metric.label.\"response_code_class\"=\"5xx\" AND resource.label.\"revision_name\"=monitoring.regex.full_match(\".*canary.*\")",
+        "aggregations": [
+          {
+            "alignmentPeriod": "60s",
+            "perSeriesAligner": "ALIGN_RATE",
+            "crossSeriesReducer": "REDUCE_SUM",
+            "groupByFields": [
+              "resource.label.\"revision_name\""
+            ]
+          }
+        ],
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0.5,
+        "duration": "60s",
+        "trigger": {
+          "count": 1
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "1800s"
+  }
+}
