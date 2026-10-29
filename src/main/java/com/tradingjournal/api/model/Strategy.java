@@ -41,6 +41,17 @@ public class Strategy {
     @OneToMany(mappedBy = "strategy")
     private List<Trade> trades = new ArrayList<>();
 
+    // Cuántas de las 7 confluencias del checklist se cumplieron (0 a 7).
+    public int confluenceCount() {
+        int count = 0;
+        for (boolean met : new boolean[]{htfPdArray, ifvg, cisd, followedRules, continuation, reversal, correctRisk}) {
+            if (met) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
