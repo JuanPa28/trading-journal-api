@@ -1,0 +1,35 @@
+package com.tradingjournal.api.config;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+
+// Agrega a TODA respuesta (también a errores y a /actuator) la versión exacta y
+// el track que atendió la petición, para poder ver en tiempo real si respondió
+// stable o canary. Va con la precedencia más alta para que los headers estén
+// puestos aunque otro filtro o un controlador falle después.
+@Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
+public class VersionHeaderFilter extends OncePerRequestFilter {
+
+    private final AppInfo appInfo;
+
+    public VersionHeaderFilter(AppInfo appInfo) {
+        this.appInfo = appInfo;
+    }
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        response.setHeader(AppInfo.VERSION_HEADER, appInfo.version());
+        response.setHeader(AppInfo.TRACK_HEADER, appInfo.track());
+        filterChain.doFilter(request, response);
+    }
+}
