@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -21,8 +22,8 @@ public class VersionHeaderFilter extends OncePerRequestFilter {
 
     private final AppInfo appInfo;
 
-    public VersionHeaderFilter(AppInfo appInfo) {
-        this.appInfo = appInfo;
+    public VersionHeaderFilter(@Value("${app.version:dev}") String version, @Value("${app.track:stable}") String track) {
+        this.appInfo = new AppInfo(version, track);
     }
 
     @Override

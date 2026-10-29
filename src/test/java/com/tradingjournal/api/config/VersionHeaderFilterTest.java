@@ -11,7 +11,7 @@ class VersionHeaderFilterTest {
 
     @Test
     void addsVersionAndTrackHeadersToTheResponse() throws Exception {
-        VersionHeaderFilter filter = new VersionHeaderFilter(new AppInfo("3.1.0", "stable"));
+        VersionHeaderFilter filter = new VersionHeaderFilter("3.1.0", "stable");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(new MockHttpServletRequest("GET", "/api/traders"), response, new MockFilterChain());
@@ -22,13 +22,12 @@ class VersionHeaderFilterTest {
 
     @Test
     void reportsTheCanaryTrack() throws Exception {
-        AppInfo canary = new AppInfo("4.0.0", "canary");
-        VersionHeaderFilter filter = new VersionHeaderFilter(canary);
+        VersionHeaderFilter filter = new VersionHeaderFilter("4.0.0", "canary");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(new MockHttpServletRequest("GET", "/actuator/health"), response, new MockFilterChain());
 
-        assertThat(canary.isCanary()).isTrue();
+        assertThat(new AppInfo("4.0.0", "canary").isCanary()).isTrue();
         assertThat(response.getHeader(AppInfo.TRACK_HEADER)).isEqualTo("canary");
     }
 }
