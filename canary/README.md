@@ -116,7 +116,7 @@ Los define [`slo.json`](slo.json) **antes** de desplegar, y los aplica [`gate.py
 | **HOLD** (pausar y volver a medir) | muestra insuficiente (menos peticiones que el mínimo de la etapa), p99 > `max(1,5 × p99 estable, p99 estable + 300 ms)`, CPU o memoria del canary **> 90 %** |
 | **PROMOTE** (pasar a la siguiente etapa) | todos los umbrales se cumplen con muestra suficiente |
 
-Es una comparación **justa**: las dos versiones reciben la **misma mezcla de peticiones** a la vez (lecturas por id y creaciones de trades, desde 12 hilos concurrentes), y solo se compara con muestra suficiente. En la etapa del 100 % ya no queda tráfico estable, así que se compara contra la línea base medida en la etapa anterior.
+Es una comparación **justa**: las dos versiones reciben la **misma mezcla de peticiones** a la vez (lecturas por id y creaciones de trades, desde 12 hilos concurrentes), y solo se compara con muestra suficiente. En la etapa del 100 % ya no queda tráfico estable, así que se compara contra la medición de la estable con **mayor carga** (la de más peticiones, normalmente la etapa del 10 %, cuando la estable atiende el 90 %). Comparar contra una etapa de menos carga daría un falso aborto: la latencia sube con la carga aunque no haya ninguna regresión.
 
 ## Inyección de fallos y rollback
 
