@@ -1,0 +1,43 @@
+# Canary - rollback automático al inyectar una regresión desde la etapa 2
+# Ejecución: https://github.com/JuanPa28/trading-journal-api/actions/runs/40997762252
+# Se conservan los pasos del despliegue y de las etapas; se omiten los de preparación del runner.
+# GitHub oculta los secrets en los logs (aparecen como ***).
+
+La revisión api-stable-310-5873217d ya existe: se reutiliza y solo se mueve la etiqueta 'stable'.
+La revisión api-canary-400-2b90922f ya existe: se reutiliza y solo se mueve la etiqueta 'canary'.
+Tráfico -> stable=100
+Revisión stable: lista
+Revisión canary: lista
+=== etapa-0 (0 % público, prueba de humo por la URL de la revisión) ===
+Prueba de humo correcta: 37 peticiones, 0 errores, versión canary.
+Tráfico -> stable=90,canary=10
+etapa-1: 10 % al canary, medición de 60s (ronda 1)
+=== etapa-1 ===
+track    peticiones  errores   p50 ms   p95 ms   p99 ms  reparto
+stable         1297    0.0%      489      888     1061     91%
+canary          131    0.0%      248      681      694      9%
+  OK  error_rate_canary: 0.0 (límite 0.02)
+  OK  error_rate_vs_stable: 0.0 (límite 0.01)
+  OK  latency_p95_ms: 681.0802 (límite 1153.9884)
+  OK  latency_p99_ms: 693.5003 (límite 1591.4292)
+  OK  cpu_utilization: 0.3291 (límite 0.9)
+  OK  memory_utilization: 0.4395 (límite 0.9)
+  -> Todos los umbrales se cumplen
+  DECISIÓN: PROMOTE
+*** Se inyecta una regresión en el canary: 40% de las peticiones llevan X-Inject-Fault ***
+Tráfico -> stable=50,canary=50
+etapa-2: 50 % al canary, medición de 60s (ronda 1)
+=== etapa-2 ===
+track    peticiones  errores   p50 ms   p95 ms   p99 ms  reparto
+stable         1242    0.0%      354      770      968     50%
+canary         1240   41.0%      139      586      667     50%
+  MAL error_rate_canary: 0.4097 (límite 0.02)
+  MAL error_rate_vs_stable: 0.4097 (límite 0.01)
+  OK  latency_p95_ms: 586.4818 (límite 1001.1209)
+  -> Tasa de errores del canary 41.0% supera 2.0%
+  -> El canary tiene 41.0% más errores que la versión estable
+  DECISIÓN: ABORT
+No se promueve (ABORT). Se revierte.
+ROLLBACK: 100 % del tráfico a la versión estable, 0 % al canary
+Tráfico -> stable=100
+Informe guardado en canary/reports/informe.json

@@ -1,0 +1,55 @@
+# Canary - promoción exitosa hasta el 100 % (sin falla)
+# Ejecución: https://github.com/JuanPa28/trading-journal-api/actions/runs/40997205603
+# Se conservan los pasos del despliegue y de las etapas; se omiten los de preparación del runner.
+# GitHub oculta los secrets en los logs (aparecen como ***).
+
+La revisión api-stable-310-5873217d ya existe: se reutiliza y solo se mueve la etiqueta 'stable'.
+La revisión api-canary-400-2b90922f ya existe: se reutiliza y solo se mueve la etiqueta 'canary'.
+Tráfico -> stable=100
+Revisión stable: lista
+Revisión canary: lista
+=== etapa-0 (0 % público, prueba de humo por la URL de la revisión) ===
+Prueba de humo correcta: 37 peticiones, 0 errores, versión canary.
+Tráfico -> stable=90,canary=10
+etapa-1: 10 % al canary, medición de 60s (ronda 1)
+=== etapa-1 ===
+track    peticiones  errores   p50 ms   p95 ms   p99 ms  reparto
+stable         1274    0.0%      449      897     1263     91%
+canary          126    0.0%      232      671      704      9%
+  OK  error_rate_canary: 0.0 (límite 0.02)
+  OK  error_rate_vs_stable: 0.0 (límite 0.01)
+  OK  latency_p95_ms: 670.7642 (límite 1166.4952)
+  OK  latency_p99_ms: 703.9944 (límite 1893.8455)
+  OK  cpu_utilization: 0.2998 (límite 0.9)
+  OK  memory_utilization: 0.3899 (límite 0.9)
+  -> Todos los umbrales se cumplen
+  DECISIÓN: PROMOTE
+Tráfico -> stable=50,canary=50
+etapa-2: 50 % al canary, medición de 60s (ronda 1)
+=== etapa-2 ===
+track    peticiones  errores   p50 ms   p95 ms   p99 ms  reparto
+stable         1129    0.0%      238      628      853     49%
+canary         1164    0.0%      286      682      822     51%
+  OK  error_rate_canary: 0.0 (límite 0.02)
+  OK  error_rate_vs_stable: 0.0 (límite 0.01)
+  OK  latency_p95_ms: 682.4062 (límite 815.8276)
+  OK  latency_p99_ms: 822.2544 (límite 1279.6671)
+  OK  cpu_utilization: 0.2996 (límite 0.9)
+  OK  memory_utilization: 0.3997 (límite 0.9)
+  -> Todos los umbrales se cumplen
+  DECISIÓN: PROMOTE
+Tráfico -> canary=100
+etapa-3: 100 % al canary, medición de 60s (ronda 1)
+=== etapa-3 ===
+track    peticiones  errores   p50 ms   p95 ms   p99 ms  reparto
+canary         1333    0.0%      511      885     1153    100%
+  OK  error_rate_canary: 0.0 (límite 0.02)
+  OK  error_rate_vs_stable: 0.0 (límite 0.01)
+  OK  latency_p95_ms: 885.0013 (límite 1166.4952)
+  OK  latency_p99_ms: 1152.7882 (límite 1893.8455)
+  OK  cpu_utilization: 0.3294 (límite 0.9)
+  OK  memory_utilization: 0.4294 (límite 0.9)
+  -> Todos los umbrales se cumplen
+  DECISIÓN: PROMOTE
+Canary promovido al 100 % del tráfico.
+Informe guardado en canary/reports/informe.json
