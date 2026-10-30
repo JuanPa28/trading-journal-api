@@ -90,6 +90,24 @@ class EvaluateTest(unittest.TestCase):
         self.assertEqual(result["decision"], gate.ABORT)
 
 
+class PickBaselineTest(unittest.TestCase):
+    def stats(self, requests, p95):
+        return {"requests": requests, "p95": p95}
+
+    def test_first_measurement_becomes_the_baseline(self):
+        self.assertEqual(gate.pick_baseline(None, self.stats(100, 500)), self.stats(100, 500))
+
+    def test_keeps_the_measurement_with_the_largest_sample(self):
+        high_load = self.stats(1200, 915)
+        lower_load = self.stats(1000, 681)
+        self.assertEqual(gate.pick_baseline(high_load, lower_load), high_load)
+        self.assertEqual(gate.pick_baseline(lower_load, high_load), high_load)
+
+    def test_no_new_stable_data_keeps_the_current_baseline(self):
+        current = self.stats(500, 400)
+        self.assertEqual(gate.pick_baseline(current, None), current)
+
+
 class ShareWarningTest(unittest.TestCase):
     def test_no_warning_when_close_to_expected(self):
         stats = gate.summarize(samples("stable", 90) + samples("canary", 10))
