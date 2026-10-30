@@ -1,0 +1,24 @@
+# Evidencias en vivo del Canary Deployment — 2026-10-29 22:38
+# Servicio: https://api-y2e46yaf5q-uc.a.run.app
+
+## 1) Etapa 0: el canary se prueba por su URL propia con 0 % de tráfico público
+$ curl -i https://canary---api-y2e46yaf5q-uc.a.run.app/api/v3/trades/1   (solo cabeceras relevantes)
+HTTP/1.1 200 OK
+x-app-version: 4.0.0
+x-app-track: canary
+
+## 2) El mismo trade en la estable y en el canary (cambio funcional observable)
+$ curl https://stable---api-y2e46yaf5q-uc.a.run.app/api/trades/1
+{'id': 1, 'contract': 'MNQU26', 'setupScore': '(no existe)', 'setupGrade': '(no existe)'}
+$ curl https://canary---api-y2e46yaf5q-uc.a.run.app/api/trades/1
+{'id': 1, 'contract': 'MNQU26', 'setupScore': 4, 'setupGrade': 'B'}
+
+## 3) Reparto real del tráfico: 30 % al canary, 100 peticiones al servicio público
+Tráfico -> stable=70,canary=30
+     37 x-app-track: canary
+     63 x-app-track: stable
+Tráfico -> stable=100
+
+## 4) Estado final de las revisiones
+TAG                   REVISION_NAME                                           PERCENT
+['canary', 'stable']  ['api-canary-400-2b90922f', 'api-stable-310-5873217d']  [None, 100]
