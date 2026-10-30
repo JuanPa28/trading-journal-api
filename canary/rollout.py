@@ -286,8 +286,7 @@ def run_flow(args) -> int:
             samples = load.run_load(service_url(), duration=bake, concurrency=args.concurrency,
                                     until=None, fault_rate=args.fault_rate if fault_started else 0.0)
             stats = gate.summarize(samples)
-            if stats.get("stable"):
-                baseline = stats["stable"]
+            baseline = gate.pick_baseline(baseline, stats.get("stable"))
             verdict = gate.evaluate(stage, stats, slo, baseline=baseline, saturation=saturation(canary_rev))
             warning = gate.share_warning(stage, stats, slo["expected_share_tolerance"])
             print_round(stage["name"], stats, verdict, warning)

@@ -127,6 +127,21 @@ def evaluate(stage: dict, stats: dict, slo: dict, baseline: dict | None = None,
     return {"decision": PROMOTE, "checks": checks, "reasons": ["Todos los umbrales se cumplen"]}
 
 
+def pick_baseline(current: dict | None, stable_stats: dict | None) -> dict | None:
+    """Elige la línea base de la versión estable para comparar cuando ya no hay tráfico estable.
+
+    Se conserva la medición con MÁS peticiones: es la de mayor carga y muestra más
+    grande. Así, al 100 % el canary no se compara contra una etapa en la que la
+    estable atendía menos tráfico (y por eso respondía más rápido), lo que daría un
+    falso aborto: la latencia sube con la carga aunque no haya ninguna regresión.
+    """
+    if stable_stats is None:
+        return current
+    if current is None or stable_stats["requests"] > current["requests"]:
+        return stable_stats
+    return current
+
+
 def share_warning(stage: dict, stats: dict, tolerance: float) -> str | None:
     """Avisa si el reparto observado se aleja del porcentaje configurado."""
     canary = stats.get("canary")
