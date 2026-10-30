@@ -72,8 +72,13 @@ def seed_trader(base_url: str, headers: dict | None = None) -> int:
 
 
 def run_load(base_url: str, duration: float, concurrency: int = 16, headers: dict | None = None,
-             trader_id: int | None = None, until=None) -> list[dict]:
-    """Genera carga hasta que pase `duration` segundos o `until(muestras)` sea verdadero."""
+             trader_id: int | None = None, until=None, fault_rate: float = 0.0) -> list[dict]:
+    """Genera carga hasta que pase `duration` segundos o `until(muestras)` sea verdadero.
+
+    fault_rate: fracción de peticiones que llevan la cabecera X-Inject-Fault: error.
+    Solo el canary la obedece (la versión estable la ignora), así que equivale a
+    una regresión del canary que aparece en producción sin tocar la versión estable.
+    """
     trader_id = trader_id or seed_trader(base_url, headers)
     trade_ids: list[int] = []
     samples: list[dict] = []
@@ -82,19 +87,22 @@ def run_load(base_url: str, duration: float, concurrency: int = 16, headers: dic
     deadline = time.monotonic() + duration
 
     def one_request():
+        headers_now = headers
+        if fault_rate > 0 and random.random() < fault_rate:
+            headers_now = dict(headers or {}, **{"X-Inject-Fault": "error"})
         roll = random.random()
         # Mezcla de lecturas por id y creaciones. No se usa el listado completo de
         # trades: crece con la propia carga y su costo dominaría la comparación.
         if roll < 0.12 or not trade_ids:
             body = dict(TRADE_BODY, traderId=trader_id)
-            result = call("POST", f"{base_url}/api/trades", body, headers)
+            result = call("POST", f"{base_url}/api/trades", body, headers_now)
             if result[0] == 201:
                 with lock:
                     trade_ids.append(json.loads(result[4])["id"])
         elif roll < 0.62:
-            result = call("GET", f"{base_url}/api/trades/{random.choice(trade_ids)}", None, headers)
+            result = call("GET", f"{base_url}/api/trades/{random.choice(trade_ids)}", None, headers_now)
         else:
-            result = call("GET", f"{base_url}/api/traders/{trader_id}", None, headers)
+            result = call("GET", f"{base_url}/api/traders/{trader_id}", None, headers_now)
         status, track, version, ms, _ = result
         with lock:
             samples.append({"track": track, "version": version, "status": status, "ms": ms})

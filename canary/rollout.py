@@ -112,6 +112,9 @@ def runtime_env(track: str, version: str, fault_error_rate: float = 0.0, fault_l
         "OCI_USER_ID": required["OCI_USER_ID"] or "dry-run",
         "OCI_FINGERPRINT": required["OCI_FINGERPRINT"] or "dry-run",
     }
+    if track == "canary":
+        # Habilita la cabecera X-Inject-Fault: sin ella no hace nada, y solo el canary la obedece.
+        env["FAULT_HEADER_ENABLED"] = "true"
     if fault_error_rate > 0:
         env["FAULT_ERROR_RATE"] = str(fault_error_rate)
     if fault_latency_ms > 0:
@@ -221,7 +224,8 @@ def run_flow(args) -> int:
         print("Se reutilizan las revisiones ya desplegadas (stable y canary).")
         canary_rev = f"{SERVICE}-{revision_suffix('canary', args.canary_version, extra)}"
     else:
-        deploy("stable", args.stable_image, args.stable_version)
+        if not args.reuse_stable:
+            deploy("stable", args.stable_image, args.stable_version)
         canary_rev = deploy("canary", args.canary_image, args.canary_version, extra,
                             args.fault_error_rate, args.fault_latency_ms)
     set_traffic(0)
@@ -246,7 +250,11 @@ def run_flow(args) -> int:
     report["stages"].append({"name": "etapa-0", "decision": gate.PROMOTE, "stats": stats})
 
     baseline = None
+    fault_started = args.fault_rate <= 0
     for stage in slo["stages"]:
+        if not fault_started and stage["name"] == args.fault_from_stage:
+            fault_started = True
+            print(f"*** Se inyecta una regresión en el canary: {args.fault_rate:.0%} de las peticiones llevan X-Inject-Fault ***")
         set_traffic(stage["canary_percent"])
         bake = args.bake_seconds if args.bake_seconds else stage["bake_seconds_real"]
         rounds = 0
@@ -254,7 +262,7 @@ def run_flow(args) -> int:
             rounds += 1
             print(f"\n{stage['name']}: {stage['canary_percent']} % al canary, medición de {bake}s (ronda {rounds})")
             samples = load.run_load(service_url(), duration=bake, concurrency=args.concurrency,
-                                    until=None)
+                                    until=None, fault_rate=args.fault_rate if fault_started else 0.0)
             stats = gate.summarize(samples)
             if stats.get("stable"):
                 baseline = stats["stable"]
@@ -319,6 +327,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--fault-error-rate", type=float, default=0.0, help="inyecta errores 500 en el canary")
     p.add_argument("--fault-latency-ms", type=int, default=0, help="inyecta latencia en el canary")
     p.add_argument("--reuse-revisions", action="store_true", help="no despliega: usa las revisiones que ya existen")
+    p.add_argument("--reuse-stable", action="store_true", help="no despliega la estable: usa la que ya existe")
+    p.add_argument("--fault-rate", type=float, default=0.0,
+                   help="fracción de peticiones con X-Inject-Fault: error (regresión del canary en producción)")
+    p.add_argument("--fault-from-stage", default="etapa-2", help="etapa desde la que empieza la regresión")
     p.add_argument("--report", help="archivo JSON donde guardar el informe")
 
     args = parser.parse_args(argv)
