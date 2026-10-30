@@ -87,9 +87,25 @@ def service_url() -> str:
 
 # ------------------------------------------------------------------------ despliegue
 
-def revision_suffix(track: str, version: str, extra: str = "") -> str:
+def revision_suffix(track: str, version: str, image: str = "", extra: str = "") -> str:
+    """Nombre estable de la revisión: track, versión y los primeros 8 caracteres del digest.
+
+    Como el digest va en el nombre, la misma imagen siempre da la misma revisión
+    (desplegar dos veces no duplica nada) y una imagen distinta nunca choca con otra.
+    """
     suffix = f"{track}-{version.replace('.', '')}"
+    if "@sha256:" in image:
+        suffix += "-" + image.split("@sha256:", 1)[1][:8]
     return f"{suffix}-{extra}" if extra else suffix
+
+
+def revision_exists(name: str) -> bool:
+    if DRY_RUN:
+        return False
+    result = subprocess.run([shutil.which("gcloud") or "gcloud", "run", "revisions", "describe", name,
+                             "--region", REGION, "--project", PROJECT, "--format", "value(name)"],
+                            capture_output=True, text=True)
+    return result.returncode == 0 and bool(result.stdout.strip())
 
 
 def runtime_env(track: str, version: str, fault_error_rate: float = 0.0, fault_latency_ms: int = 0) -> dict:
@@ -125,7 +141,13 @@ def runtime_env(track: str, version: str, fault_error_rate: float = 0.0, fault_l
 def deploy(track: str, image: str, version: str, extra: str = "", fault_error_rate: float = 0.0,
            fault_latency_ms: int = 0) -> str:
     """Despliega una revisión. El stable inicial recibe el 100 %; el canary nace en 0 %."""
-    suffix = revision_suffix(track, version, extra)
+    suffix = revision_suffix(track, version, image, extra)
+    name = f"{SERVICE}-{suffix}"
+    if revision_exists(name):
+        print(f"La revisión {name} ya existe: se reutiliza y solo se mueve la etiqueta '{track}'.")
+        gcloud("run", "services", "update-traffic", SERVICE, "--region", REGION,
+               "--update-tags", f"{track}={name}", "--quiet")
+        return name
     exists = service_json() is not None
     env = runtime_env(track, version, fault_error_rate, fault_latency_ms)
 
@@ -222,7 +244,7 @@ def run_flow(args) -> int:
     extra = "faulty" if args.fault_error_rate or args.fault_latency_ms else ""
     if args.reuse_revisions:
         print("Se reutilizan las revisiones ya desplegadas (stable y canary).")
-        canary_rev = f"{SERVICE}-{revision_suffix('canary', args.canary_version, extra)}"
+        canary_rev = f"{SERVICE}-{revision_suffix('canary', args.canary_version, args.canary_image, extra)}"
     else:
         if not args.reuse_stable:
             deploy("stable", args.stable_image, args.stable_version)
