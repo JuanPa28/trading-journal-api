@@ -256,6 +256,13 @@ def run_flow(args) -> int:
         print("[dry-run] el resto del flujo (smoke, etapas y decisiones) no se simula")
         return 0
 
+    # Arranque en frío: se despierta cada revisión por su URL propia antes de medir.
+    for tag in ("stable", "canary"):
+        ready = load.warm_up(tag_url(tag))
+        print(f"Revisión {tag}: {'lista' if ready else 'NO respondió al calentamiento'}")
+        if not ready:
+            raise RolloutError(f"La revisión {tag} no arrancó")
+
     # Etapa 0: 0 % de tráfico público, prueba de humo por la URL de la revisión.
     print("\n=== etapa-0 (0 % público, prueba de humo por la URL de la revisión) ===")
     smoke = slo["smoke"]

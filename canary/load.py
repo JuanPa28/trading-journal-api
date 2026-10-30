@@ -60,15 +60,34 @@ def call(method: str, url: str, body: dict | None = None, headers: dict | None =
     return status, meta.get("X-App-Track", "unknown"), meta.get("X-App-Version", "unknown"), ms, payload
 
 
+def warm_up(base_url: str, attempts: int = 6) -> bool:
+    """Despierta una instancia (arranque en frío) antes de medir, con tiempos de espera generosos.
+
+    Cloud Run apaga las instancias sin tráfico (min-instances 0, por costo). La
+    primera petición paga el arranque de la JVM y de la conexión a la base; si se
+    midiera ahí, el arranque en frío se contaría como si fuera un error o una
+    latencia de la versión.
+    """
+    for _ in range(attempts):
+        status, *_ = call("GET", f"{base_url}/actuator/health", timeout=120)
+        if status == 200:
+            return True
+        time.sleep(3)
+    return False
+
+
 def seed_trader(base_url: str, headers: dict | None = None) -> int:
     """Crea un trader dedicado a la carga y devuelve su id."""
     unique = uuid.uuid4().hex[:8]
     body = {"fullName": f"Carga {unique}", "username": f"carga_{unique}",
             "email": f"carga_{unique}@canary.test", "availableFunds": 10000}
-    status, _, _, _, payload = call("POST", f"{base_url}/api/traders", body, headers)
-    if status != 201:
-        raise RuntimeError(f"No se pudo crear el trader de carga: HTTP {status}")
-    return json.loads(payload)["id"]
+    status = 0
+    for _ in range(3):
+        status, _, _, _, payload = call("POST", f"{base_url}/api/traders", body, headers, timeout=60)
+        if status == 201:
+            return json.loads(payload)["id"]
+        time.sleep(3)
+    raise RuntimeError(f"No se pudo crear el trader de carga: HTTP {status}")
 
 
 def run_load(base_url: str, duration: float, concurrency: int = 16, headers: dict | None = None,
