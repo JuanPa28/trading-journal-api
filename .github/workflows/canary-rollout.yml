@@ -23,9 +23,14 @@ on:
       bake_seconds:
         description: "Segundos de medición por etapa (0 usa los tiempos reales de canary/slo.json)"
         default: "60"
-      fault_error_rate:
-        description: "Fracción de errores 500 que se inyecta al canary (0 = ninguno, 0.4 = 40 %)"
+      fault_rate:
+        description: "Regresión simulada: fracción de peticiones a las que el canary responde 500 (0 = ninguna, 0.4 = 40 %)"
         default: "0"
+      fault_from_stage:
+        description: "Etapa en la que empieza la regresión simulada"
+        type: choice
+        options: [etapa-1, etapa-2, etapa-3]
+        default: etapa-2
 
 permissions:
   contents: read
@@ -140,13 +145,14 @@ jobs:
           STABLE_REF: ${{ inputs.stable_ref }}
           CANARY_REF: ${{ inputs.canary_ref }}
           BAKE_SECONDS: ${{ inputs.bake_seconds }}
-          FAULT_ERROR_RATE: ${{ inputs.fault_error_rate }}
+          FAULT_RATE: ${{ inputs.fault_rate }}
+          FAULT_FROM_STAGE: ${{ inputs.fault_from_stage }}
         run: |
           python canary/rollout.py run \
             --stable-image "$(cat image-stable.txt)" --stable-version "${STABLE_REF#v}" \
             --canary-image "$(cat image-canary.txt)" --canary-version "${CANARY_REF#v}" \
             --bake-seconds "$BAKE_SECONDS" \
-            --fault-error-rate "$FAULT_ERROR_RATE" \
+            --fault-rate "$FAULT_RATE" --fault-from-stage "$FAULT_FROM_STAGE" \
             --report canary/reports/informe.json
 
       - name: Guardar el informe de la ejecución
