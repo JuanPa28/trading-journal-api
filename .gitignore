@@ -40,3 +40,6 @@ application-local.properties
 .DS_Store
 Thumbs.db
 
+
+# Informes locales del canary (la evidencia curada vive en canary/evidencias)
+canary/reports/
