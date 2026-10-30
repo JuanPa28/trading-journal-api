@@ -2,7 +2,7 @@
 
 Proyecto semestral de la materia de Desarrollo de Software. **Actividad 2 (Entrega 2, Énfasis DevOps)** — arquitectura multicloud, sobre la base de la Actividad 1 (API RESTful de registro y seguimiento de operaciones de trading).
 
-> **Estado de la infraestructura (octubre de 2026):** tras la sustentación de la Entrega 2 se **eliminó toda la infraestructura en la nube** (clúster AKS en Azure; Autonomous Database, bucket de Object Storage y clúster OKE en OCI), por indicación del profesor. Las URL y las IP públicas que se mencionan más abajo pertenecen a esa entrega y **ya no existen**; el código, los manifiestos de `k8s/` y la colección de Postman se conservan como evidencia, y la versión entregada está en el tag [`v2.0.0`](https://github.com/JuanPa28/trading-journal-api/releases/tag/v2.0.0). La **Entrega 3 (Seguimiento #3, Terraform)** vuelve a crear la infraestructura mediante código, en la carpeta `terraform/`.
+> **Estado de la infraestructura (octubre de 2026):** tras la sustentación de la Entrega 2 se **eliminó toda la infraestructura en la nube** (clúster AKS en Azure; Autonomous Database, bucket de Object Storage y clúster OKE en OCI), por indicación del profesor. Las URL y las IP públicas que se mencionan más abajo pertenecen a esa entrega y **ya no existen**; el código, los manifiestos de `k8s/` y la colección de Postman se conservan como evidencia, y la versión entregada está en el tag [`v2.0.0`](https://github.com/JuanPa28/trading-journal-api/releases/tag/v2.0.0). La **Entrega 3 (Seguimiento #3, Terraform)** vuelve a crear la infraestructura mediante código, en la carpeta `terraform/`; la **Entrega 4 (Canary Deployments)** está en `canary/`.
 
 Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia nube de cómputo, reutilizando entidades entre las 3 API en tiempo real (sin datos quemados):
 
@@ -11,6 +11,22 @@ Grupo cerrado de 3 integrantes, cada uno con su propio repositorio y su propia n
 | **Juan Pablo (este repo)** | `JuanPa28/trading-journal-api` | **Azure (AKS)** — cómputo movido de OCI por falta de capacidad gratuita, datos y storage se quedaron en OCI | **Object Storage** (OCI) |
 | Mariana Pineda ("Mari") | `MarianaPineda0/StatsNostra` | GCP (GKE) | **Caché distribuida** |
 | Juan Felipe ("Pipe") | `jfpa11100/ecommerce-api` | AWS | **MS Orquestador + cola de mensajería** |
+
+## Entrega 4 — Canary Deployment (Google Cloud Run)
+
+La carpeta [`canary/`](./canary) implementa una estrategia completa de **Canary Deployment**: la versión nueva (`v4.0.0`, rutas `api/v3`) convive en producción con la estable (`v3.1.0`, rutas `api/v1`), recibe el tráfico por etapas (**0 % → 10 % → 50 % → 100 %**), se mide contra la línea base bajo la misma carga y se promueve o se revierte de forma automática.
+
+![Arquitectura del Canary Deployment](docs/arquitectura-canary.svg)
+
+- **Nube:** Google Cloud Run (cómputo, con reparto de tráfico por revisión) y Oracle Autonomous Database Always Free (datos compartidos). Todo dentro de capas gratuitas.
+- **Cada respuesta dice quién la atendió:** cabeceras `X-App-Version` y `X-App-Track` (`stable` o `canary`).
+- **Cambio funcional compatible hacia atrás (Expand/Contract):** el canary agrega `setupScore` y `setupGrade` a los trades, con una columna nueva *nullable*; la estable sigue funcionando intacta y el rollback es siempre posible.
+- **Decisión objetiva:** umbrales de errores, latencia p95/p99 y saturación definidos como código ([`slo.json`](canary/slo.json)); la puerta de calidad ([`gate.py`](canary/gate.py)) decide PROMOTE, HOLD o ABORT.
+- **Falla simulada y rollback:** una regresión del canary activable por cabecera dispara el aborto y devuelve el 100 % del tráfico a la estable.
+- **Pipeline:** [`canary-rollout.yml`](.github/workflows/canary-rollout.yml) (*Actions → Canary - Desplegar y promover*): construye las dos imágenes por digest, las despliega y avanza las etapas.
+- **Tablero** lado a lado stable vs canary en Cloud Monitoring.
+
+Plan de etapas, estrategia de datos, SLO, cómo ejecutarlo y costos: [`canary/README.md`](./canary/README.md).
 
 ## Entrega 3 — Infraestructura como código (Terraform)
 
