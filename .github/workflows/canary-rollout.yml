@@ -23,6 +23,10 @@ on:
       bake_seconds:
         description: "Segundos de medición por etapa (0 usa los tiempos reales de canary/slo.json)"
         default: "60"
+      skip_build:
+        description: "Reutilizar las imágenes ya publicadas de esos tags (ahorra unos 5 minutos en los ensayos)"
+        type: boolean
+        default: false
       fault_rate:
         description: "Regresión simulada: fracción de peticiones a las que el canary responde 500 (0 = ninguna, 0.4 = 40 %)"
         default: "0"
@@ -61,7 +65,7 @@ jobs:
   build:
     name: Construir imagen ${{ matrix.track }}
     needs: tools
-    if: inputs.action == 'rollout'
+    if: inputs.action == 'rollout' && !inputs.skip_build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -115,7 +119,9 @@ jobs:
 
   rollout:
     name: Desplegar y promover por etapas
-    needs: build
+    needs: [tools, build]
+    # build se omite cuando se reutilizan las imágenes: el despliegue igual debe correr.
+    if: always() && inputs.action == 'rollout' && needs.tools.result == 'success' && (needs.build.result == 'success' || needs.build.result == 'skipped')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -125,6 +131,7 @@ jobs:
           python-version: "3.12"
 
       - uses: actions/download-artifact@v4
+        if: ${{ !inputs.skip_build }}
         with:
           pattern: image-*
           merge-multiple: true
@@ -135,6 +142,20 @@ jobs:
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
       - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Resolver las imágenes ya publicadas (por digest)
+        if: ${{ inputs.skip_build }}
+        env:
+          STABLE_REF: ${{ inputs.stable_ref }}
+          CANARY_REF: ${{ inputs.canary_ref }}
+        run: |
+          BASE="${REGISTRY}/${GCP_PROJECT_ID}/${REPOSITORY}/api"
+          for TRACK in stable canary; do
+            if [ "$TRACK" = "stable" ]; then REF="$STABLE_REF"; else REF="$CANARY_REF"; fi
+            DIGEST="$(gcloud artifacts docker images describe "${BASE}:${TRACK}-${REF#v}" --format='value(image_summary.digest)')"
+            echo "${BASE}@${DIGEST}" > "image-${TRACK}.txt"
+            echo "${TRACK}: ${BASE}@${DIGEST}"
+          done
 
       - name: Desplegar, medir cada etapa y decidir
         # Las entradas llegan por entorno para no interpolar texto del usuario dentro del script.
