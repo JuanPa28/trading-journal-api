@@ -10,9 +10,1681 @@
     { "key": "traderId", "value": "1", "type": "string" },
     { "key": "strategyId", "value": "1", "type": "string" },
     { "key": "tradeId", "value": "1", "type": "string" },
-    { "key": "attachmentId", "value": "", "type": "string" }
+    { "key": "attachmentId", "value": "", "type": "string" },
+    { "key": "canaryUrl", "value": "https://canary---api-y2e46yaf5q-uc.a.run.app", "type": "string" },
+    { "key": "stableUrl", "value": "https://stable---api-y2e46yaf5q-uc.a.run.app", "type": "string" }
   ],
   "item": [
+    {
+      "name": "Canary (Entrega 4)",
+      "description": "Peticiones para demostrar el Canary Deployment en Google Cloud Run: reparto de tráfico entre stable y canary, acceso al canary al 0 % por su URL propia y falla inyectada. Usa el environment 'Canary Entrega 4 (Cloud Run)'. Observa siempre las cabeceras X-App-Version y X-App-Track de cada respuesta.",
+      "item": [
+        {
+          "name": "1. Salud (ver X-App-Track en Headers)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
+            "description": "Responde la versión que atienda. Ejecútala varias veces con un reparto de tráfico activo y mira la cabecera X-App-Track: a veces stable y a veces canary."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Crear trader",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/traders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "traders"
+              ]
+            },
+            "description": "Escribe en Oracle. Guarda el id en traderId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 5000.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "const v = pm.response.json().id;",
+                  "if (pm.environment.name) pm.environment.set('traderId', v); else pm.collectionVariables.set('traderId', v);",
+                  "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Crear trade",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades"
+              ]
+            },
+            "description": "Si lo atiende el canary, la respuesta trae setupScore y setupGrade; si lo atiende la estable, no. Guarda el id en tradeId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.0,\n  \"commissions\": 1.0,\n  \"fees\": 1.44,\n  \"notes\": \"Prueba canary\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "const v = pm.response.json().id;",
+                  "if (pm.environment.name) pm.environment.set('tradeId', v); else pm.collectionVariables.set('tradeId', v);",
+                  "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Leer trade (reparto de tráfico)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "Misma ruta de siempre. Repítela: según el porcentaje del canary, X-App-Track alterna y solo el canary devuelve setupScore y setupGrade."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Etapa 0: leer por la URL del canary (0 % público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{canaryUrl}}/api/v3/trades/{{tradeId}}",
+              "host": [
+                "{{canaryUrl}}"
+              ],
+              "path": [
+                "api",
+                "v3",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "Acceso directo a la revisión canary por su URL propia (etiqueta), sin tráfico público. Siempre responde canary, con setupScore y setupGrade."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Ruta api/v3 por el servicio público",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v3/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v3",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "La ruta /api/v3 solo existe en el canary: con la etapa en 0 % responde 404 (la atiende la estable); con tráfico al canary, a veces 200 y a veces 404."
+          },
+          "response": []
+        },
+        {
+          "name": "7. Falla inyectada en el canary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Inject-Fault",
+                "value": "error"
+              }
+            ],
+            "url": {
+              "raw": "{{canaryUrl}}/api/trades/{{tradeId}}",
+              "host": [
+                "{{canaryUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "Con X-Inject-Fault: error el canary responde 500 (simula una regresión en producción)."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "pm.test('Responde 500', () => pm.response.to.have.status(500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. La estable ignora la falla",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Inject-Fault",
+                "value": "error"
+              }
+            ],
+            "url": {
+              "raw": "{{stableUrl}}/api/trades/{{tradeId}}",
+              "host": [
+                "{{stableUrl}}"
+              ],
+              "path": [
+                "api",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "Misma cabecera, pero la versión estable nunca falla: responde 200."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const track = pm.response.headers.get('X-App-Track');",
+                  "const version = pm.response.headers.get('X-App-Version');",
+                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Terraform (Entrega 3)",
+      "description": "Todas las peticiones contra el API desplegado con Terraform (API en Azure Container Instances, datos en Oracle Cloud). Usa el environment 'Terraform Entrega 3 (Azure + OCI)' o pon en baseUrl: http://trading-journal-dev-api-826c31.eastus.azurecontainer.io:8080. Orden sugerido: 1 Salud, 2 Traders, 3 Strategies y Trades (crear antes de leer), 4 api/v2, 5 Object Storage, 6 Casos de error y al FINAL 7 Eliminar. Las peticiones que crean (POST) guardan solas el id en traderId, tradeId o attachmentId.",
+      "item": [
+        {
+          "name": "1. Salud",
+          "item": [
+            {
+              "name": "Salud del API (Actuator)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/actuator/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Comprueba que el contenedor de Azure Container Instances desplegado por Terraform esta arriba. Debe responder {\"status\":\"UP\"}."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "2. Traders (api/v1)",
+          "item": [
+            {
+              "name": "Crear trader",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 5000.00\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders"
+                  ]
+                },
+                "description": "Crea un Trader. Campos validados: fullName y username no vacíos, email con formato válido, availableFunds >= 0."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const v = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('traderId', v); else pm.collectionVariables.set('traderId', v);",
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Listar traders",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Obtener trader por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Actualizar trader",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 7500.00\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Editar un campo del trader (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"availableFunds\": 7500.00\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                },
+                "description": "Actualización parcial: solo cambia los campos que mandes (aquí solo availableFunds). Cualquier campo omitido (fullName, username, email) se queda igual. A diferencia de PUT, no hace falta mandar el objeto completo."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Crear, listar, leer, actualizar (PUT) y editar un campo (PATCH). Escriben y leen en la base de datos Oracle."
+        },
+        {
+          "name": "3. Strategies y Trades (api/v1)",
+          "item": [
+            {
+              "name": "Listar strategies",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/strategies",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies"
+                  ]
+                },
+                "description": "Solo lectura. Las Strategy se crean automáticamente dentro de POST /api/trades, nunca directamente."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Obtener strategy por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/strategies/{{strategyId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "strategies",
+                    "{{strategyId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Crear trade",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Buen setup\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades"
+                  ]
+                },
+                "description": "Crea un Trade. El objeto 'strategy' anidado se guarda como una fila NUEVA de Strategy siempre (nunca se reutiliza una existente)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const v = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('tradeId', v); else pm.collectionVariables.set('tradeId', v);",
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Listar trades",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Obtener trade por ID",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Actualizar trade",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29700.00,\n  \"pnl\": 234.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Ajustado el precio de salida\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                },
+                "description": "Actualiza un Trade existente. A diferencia de crear, aquí la Strategy existente se reutiliza y se le pisan los campos (no se crea una nueva fila)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Editar un campo del trade (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notes\": \"Nota corregida después de revisar el trade\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                },
+                "description": "Actualización parcial: solo cambia los campos que mandes (aquí solo notes). El resto del trade (precios, fechas, contract, la Strategy, etc.) se queda exactamente igual. No acepta cambiar traderId ni la strategy — solo los campos propios del Trade."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Buscar trades (QUERY)",
+              "request": {
+                "method": "QUERY",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"won\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/query",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "query"
+                  ]
+                },
+                "description": "Usa el verbo HTTP QUERY literal (no POST). Filtra por traderId y/o won (true = ganadoras, false = perdedoras). Cualquiera de los dos campos puede omitirse o mandarse null."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Un Trade crea su propia Strategy. Crea primero un trader (carpeta 2)."
+        },
+        {
+          "name": "4. api/v2 - Traders",
+          "item": [
+            {
+              "name": "Trader v2 (enriquecido con Mari + Pipe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                },
+                "description": "Igual que 'Obtener trader por ID' pero trae además un 'companions' con una entidad random de Mari (partido/predicción) y una de Pipe (commerce/product), obtenidas en tiempo real por HTTP. Un campo en null significa que esa API compañera no respondió o no tiene datos todavía — no es un error tuyo."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Crear trader v2",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 5000.00\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/traders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "traders"
+                  ]
+                },
+                "description": "CRUD idéntico a v1 (mismo TraderService) — solo el GetById se enriquece, este igual que 'Crear trader'."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const v = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('traderId', v); else pm.collectionVariables.set('traderId', v);",
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Listar traders v2",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/traders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "traders"
+                  ]
+                },
+                "description": "Sin enriquecer — solo el GetById trae companions, el listado es igual que v1."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Actualizar trader v2",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 7500.00\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Editar un campo del trader v2 (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"availableFunds\": 7500.00\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Mismas operaciones por api/v2; el GET trae 'companions' (null: las APIs de Mari y Pipe ya no estan arriba)."
+        },
+        {
+          "name": "4. api/v2 - Strategies",
+          "item": [
+            {
+              "name": "Strategy v2 (enriquecido con Mari + Pipe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/strategies/{{strategyId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "strategies",
+                    "{{strategyId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Listar strategies v2",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/strategies",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "strategies"
+                  ]
+                },
+                "description": "Solo lectura, igual que v1 — Strategy nunca se crea/edita directamente, siempre nace junto con un Trade."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "4. api/v2 - Trades",
+          "item": [
+            {
+              "name": "Trade v2 (enriquecido con Mari + Pipe)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Crear trade v2",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Buen setup\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/trades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "trades"
+                  ]
+                },
+                "description": "CRUD idéntico a v1 (mismo TradeService) — solo el GetById se enriquece, este igual que 'Crear trade'."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const v = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('tradeId', v); else pm.collectionVariables.set('tradeId', v);",
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Listar trades v2",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/trades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "trades"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Actualizar trade v2",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29700.00,\n  \"pnl\": 234.00,\n  \"commissions\": 1.00,\n  \"fees\": 1.44,\n  \"notes\": \"Ajustado el precio de salida\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Editar un campo del trade v2 (PATCH)",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"notes\": \"Nota corregida después de revisar el trade\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "5. Object Storage (OCI)",
+          "item": [
+            {
+              "name": "Guardar adjunto (Object Storage)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nota\": \"Comprobante de la operación\",\n  \"tradeId\": {{tradeId}}\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/attachments",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "attachments"
+                  ]
+                },
+                "description": "Guarda cualquier JSON en el bucket real de OCI Object Storage. Devuelve {\"id\": \"<uuid>.json\"} — copia ese id a la variable de colección 'attachmentId' para usarlo en la siguiente petición."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const v = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('attachmentId', v); else pm.collectionVariables.set('attachmentId', v);",
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Recuperar adjunto (Object Storage)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/attachments/{{attachmentId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "attachments",
+                    "{{attachmentId}}"
+                  ]
+                },
+                "description": "Requiere haber corrido antes 'Guardar adjunto' y haber puesto el id devuelto en la variable de colección 'attachmentId'."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "Guardar un adjunto y recuperarlo. El archivo aparece en el bucket trading-journal-dev-attachments de la consola de Oracle."
+        },
+        {
+          "name": "6. Casos de error y QUERY",
+          "item": [
+            {
+              "name": "QUERY - Solo perdedoras",
+              "request": {
+                "method": "QUERY",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"won\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/query",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "query"
+                  ]
+                }
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "name": "QUERY con GET en vez de QUERY (debe dar 405)",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"won\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/query",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "query"
+                  ]
+                },
+                "description": "Demuestra que la ruta /api/trades/query rechaza cualquier método que no sea el literal QUERY -> espera 405 Method Not Allowed."
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "name": "404 - Trader inexistente",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders/999999",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders",
+                    "999999"
+                  ]
+                },
+                "description": "Demuestra el manejo centralizado de errores (GlobalExceptionHandler) -> espera 404 con cuerpo JSON de error."
+              },
+              "response": [],
+              "event": []
+            },
+            {
+              "name": "400 - Validación falla al crear trader",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"\",\n  \"username\": \"x\",\n  \"email\": \"not-an-email\",\n  \"availableFunds\": -5\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders"
+                  ]
+                },
+                "description": "fullName vacío, email inválido y availableFunds negativo -> espera 400 con el detalle de cada campo que falló."
+              },
+              "response": [],
+              "event": []
+            }
+          ]
+        },
+        {
+          "name": "7. Eliminar (ejecutar al final)",
+          "item": [
+            {
+              "name": "Eliminar trade",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Eliminar trade v2",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Eliminar trader",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Eliminar trader v2",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v2/traders/{{traderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v2",
+                    "traders",
+                    "{{traderId}}"
+                  ]
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ],
+          "description": "DELETE de trades y traders. Ejecutar al final: borra los datos usados en las demas carpetas."
+        }
+      ]
+    },
     {
       "name": "Traders",
       "item": [
