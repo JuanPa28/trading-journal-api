@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7d39d0bf-dfdf-40f9-b323-f96c3d943fe4",
     "name": "Trading Journal API",
-    "description": "Colección completa de la API REST del Trading Journal. Incluye las 3 entidades (Trader, Strategy, Trade) de la Actividad 1, el endpoint QUERY con el método HTTP literal, casos de prueba de validación/errores, y la carpeta 'api/v2 (Entrega 2)' con los endpoints enriquecidos (traen entidades de Mari y Pipe en tiempo real) más el componente de Object Storage. Selecciona el environment 'Producción (AKS)' para apuntar al clúster real en Azure.",
+    "description": "Colección completa de la API REST del Trading Journal. Incluye las 3 entidades (Trader, Strategy, Trade) de la Actividad 1, el endpoint QUERY con el método HTTP literal, casos de prueba de validación/errores, y la carpeta 'api/v2 (Entrega 2)' con los endpoints enriquecidos (traen entidades de Mari y Pipe en tiempo real) más el componente de Object Storage. Para la Entrega 4 (Canary Deployment) usa el environment 'Canary Entrega 4 (Cloud Run)' y la carpeta 'Canary (Entrega 4)'. Para la Entrega 3 (Terraform) usa 'Terraform Entrega 3 (Azure + OCI)'. Las carpetas de las entregas anteriores se conservan como historial.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -12,309 +12,801 @@
     { "key": "tradeId", "value": "1", "type": "string" },
     { "key": "attachmentId", "value": "", "type": "string" },
     { "key": "canaryUrl", "value": "https://canary---api-y2e46yaf5q-uc.a.run.app", "type": "string" },
-    { "key": "stableUrl", "value": "https://stable---api-y2e46yaf5q-uc.a.run.app", "type": "string" }
+    { "key": "stableUrl", "value": "https://stable---api-y2e46yaf5q-uc.a.run.app", "type": "string" },
+    { "key": "tradeStableId", "value": "1", "type": "string" },
+    { "key": "tradeCanaryId", "value": "1", "type": "string" },
+    { "key": "countStable", "value": "0", "type": "string" },
+    { "key": "countCanary", "value": "0", "type": "string" },
+    { "key": "countOther", "value": "0", "type": "string" }
   ],
   "item": [
     {
       "name": "Canary (Entrega 4)",
-      "description": "Peticiones para demostrar el Canary Deployment en Google Cloud Run: reparto de tráfico entre stable y canary, acceso al canary al 0 % por su URL propia y falla inyectada. Usa el environment 'Canary Entrega 4 (Cloud Run)'. Observa siempre las cabeceras X-App-Version y X-App-Track de cada respuesta.",
+      "description": "Demostración del Canary Deployment en Google Cloud Run. Usa el environment 'Canary Entrega 4 (Cloud Run)'. Ejecuta las carpetas en orden: 0 Preparación, 1 Etapa 0, 2 Reparto de tráfico, 3 Datos y Expand/Contract, 4 Falla inyectada y rollback. En CADA respuesta mira las cabeceras X-App-Version y X-App-Track: dicen qué versión atendió la petición. baseUrl es la URL pública del servicio (reparte el tráfico); canaryUrl y stableUrl son las URL propias de cada revisión.",
       "item": [
         {
-          "name": "1. Salud (ver X-App-Track en Headers)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/actuator/health",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "actuator",
-                "health"
-              ]
-            },
-            "description": "Responde la versión que atienda. Ejecútala varias veces con un reparto de tráfico activo y mira la cabecera X-App-Track: a veces stable y a veces canary."
-          },
-          "response": [],
-          "event": [
+          "name": "0. Preparación (hacer antes de empezar)",
+          "description": "Pone los contadores en cero y despierta las dos versiones (Cloud Run apaga las instancias sin tráfico: la primera petición tarda unos 30 segundos).",
+          "item": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "2. Crear trader",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/traders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "traders"
-              ]
-            },
-            "description": "Escribe en Oracle. Guarda el id en traderId.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28\",\n  \"email\": \"juanpa@example.com\",\n  \"availableFunds\": 5000.0\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+              "name": "0.1 Reiniciar contadores de reparto",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{stableUrl}}/actuator/health",
+                  "host": [
+                    "{{stableUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Pone en cero el conteo acumulado de peticiones por track. Hazlo antes de cada demostración del reparto."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.collectionVariables.set('countStable', '0');",
+                      "pm.collectionVariables.set('countCanary', '0');",
+                      "pm.collectionVariables.set('countOther', '0');",
+                      "pm.test('Contadores de reparto en cero', () => pm.expect(pm.collectionVariables.get('countStable')).to.eql('0'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
                 }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "const v = pm.response.json().id;",
-                  "if (pm.environment.name) pm.environment.set('traderId', v); else pm.collectionVariables.set('traderId', v);",
-                  "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "3. Crear trade",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/trades",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "trades"
               ]
             },
-            "description": "Si lo atiende el canary, la respuesta trae setupScore y setupGrade; si lo atiende la estable, no. Guarda el id en tradeId.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"2967867693\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.0,\n  \"commissions\": 1.0,\n  \"fees\": 1.44,\n  \"notes\": \"Prueba canary\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "0.2 Despertar la estable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{stableUrl}}/actuator/health",
+                  "host": [
+                    "{{stableUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Primera petición a la revisión estable: puede tardar unos 30 s (arranque en frío)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es stable', () => pm.expect(track).to.eql('stable'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
                 }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "const v = pm.response.json().id;",
-                  "if (pm.environment.name) pm.environment.set('tradeId', v); else pm.collectionVariables.set('tradeId', v);",
-                  "pm.test('Sin error (< 400)', () => pm.expect(pm.response.code).to.be.below(400));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "4. Leer trade (reparto de tráfico)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "trades",
-                "{{tradeId}}"
               ]
             },
-            "description": "Misma ruta de siempre. Repítela: según el porcentaje del canary, X-App-Track alterna y solo el canary devuelve setupScore y setupGrade."
-          },
-          "response": [],
-          "event": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "5. Etapa 0: leer por la URL del canary (0 % público)",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{canaryUrl}}/api/v3/trades/{{tradeId}}",
-              "host": [
-                "{{canaryUrl}}"
-              ],
-              "path": [
-                "api",
-                "v3",
-                "trades",
-                "{{tradeId}}"
+              "name": "0.3 Despertar el canary",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{canaryUrl}}/actuator/health",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Primera petición a la revisión canary: puede tardar unos 30 s (arranque en frío)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
               ]
             },
-            "description": "Acceso directo a la revisión canary por su URL propia (etiqueta), sin tráfico público. Siempre responde canary, con setupScore y setupGrade."
-          },
-          "response": [],
-          "event": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "6. Ruta api/v3 por el servicio público",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v3/trades/{{tradeId}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v3",
-                "trades",
-                "{{tradeId}}"
+              "name": "0.4 Crear un trader para la demostración",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/traders",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "traders"
+                  ]
+                },
+                "description": "Escribe en la base Oracle y guarda el id en traderId. Las demás peticiones usan ese trader.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"fullName\": \"Juan Pablo Ramirez\",\n  \"username\": \"juanpa28_{{$timestamp}}\",\n  \"email\": \"juanpa_{{$timestamp}}@example.com\",\n  \"availableFunds\": 5000.0\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "const id = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('traderId', id); else pm.collectionVariables.set('traderId', id);",
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
               ]
             },
-            "description": "La ruta /api/v3 solo existe en el canary: con la etapa en 0 % responde 404 (la atiende la estable); con tráfico al canary, a veces 200 y a veces 404."
-          },
-          "response": []
-        },
-        {
-          "name": "7. Falla inyectada en el canary",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-Inject-Fault",
-                "value": "error"
-              }
-            ],
-            "url": {
-              "raw": "{{canaryUrl}}/api/trades/{{tradeId}}",
-              "host": [
-                "{{canaryUrl}}"
-              ],
-              "path": [
-                "api",
-                "trades",
-                "{{tradeId}}"
-              ]
-            },
-            "description": "Con X-Inject-Fault: error el canary responde 500 (simula una regresión en producción)."
-          },
-          "response": [],
-          "event": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "pm.test('Responde 500', () => pm.response.to.have.status(500));"
-                ]
-              }
+              "name": "0.5 Crear un trade para la demostración",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades"
+                  ]
+                },
+                "description": "Crea un trade del trader anterior y guarda su id en tradeId. Las carpetas 1 y 2 lo leen.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"demo\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.0,\n  \"commissions\": 1.0,\n  \"fees\": 1.44,\n  \"notes\": \"Demostracion canary\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "const id = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('tradeId', id); else pm.collectionVariables.set('tradeId', id);",
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));"
+                    ]
+                  }
+                }
+              ]
             }
           ]
         },
         {
-          "name": "8. La estable ignora la falla",
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "X-Inject-Fault",
-                "value": "error"
-              }
-            ],
-            "url": {
-              "raw": "{{stableUrl}}/api/trades/{{tradeId}}",
-              "host": [
-                "{{stableUrl}}"
-              ],
-              "path": [
-                "api",
-                "trades",
-                "{{tradeId}}"
+          "name": "1. Etapa 0: el canary con 0 % de tráfico público",
+          "description": "Con el canary al 0 % nadie lo recibe por la URL pública; se accede solo por la URL propia de su revisión. Esta carpeta demuestra el punto (a) de la sustentación.",
+          "item": [
+            {
+              "name": "1.1 Salud del canary por su URL propia",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{canaryUrl}}/actuator/health",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Acceso directo al canary con 0 % público. Mira X-App-Track: canary y X-App-Version: 4.0.0."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
               ]
             },
-            "description": "Misma cabecera, pero la versión estable nunca falla: responde 200."
-          },
-          "response": [],
-          "event": [
             {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "const track = pm.response.headers.get('X-App-Track');",
-                  "const version = pm.response.headers.get('X-App-Version');",
-                  "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
-                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
-                ]
-              }
+              "name": "1.2 La ruta api/v3 existe solo en el canary",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{canaryUrl}}/api/v3/trades/{{tradeId}}",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v3",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                },
+                "description": "La ruta nueva /api/v3/trades/{id} responde 200 en el canary, con setupScore y setupGrade."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "1.3 La ruta api/v3 NO existe en la estable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{stableUrl}}/api/v3/trades/{{tradeId}}",
+                  "host": [
+                    "{{stableUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v3",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                },
+                "description": "La versión estable no conoce /api/v3: responde 404. Así se ve que son dos versiones distintas."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es stable', () => pm.expect(track).to.eql('stable'));",
+                      "pm.test('Responde 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "1.4 Servicio público con 0 %: siempre responde la estable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/actuator/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Con el canary al 0 %, la URL pública solo la atiende la estable (X-App-Track: stable)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "2. Reparto real de tráfico (etapas 1 a 3)",
+          "description": "Demuestra el punto (b): el reparto real entre stable y canary. Se ejecuta con el Collection Runner: elige esta carpeta y pon 100 iteraciones. Cada respuesta suma al contador y muestra el porcentaje acumulado.",
+          "item": [
+            {
+              "name": "2.1 Reparto: salud (usar con el Runner, 100 iteraciones)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/actuator/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Cada iteración cuenta qué track respondió. Con el canary al 10 %, el acumulado tiende a 90 % stable y 10 % canary."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track') || 'desconocido';",
+                      "const version = pm.response.headers.get('X-App-Version') || '?';",
+                      "const key = track === 'stable' ? 'countStable' : track === 'canary' ? 'countCanary' : 'countOther';",
+                      "const get = (k) => parseInt(pm.collectionVariables.get(k) || '0', 10);",
+                      "pm.collectionVariables.set(key, get(key) + 1);",
+                      "const s = get('countStable'), c = get('countCanary'), t = s + c + get('countOther');",
+                      "const pct = (n) => t ? Math.round(100 * n / t) : 0;",
+                      "pm.test('Atendió ' + track + ' ' + version + ' | acumulado: stable ' + s + ' (' + pct(s) + ' %), canary ' + c + ' (' + pct(c) + ' %)', () => {",
+                      "    pm.expect(pm.response.code).to.be.below(500);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2.2 Reparto: leer un trade (usar con el Runner)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/trades/{{tradeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeId}}"
+                  ]
+                },
+                "description": "Misma ruta de siempre. Solo el canary devuelve setupScore y setupGrade; la estable no."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track') || 'desconocido';",
+                      "const version = pm.response.headers.get('X-App-Version') || '?';",
+                      "const key = track === 'stable' ? 'countStable' : track === 'canary' ? 'countCanary' : 'countOther';",
+                      "const get = (k) => parseInt(pm.collectionVariables.get(k) || '0', 10);",
+                      "pm.collectionVariables.set(key, get(key) + 1);",
+                      "const s = get('countStable'), c = get('countCanary'), t = s + c + get('countOther');",
+                      "const pct = (n) => t ? Math.round(100 * n / t) : 0;",
+                      "pm.test('Atendió ' + track + ' ' + version + ' | acumulado: stable ' + s + ' (' + pct(s) + ' %), canary ' + c + ' (' + pct(c) + ' %)', () => {",
+                      "    pm.expect(pm.response.code).to.be.below(500);",
+                      "});",
+                      "const body = pm.response.json();",
+                      "const servedBy = pm.response.headers.get('X-App-Track');",
+                      "pm.test('setupScore solo en el canary', () => pm.expect('setupScore' in body).to.eql(servedBy === 'canary'));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "3. Cambio funcional y Expand/Contract",
+          "description": "El canary agrega setupScore y setupGrade con una columna nueva y nullable. La estable sigue funcionando con los mismos datos, así que el rollback siempre es posible.",
+          "item": [
+            {
+              "name": "3.1 Crear un trade con la estable",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{stableUrl}}/api/trades",
+                  "host": [
+                    "{{stableUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades"
+                  ]
+                },
+                "description": "La estable guarda el trade SIN setup_score (no conoce la columna). Guarda el id en tradeStableId.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"estable\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.0,\n  \"commissions\": 1.0,\n  \"fees\": 1.44,\n  \"notes\": \"Demostracion canary\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es stable', () => pm.expect(track).to.eql('stable'));",
+                      "const id = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('tradeStableId', id); else pm.collectionVariables.set('tradeStableId', id);",
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.test('La estable no devuelve setupScore', () => pm.expect('setupScore' in pm.response.json()).to.eql(false));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3.2 Leer ese trade con el canary",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{canaryUrl}}/api/trades/{{tradeStableId}}",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeStableId}}"
+                  ]
+                },
+                "description": "El canary lee un dato escrito por la estable y CALCULA el setupScore al leer, sin escribirlo. Compatibilidad hacia atrás."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                      "const b = pm.response.json();",
+                      "pm.test('El canary calcula setupScore y setupGrade', () => { pm.expect(b.setupScore).to.be.a('number'); pm.expect(b.setupGrade).to.be.a('string'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3.3 Crear un trade con el canary",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{canaryUrl}}/api/v3/trades",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v3",
+                    "trades"
+                  ]
+                },
+                "description": "El canary guarda el trade con setup_score en la columna nueva. Guarda el id en tradeCanaryId.",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"traderId\": {{traderId}},\n  \"strategy\": {\n    \"htfPdArray\": true,\n    \"ifvg\": true,\n    \"cisd\": false,\n    \"followedRules\": true,\n    \"continuation\": false,\n    \"reversal\": false,\n    \"correctRisk\": true\n  },\n  \"externalId\": \"canary\",\n  \"contract\": \"MNQU26\",\n  \"size\": 2,\n  \"direction\": \"SHORT\",\n  \"entryTime\": \"2026-08-10T08:40:01\",\n  \"exitTime\": \"2026-08-10T08:41:32\",\n  \"entryPrice\": 29770.25,\n  \"exitPrice\": 29726.75,\n  \"pnl\": 174.0,\n  \"commissions\": 1.0,\n  \"fees\": 1.44,\n  \"notes\": \"Demostracion canary\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "const id = pm.response.json().id;",
+                      "if (pm.environment.name) pm.environment.set('tradeCanaryId', id); else pm.collectionVariables.set('tradeCanaryId', id);",
+                      "pm.test('Responde 201', () => pm.response.to.have.status(201));",
+                      "pm.test('Devuelve setupScore y setupGrade', () => { const b = pm.response.json(); pm.expect(b.setupScore).to.be.a('number'); pm.expect(b.setupGrade).to.be.a('string'); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3.4 Leer el trade del canary con la estable (seguridad del rollback)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{stableUrl}}/api/trades/{{tradeCanaryId}}",
+                  "host": [
+                    "{{stableUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeCanaryId}}"
+                  ]
+                },
+                "description": "La estable lee sin problema un trade creado por el canary: ignora la columna nueva. Por eso el rollback no rompe nada."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es stable', () => pm.expect(track).to.eql('stable'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                      "pm.test('La estable no devuelve setupScore', () => pm.expect('setupScore' in pm.response.json()).to.eql(false));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "4. Falla inyectada y rollback",
+          "description": "Demuestra el punto (d): una regresión del canary. La cabecera X-Inject-Fault solo la obedece el canary; la estable nunca falla. El rollback automático lo ejecuta el pipeline (Actions), esta carpeta muestra la falla y el resultado.",
+          "item": [
+            {
+              "name": "4.1 Falla de errores en el canary",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Inject-Fault",
+                    "value": "error"
+                  }
+                ],
+                "url": {
+                  "raw": "{{canaryUrl}}/api/trades/{{tradeStableId}}",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeStableId}}"
+                  ]
+                },
+                "description": "Con X-Inject-Fault: error el canary responde 500 (simula una regresión en producción)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "pm.test('Responde 500', () => pm.response.to.have.status(500));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4.2 La estable ignora la falla",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Inject-Fault",
+                    "value": "error"
+                  }
+                ],
+                "url": {
+                  "raw": "{{stableUrl}}/api/trades/{{tradeStableId}}",
+                  "host": [
+                    "{{stableUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeStableId}}"
+                  ]
+                },
+                "description": "Misma cabecera, pero la versión estable nunca falla: responde 200."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es stable', () => pm.expect(track).to.eql('stable'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4.3 Latencia inyectada en el canary",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-Inject-Fault",
+                    "value": "latency"
+                  }
+                ],
+                "url": {
+                  "raw": "{{canaryUrl}}/api/trades/{{tradeStableId}}",
+                  "host": [
+                    "{{canaryUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "trades",
+                    "{{tradeStableId}}"
+                  ]
+                },
+                "description": "Con X-Inject-Fault: latency el canary tarda al menos 1,5 segundos. Mira el tiempo de respuesta en Postman."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track');",
+                      "const version = pm.response.headers.get('X-App-Version');",
+                      "pm.test('Atendió: ' + track + ' ' + version, () => pm.expect(track).to.be.a('string'));",
+                      "pm.test('El track es canary', () => pm.expect(track).to.eql('canary'));",
+                      "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                      "pm.test('Tardó al menos 1,4 s', () => pm.expect(pm.response.responseTime).to.be.above(1400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4.4 Después del rollback: todo lo atiende la estable",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/actuator/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "actuator",
+                    "health"
+                  ]
+                },
+                "description": "Tras un rollback el canary queda en 0 %. Usa el Runner con 20 iteraciones: el acumulado debe mostrar 100 % stable. Reinicia los contadores antes (0.1)."
+              },
+              "response": [],
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "const track = pm.response.headers.get('X-App-Track') || 'desconocido';",
+                      "const version = pm.response.headers.get('X-App-Version') || '?';",
+                      "const key = track === 'stable' ? 'countStable' : track === 'canary' ? 'countCanary' : 'countOther';",
+                      "const get = (k) => parseInt(pm.collectionVariables.get(k) || '0', 10);",
+                      "pm.collectionVariables.set(key, get(key) + 1);",
+                      "const s = get('countStable'), c = get('countCanary'), t = s + c + get('countOther');",
+                      "const pct = (n) => t ? Math.round(100 * n / t) : 0;",
+                      "pm.test('Atendió ' + track + ' ' + version + ' | acumulado: stable ' + s + ' (' + pct(s) + ' %), canary ' + c + ' (' + pct(c) + ' %)', () => {",
+                      "    pm.expect(pm.response.code).to.be.below(500);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
             }
           ]
         }
