@@ -106,6 +106,20 @@ Hay dos fuentes que se complementan:
 
 [`monitoring/dashboard.json`](monitoring/dashboard.json) crea el tablero **«Canary: stable vs canary»** en Cloud Monitoring con tráfico, errores 5xx, latencias p50/p95/p99, CPU, memoria, instancias y la métrica de negocio, una línea por revisión. Se instala con [`monitoring/setup-monitoring.sh`](monitoring/setup-monitoring.sh).
 
+Capturas del tablero real en Cloud Monitoring (últimas 6 horas, con ejecuciones de promoción y de rollback). Cada línea es una revisión de Cloud Run: `api-stable-310-*` es la línea base y `api-canary-400-*` es el canary. Los picos de errores 5xx aparecen solo en la revisión canary, durante las pruebas con falla inyectada.
+
+**Tráfico y errores 5xx por revisión**
+
+![Tablero: tráfico y errores 5xx](../docs/capturas/tablero-trafico-y-errores.png)
+
+**Latencia p50, p95 y p99, y saturación de CPU**
+
+![Tablero: latencia y CPU](../docs/capturas/tablero-latencia-y-cpu.png)
+
+**Saturación de memoria, instancias activas y métrica de negocio (trades creados por segundo)**
+
+![Tablero: memoria, instancias y métrica de negocio](../docs/capturas/tablero-memoria-instancias-negocio.png)
+
 ### Umbrales de decisión (SLO) versionados como código
 
 Los define [`slo.json`](slo.json) **antes** de desplegar, y los aplica [`gate.py`](gate.py):
