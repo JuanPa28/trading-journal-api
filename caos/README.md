@@ -2,6 +2,8 @@
 
 Seguimiento #4 (DevOps). Un flujo síncrono de punta a punta, con un generador de carga fijo y experimentos de caos declarados como código, para refutar una hipótesis de resiliencia, mejorar el sistema y demostrar la mejora con datos comparables.
 
+> Estado del flujo (13 de noviembre): las tres APIs responden y el coordinador recorre las tres nubes; ver [`resultados/01-flujo-por-las-tres-nubes.md`](resultados/01-flujo-por-las-tres-nubes.md).
+
 > Estado: **en construcción** (entrega el 18 de noviembre de 2026). Las secciones marcadas como *pendiente* se completan al ejecutar las rondas.
 
 ## El flujo
