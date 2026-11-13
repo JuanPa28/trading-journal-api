@@ -99,6 +99,41 @@ class CompanionClientTest {
         assertThat(millis(() -> client.getPrediccion())).isGreaterThanOrEqualTo(280);
     }
 
+    // ---- latencia por cabecera (por petición)
+
+    @Test
+    void headerLatencyDelaysOnlyTheTargetedCompanionOfThatRequest() {
+        CompanionClient client = new CompanionClient(DEAD, DEAD, 5000, 10000, 0, "all");
+        org.slf4j.MDC.put("outboundFaultLatencyMs", "400");
+        org.slf4j.MDC.put("outboundFaultTarget", "mari");
+        try {
+            assertThat(millis(() -> client.getPartido())).isGreaterThanOrEqualTo(380);
+            assertThat(millis(() -> client.getCommerce())).isLessThan(300);
+        } finally {
+            org.slf4j.MDC.clear();
+        }
+    }
+
+    @Test
+    void withoutTheHeaderThereIsNoExtraLatency() {
+        CompanionClient client = new CompanionClient(DEAD, DEAD, 5000, 10000, 0, "all");
+
+        assertThat(millis(() -> client.getPartido())).isLessThan(300);
+    }
+
+    @Test
+    void theCallTimeoutAlsoBoundsTheHeaderLatency() {
+        CompanionClient client = new CompanionClient(DEAD, DEAD, 5000, 10000, 0, "all",
+                300, false, 10, 5, 50, 1000, 10);
+        org.slf4j.MDC.put("outboundFaultLatencyMs", "5000");
+        org.slf4j.MDC.put("outboundFaultTarget", "all");
+        try {
+            assertThat(millis(() -> client.getPartido())).isBetween(250L, 1500L);
+        } finally {
+            org.slf4j.MDC.clear();
+        }
+    }
+
     // ---- timeout por dependencia
 
     @Test
