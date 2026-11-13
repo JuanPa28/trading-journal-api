@@ -1,0 +1,52 @@
+name: Publicar imagen del API
+
+# Construye la imagen del API a partir de un tag o una rama y la publica en
+# GitHub Container Registry, para que cualquier nube la pueda descargar.
+# Se ejecuta a mano: Actions > Publicar imagen del API > Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Tag o rama que se construye (por ejemplo v4.0.0 o main)"
+        default: main
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Construir y publicar
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Calcular el nombre de la imagen
+        id: vars
+        env:
+          REF: ${{ inputs.ref }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "image=ghcr.io/$(echo "$REPO" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
+          echo "tag=$(echo "$REF" | tr '/' '-')" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construir y publicar
+        id: push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          provenance: false
+          sbom: false
+          tags: ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }}
+
+      - name: Resumen
+        run: echo "Imagen ${{ steps.vars.outputs.image }}:${{ steps.vars.outputs.tag }} (digest ${{ steps.push.outputs.digest }})" >> "$GITHUB_STEP_SUMMARY"
