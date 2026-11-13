@@ -13,7 +13,7 @@
 
 | Integrante | Nube | Salud | Rutas del flujo | `X-App-Name` | Eco de `X-Trace-Id` |
 |---|---|---|---|---|---|
-| Juan (coordinador) | Azure Container Apps | `/actuator/health` | `/api/v2/trades/{id}` | sí | sí |
+| Juanpa (coordinador) | Azure Container Apps | `/actuator/health` | `/api/v2/trades/{id}` | sí (`juanpa`) | sí |
 | Mari | Google Cloud (GKE) | `/health/ready` | `/api/v1/partidos`, `/api/v1/predicciones` | sí | sí |
 | Pipe | AWS | `/health` | `/api/v1/commerce`, `/api/v1/products` | pendiente | pendiente |
 
