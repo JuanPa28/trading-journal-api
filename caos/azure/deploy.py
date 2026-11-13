@@ -157,6 +157,36 @@ def deploy(image: str, version: str, track: str, mari_url: str, pipe_url: str) -
     print(f"Salud:    https://{fqdn}/actuator/health")
 
 
+def app_url() -> str:
+    fqdn = az("containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP, "--query",
+              "properties.configuration.ingress.fqdn", "-o", "tsv")
+    return f"https://{fqdn}"
+
+
+def wait_healthy(timeout: int = 180) -> bool:
+    """Espera a que la nueva revisión responda salud 200 (tras un cambio de variables)."""
+    import urllib.request
+    deadline = time.time() + timeout
+    url = app_url() + "/actuator/health"
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(url, timeout=10) as response:
+                if response.status == 200:
+                    return True
+        except Exception:
+            pass
+        time.sleep(5)
+    return False
+
+
+def set_env(pairs: dict[str, str]) -> None:
+    """Cambia variables de entorno de la aplicación (crea una revisión nueva, sin caída)."""
+    az("containerapp", "update", "-g", RESOURCE_GROUP, "-n", APP, "--set-env-vars",
+       *[f"{key}={value}" for key, value in pairs.items()], "-o", "none")
+    print("Variables aplicadas:", ", ".join(pairs))
+    print("La API responde salud 200:", "sí" if wait_healthy() else "NO (revisar)")
+
+
 def teardown() -> None:
     if not az("group", "exists", "-n", RESOURCE_GROUP) == "true":
         print(f"El grupo {RESOURCE_GROUP} no existe: nada que eliminar.")
@@ -174,10 +204,19 @@ def main() -> None:
     p.add_argument("--track", default="stable", choices=["stable", "canary"])
     p.add_argument("--mari-url", default="http://127.0.0.1:9", help="URL de la API de Mari (por defecto, falla rápido)")
     p.add_argument("--pipe-url", default="http://127.0.0.1:9", help="URL de la API de Pipe (por defecto, falla rápido)")
+    p = sub.add_parser("fault", help="activa o apaga la latencia saliente hacia los compañeros (0 la apaga)")
+    p.add_argument("--latency-ms", type=int, required=True)
+    p.add_argument("--target", default="all", choices=["all", "mari", "pipe"])
+    p = sub.add_parser("env", help="cambia variables de entorno, por ejemplo COMPANIONS_READ_TIMEOUT_MS=1000")
+    p.add_argument("pairs", nargs="+", metavar="CLAVE=VALOR")
     sub.add_parser("teardown")
     args = parser.parse_args()
     if args.command == "deploy":
         deploy(args.image, args.version, args.track, args.mari_url, args.pipe_url)
+    elif args.command == "fault":
+        set_env({"OUTBOUND_FAULT_LATENCY_MS": str(args.latency_ms), "OUTBOUND_FAULT_TARGET": args.target})
+    elif args.command == "env":
+        set_env(dict(pair.split("=", 1) for pair in args.pairs))
     else:
         teardown()
 
