@@ -163,19 +163,27 @@ def app_url() -> str:
     return f"https://{fqdn}"
 
 
-def wait_healthy(timeout: int = 180) -> bool:
-    """Espera a que la nueva revisión responda salud 200 (tras un cambio de variables)."""
+def wait_healthy(timeout: int = 420) -> bool:
+    """Espera a que la revisión NUEVA esté lista y responda salud 200.
+
+    Un cambio de variables crea una revisión nueva (la JVM tarda un par de minutos en
+    arrancar); mientras tanto sigue respondiendo la anterior, así que no basta con
+    probar la URL: hay que esperar a que la última revisión sea también la última lista.
+    """
     import urllib.request
     deadline = time.time() + timeout
-    url = app_url() + "/actuator/health"
     while time.time() < deadline:
-        try:
-            with urllib.request.urlopen(url, timeout=10) as response:
-                if response.status == 200:
-                    return True
-        except Exception:
-            pass
-        time.sleep(5)
+        latest, ready = az("containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP, "--query",
+                           "[properties.latestRevisionName, properties.latestReadyRevisionName]",
+                           "-o", "tsv", check=False).split() + ["", ""]
+        if latest and latest == ready:
+            try:
+                with urllib.request.urlopen(app_url() + "/actuator/health", timeout=15) as response:
+                    if response.status == 200:
+                        return True
+            except Exception:
+                pass
+        time.sleep(8)
     return False
 
 
