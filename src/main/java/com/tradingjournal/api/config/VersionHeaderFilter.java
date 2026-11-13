@@ -22,8 +22,9 @@ public class VersionHeaderFilter extends OncePerRequestFilter {
 
     private final AppInfo appInfo;
 
-    public VersionHeaderFilter(@Value("${app.version:dev}") String version, @Value("${app.track:stable}") String track) {
-        this.appInfo = new AppInfo(version, track);
+    public VersionHeaderFilter(@Value("${app.version:dev}") String version, @Value("${app.track:stable}") String track,
+                               @Value("${app.name:juan}") String name) {
+        this.appInfo = new AppInfo(version, track, name);
     }
 
     @Override
@@ -31,6 +32,7 @@ public class VersionHeaderFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         response.setHeader(AppInfo.VERSION_HEADER, appInfo.version());
         response.setHeader(AppInfo.TRACK_HEADER, appInfo.track());
+        response.setHeader(AppInfo.NAME_HEADER, appInfo.name());
         filterChain.doFilter(request, response);
     }
 }

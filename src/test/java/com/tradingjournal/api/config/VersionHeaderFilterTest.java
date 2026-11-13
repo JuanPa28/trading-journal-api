@@ -11,18 +11,19 @@ class VersionHeaderFilterTest {
 
     @Test
     void addsVersionAndTrackHeadersToTheResponse() throws Exception {
-        VersionHeaderFilter filter = new VersionHeaderFilter("3.1.0", "stable");
+        VersionHeaderFilter filter = new VersionHeaderFilter("3.1.0", "stable", "juan");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(new MockHttpServletRequest("GET", "/api/traders"), response, new MockFilterChain());
 
         assertThat(response.getHeader(AppInfo.VERSION_HEADER)).isEqualTo("3.1.0");
         assertThat(response.getHeader(AppInfo.TRACK_HEADER)).isEqualTo("stable");
+        assertThat(response.getHeader(AppInfo.NAME_HEADER)).isEqualTo("juan");
     }
 
     @Test
     void reportsTheCanaryTrack() throws Exception {
-        VersionHeaderFilter filter = new VersionHeaderFilter("4.0.0", "canary");
+        VersionHeaderFilter filter = new VersionHeaderFilter("4.0.0", "canary", "juan");
         MockHttpServletResponse response = new MockHttpServletResponse();
 
         filter.doFilter(new MockHttpServletRequest("GET", "/actuator/health"), response, new MockFilterChain());

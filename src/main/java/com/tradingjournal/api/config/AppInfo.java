@@ -10,13 +10,20 @@ public class AppInfo {
 
     public static final String VERSION_HEADER = "X-App-Version";
     public static final String TRACK_HEADER = "X-App-Track";
+    public static final String NAME_HEADER = "X-App-Name";
 
     private final String version;
     private final String track;
+    private final String name;
 
-    public AppInfo(String version, String track) {
+    public AppInfo(String version, String track, String name) {
         this.version = version;
         this.track = track;
+        this.name = name;
+    }
+
+    public AppInfo(String version, String track) {
+        this(version, track, "juan");
     }
 
     public String version() {
@@ -25,6 +32,11 @@ public class AppInfo {
 
     public String track() {
         return track;
+    }
+
+    // Cuál de las tres APIs del grupo respondió (juan, mari o pipe), para verlo en vivo.
+    public String name() {
+        return name;
     }
 
     public boolean isCanary() {
