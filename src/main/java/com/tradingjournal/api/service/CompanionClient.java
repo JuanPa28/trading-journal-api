@@ -1,5 +1,6 @@
 package com.tradingjournal.api.service;
 
+import com.tradingjournal.api.config.OutboundFaultHeaderFilter;
 import com.tradingjournal.api.config.RequestLoggingFilter;
 import com.tradingjournal.api.dto.companion.CommerceDto;
 import com.tradingjournal.api.dto.companion.PartidoDto;
@@ -138,18 +139,26 @@ public class CompanionClient {
         return safeGetRandom(pipeClient, "pipe", "/api/v1/products", ProductDto[].class);
     }
 
-    private void injectLatency(String target) throws InterruptedException {
-        if (faultLatencyMs <= 0 || !("all".equalsIgnoreCase(faultTarget) || target.equalsIgnoreCase(faultTarget))) {
-            return;
+    // Latencia saliente: la de la variable de entorno (para todo el tráfico) o la de la
+    // cabecera de la petición (solo para esa petición); se aplica la mayor de las dos.
+    private void injectLatency(String target, long headerLatencyMs, String headerTarget) throws InterruptedException {
+        long delay = 0;
+        if (faultLatencyMs > 0 && ("all".equalsIgnoreCase(faultTarget) || target.equalsIgnoreCase(faultTarget))) {
+            delay = faultLatencyMs;
         }
-        Thread.sleep(faultLatencyMs);
+        if (headerLatencyMs > 0 && ("all".equalsIgnoreCase(headerTarget) || target.equalsIgnoreCase(headerTarget))) {
+            delay = Math.max(delay, headerLatencyMs);
+        }
+        if (delay > 0) {
+            Thread.sleep(delay);
+        }
     }
 
     // Una llamada completa a un compañero. Lanza excepción si falla, para que el
     // circuit breaker la cuente; una lista vacía NO es un fallo.
-    private <T> T fetch(RestClient client, String target, String uri, Class<T[]> arrayType, String traceId)
-            throws InterruptedException {
-        injectLatency(target);
+    private <T> T fetch(RestClient client, String target, String uri, Class<T[]> arrayType, String traceId,
+                        long headerLatencyMs, String headerTarget) throws InterruptedException {
+        injectLatency(target, headerLatencyMs, headerTarget);
         T[] items = client.get().uri(uri)
                 .header(RequestLoggingFilter.TRACE_ID_HEADER, traceId)
                 .retrieve().body(arrayType);
@@ -179,12 +188,22 @@ public class CompanionClient {
         }
     }
 
+    private static long parseLong(String value) {
+        try {
+            return value == null ? 0 : Long.parseLong(value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
     private <T> T safeGetRandom(RestClient client, String target, String uri, Class<T[]> arrayType) {
         // El trace id se toma aquí porque el MDC es local al hilo y la llamada puede correr en otro.
         String traceId = MDC.get(RequestLoggingFilter.TRACE_ID_MDC_KEY);
+        long headerLatencyMs = parseLong(MDC.get(OutboundFaultHeaderFilter.LATENCY_MDC_KEY));
+        String headerTarget = MDC.get(OutboundFaultHeaderFilter.TARGET_MDC_KEY);
         Supplier<T> call = () -> withTimeout(() -> {
             try {
-                return fetch(client, target, uri, arrayType, traceId);
+                return fetch(client, target, uri, arrayType, traceId, headerLatencyMs, headerTarget);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 throw new IllegalStateException(e);
