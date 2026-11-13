@@ -173,9 +173,10 @@ def wait_healthy(timeout: int = 420) -> bool:
     import urllib.request
     deadline = time.time() + timeout
     while time.time() < deadline:
-        latest, ready = az("containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP, "--query",
-                           "[properties.latestRevisionName, properties.latestReadyRevisionName]",
-                           "-o", "tsv", check=False).split() + ["", ""]
+        names = az("containerapp", "show", "-g", RESOURCE_GROUP, "-n", APP, "--query",
+                   "[properties.latestRevisionName, properties.latestReadyRevisionName]",
+                   "-o", "tsv", check=False).split()
+        latest, ready = (names + ["", ""])[:2]
         if latest and latest == ready:
             try:
                 with urllib.request.urlopen(app_url() + "/actuator/health", timeout=15) as response:
