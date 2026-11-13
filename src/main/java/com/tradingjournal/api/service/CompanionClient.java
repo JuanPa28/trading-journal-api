@@ -5,16 +5,28 @@ import com.tradingjournal.api.dto.companion.CommerceDto;
 import com.tradingjournal.api.dto.companion.PartidoDto;
 import com.tradingjournal.api.dto.companion.PrediccionDto;
 import com.tradingjournal.api.dto.companion.ProductDto;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
+import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 // Llama en vivo a las APIs de Mari y Pipe para traer sus entidades — nunca
 // datos quemados ni copia de su base de datos, tal como pide la rúbrica.
@@ -32,6 +44,9 @@ public class CompanionClient {
     private final RestClient pipeClient;
     private final long faultLatencyMs;
     private final String faultTarget;
+    private final long callTimeoutMs;
+    private final Map<String, CircuitBreaker> breakers;
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     // Los tiempos de espera salen de la configuración, y por defecto valen lo de
     // siempre (5 s para conectar y 10 s para leer). Así la ronda 0 de un
@@ -42,20 +57,69 @@ public class CompanionClient {
     // (OUTBOUND_FAULT_LATENCY_MS=0). Añade esa espera antes de la llamada hacia
     // el compañero indicado (mari, pipe o all) para simular una dependencia lenta
     // en otra nube.
+    //
+    // Dos patrones de resiliencia, AMBOS APAGADOS por defecto (el comportamiento
+    // sin proteger es el de la ronda 0):
+    //  - Timeout por dependencia (COMPANIONS_CALL_TIMEOUT_MS > 0): tope de tiempo
+    //    para TODA la llamada hacia un compañero. Si se pasa, esa entidad queda en
+    //    null y la petición sigue. Es distinto del tiempo de lectura del socket:
+    //    cubre también la espera inyectada.
+    //  - Circuit breaker por compañero (RESILIENCE_CB_ENABLED=true): si la mitad de
+    //    las últimas llamadas fallan o son lentas, el circuito se abre y se responde
+    //    null al instante, sin esperar al compañero, hasta que pase el tiempo de
+    //    reposo y una llamada de prueba salga bien.
+    @Autowired
     public CompanionClient(
             @Value("${companions.mari.base-url}") String mariBaseUrl,
             @Value("${companions.pipe.base-url}") String pipeBaseUrl,
             @Value("${companions.connect-timeout-ms:5000}") long connectTimeoutMs,
             @Value("${companions.read-timeout-ms:10000}") long readTimeoutMs,
             @Value("${companions.fault.latency-ms:0}") long faultLatencyMs,
-            @Value("${companions.fault.target:all}") String faultTarget) {
+            @Value("${companions.fault.target:all}") String faultTarget,
+            @Value("${companions.resilience.call-timeout-ms:0}") long callTimeoutMs,
+            @Value("${companions.resilience.circuit-breaker.enabled:false}") boolean circuitBreakerEnabled,
+            @Value("${companions.resilience.circuit-breaker.window-size:10}") int windowSize,
+            @Value("${companions.resilience.circuit-breaker.minimum-calls:5}") int minimumCalls,
+            @Value("${companions.resilience.circuit-breaker.failure-rate-percent:50}") float failureRatePercent,
+            @Value("${companions.resilience.circuit-breaker.slow-call-ms:1000}") long slowCallMs,
+            @Value("${companions.resilience.circuit-breaker.open-seconds:10}") long openSeconds) {
         this.faultLatencyMs = faultLatencyMs;
         this.faultTarget = faultTarget;
+        this.callTimeoutMs = callTimeoutMs;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeoutMs));
         requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMs));
         this.mariClient = RestClient.builder().baseUrl(mariBaseUrl).requestFactory(requestFactory).build();
         this.pipeClient = RestClient.builder().baseUrl(pipeBaseUrl).requestFactory(requestFactory).build();
+        this.breakers = circuitBreakerEnabled
+                ? Map.of("mari", newBreaker("mari", windowSize, minimumCalls, failureRatePercent, slowCallMs, openSeconds),
+                        "pipe", newBreaker("pipe", windowSize, minimumCalls, failureRatePercent, slowCallMs, openSeconds))
+                : Map.of();
+    }
+
+    // Constructor sin patrones de resiliencia: el comportamiento original.
+    public CompanionClient(String mariBaseUrl, String pipeBaseUrl, long connectTimeoutMs, long readTimeoutMs,
+                           long faultLatencyMs, String faultTarget) {
+        this(mariBaseUrl, pipeBaseUrl, connectTimeoutMs, readTimeoutMs, faultLatencyMs, faultTarget,
+                0, false, 10, 5, 50, 1000, 10);
+    }
+
+    private static CircuitBreaker newBreaker(String name, int windowSize, int minimumCalls, float failureRatePercent,
+                                             long slowCallMs, long openSeconds) {
+        CircuitBreakerConfig config = CircuitBreakerConfig.custom()
+                .slidingWindowType(CircuitBreakerConfig.SlidingWindowType.COUNT_BASED)
+                .slidingWindowSize(windowSize)
+                .minimumNumberOfCalls(minimumCalls)
+                .failureRateThreshold(failureRatePercent)
+                .slowCallDurationThreshold(Duration.ofMillis(slowCallMs))
+                .slowCallRateThreshold(failureRatePercent)
+                .waitDurationInOpenState(Duration.ofSeconds(openSeconds))
+                .permittedNumberOfCallsInHalfOpenState(2)
+                .build();
+        CircuitBreaker breaker = CircuitBreaker.of("companion-" + name, config);
+        breaker.getEventPublisher().onStateTransition(event ->
+                log.warn("Circuit breaker {}: {}", breaker.getName(), event.getStateTransition()));
+        return breaker;
     }
 
     public PartidoDto getPartido() {
@@ -74,28 +138,64 @@ public class CompanionClient {
         return safeGetRandom(pipeClient, "pipe", "/api/v1/products", ProductDto[].class);
     }
 
-    private void injectLatency(String target) {
+    private void injectLatency(String target) throws InterruptedException {
         if (faultLatencyMs <= 0 || !("all".equalsIgnoreCase(faultTarget) || target.equalsIgnoreCase(faultTarget))) {
             return;
         }
+        Thread.sleep(faultLatencyMs);
+    }
+
+    // Una llamada completa a un compañero. Lanza excepción si falla, para que el
+    // circuit breaker la cuente; una lista vacía NO es un fallo.
+    private <T> T fetch(RestClient client, String target, String uri, Class<T[]> arrayType, String traceId)
+            throws InterruptedException {
+        injectLatency(target);
+        T[] items = client.get().uri(uri)
+                .header(RequestLoggingFilter.TRACE_ID_HEADER, traceId)
+                .retrieve().body(arrayType);
+        if (items == null || items.length == 0) {
+            return null;
+        }
+        return items[ThreadLocalRandom.current().nextInt(items.length)];
+    }
+
+    // Aplica el tope de tiempo de toda la llamada, si está activo.
+    private <T> T withTimeout(Supplier<T> call) {
+        if (callTimeoutMs <= 0) {
+            return call.get();
+        }
+        Future<T> future = executor.submit(call::get);
         try {
-            Thread.sleep(faultLatencyMs);
+            return future.get(callTimeoutMs, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException e) {
+            future.cancel(true);
+            throw new IllegalStateException("la llamada superó el tiempo máximo de " + callTimeoutMs + " ms");
+        } catch (ExecutionException e) {
+            throw e.getCause() instanceof RuntimeException runtime ? runtime : new IllegalStateException(e.getCause());
         } catch (InterruptedException e) {
+            future.cancel(true);
             Thread.currentThread().interrupt();
+            throw new IllegalStateException(e);
         }
     }
 
     private <T> T safeGetRandom(RestClient client, String target, String uri, Class<T[]> arrayType) {
-        try {
-            injectLatency(target);
-            String traceId = MDC.get(RequestLoggingFilter.TRACE_ID_MDC_KEY);
-            T[] items = client.get().uri(uri)
-                    .header(RequestLoggingFilter.TRACE_ID_HEADER, traceId)
-                    .retrieve().body(arrayType);
-            if (items == null || items.length == 0) {
-                return null;
+        // El trace id se toma aquí porque el MDC es local al hilo y la llamada puede correr en otro.
+        String traceId = MDC.get(RequestLoggingFilter.TRACE_ID_MDC_KEY);
+        Supplier<T> call = () -> withTimeout(() -> {
+            try {
+                return fetch(client, target, uri, arrayType, traceId);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
             }
-            return items[ThreadLocalRandom.current().nextInt(items.length)];
+        });
+        try {
+            CircuitBreaker breaker = breakers.get(target);
+            return breaker != null ? breaker.executeSupplier(call) : call.get();
+        } catch (CallNotPermittedException e) {
+            log.warn("Circuito abierto hacia {}: se responde sin esperar ({})", target, uri);
+            return null;
         } catch (Exception e) {
             log.warn("No se pudo obtener {} desde la API compañera: {}", uri, e.getMessage());
             return null;

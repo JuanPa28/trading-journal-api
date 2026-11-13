@@ -80,6 +80,17 @@ companions:
   # Tiempos de espera hacia Mari y Pipe. Los valores por defecto son los de siempre.
   connect-timeout-ms: ${COMPANIONS_CONNECT_TIMEOUT_MS:5000}
   read-timeout-ms: ${COMPANIONS_READ_TIMEOUT_MS:10000}
+  # Patrones de resiliencia hacia los compañeros. APAGADOS por defecto: el comportamiento
+  # sin proteger es el de la ronda 0 de los experimentos de caos.
+  resilience:
+    call-timeout-ms: ${COMPANIONS_CALL_TIMEOUT_MS:0}   # 0 = sin tope; por ejemplo 1000 activa el timeout
+    circuit-breaker:
+      enabled: ${RESILIENCE_CB_ENABLED:false}
+      window-size: ${RESILIENCE_CB_WINDOW_SIZE:10}
+      minimum-calls: ${RESILIENCE_CB_MINIMUM_CALLS:5}
+      failure-rate-percent: ${RESILIENCE_CB_FAILURE_RATE_PERCENT:50}
+      slow-call-ms: ${RESILIENCE_CB_SLOW_CALL_MS:1000}
+      open-seconds: ${RESILIENCE_CB_OPEN_SECONDS:10}
   # Interruptor de fallo: latencia añadida a las llamadas salientes (apagado por defecto).
   fault:
     latency-ms: ${OUTBOUND_FAULT_LATENCY_MS:0}
