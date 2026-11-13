@@ -118,8 +118,8 @@ oci:
 app:
   version: ${APP_VERSION:dev}
   track: ${APP_TRACK:stable}
-  # Cuál de las tres APIs del grupo es esta (juan, mari o pipe): cabecera X-App-Name.
-  name: ${APP_NAME:juan}
+  # Cuál de las tres APIs del grupo es esta (juanpa, mari o pipe): cabecera X-App-Name.
+  name: ${APP_NAME:juanpa}
 
 # Inyección de fallos (solo surte efecto en el track canary). Se activa al
 # desplegar una revisión con estas variables, para simular una regresión.

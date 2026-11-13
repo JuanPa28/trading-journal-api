@@ -23,7 +23,7 @@ public class AppInfo {
     }
 
     public AppInfo(String version, String track) {
-        this(version, track, "juan");
+        this(version, track, "juanpa");
     }
 
     public String version() {

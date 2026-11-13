@@ -23,7 +23,7 @@ public class VersionHeaderFilter extends OncePerRequestFilter {
     private final AppInfo appInfo;
 
     public VersionHeaderFilter(@Value("${app.version:dev}") String version, @Value("${app.track:stable}") String track,
-                               @Value("${app.name:juan}") String name) {
+                               @Value("${app.name:juanpa}") String name) {
         this.appInfo = new AppInfo(version, track, name);
     }
 
