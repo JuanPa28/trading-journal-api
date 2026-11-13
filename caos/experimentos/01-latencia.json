@@ -1,0 +1,72 @@
+{
+  "version": "1.0.0",
+  "title": "Latencia saliente del coordinador hacia Mari",
+  "description": "Dado el perfil de carga fijo (caos/carga/perfil.js), cuando se inyecten 3000 ms de latencia en las llamadas del coordinador hacia la API de Mari durante 3 minutos, el flujo mantendra exito >= 99 % y p95 <= X ms (X sale de medir el estado estable).",
+  "tags": ["devops", "latencia", "juan", "azure"],
+  "configuration": {
+    "coordinador": "https://api-coordinador.jollybeach-fbb8b9ad.eastus.azurecontainerapps.io",
+    "latencia_ms": 3000
+  },
+  "steady-state-hypothesis": {
+    "title": "El coordinador esta sano antes y despues del experimento",
+    "probes": [
+      {
+        "type": "probe",
+        "name": "salud-del-coordinador",
+        "tolerance": 200,
+        "provider": {
+          "type": "http",
+          "url": "${coordinador}/actuator/health",
+          "timeout": 20
+        }
+      }
+    ]
+  },
+  "method": [
+    {
+      "type": "action",
+      "name": "inyectar-latencia-saliente-hacia-mari",
+      "provider": {
+        "type": "process",
+        "path": "python",
+        "arguments": "caos/azure/deploy.py fault --latency-ms 3000 --target mari"
+      }
+    },
+    {
+      "type": "action",
+      "name": "correr-el-perfil-de-carga",
+      "provider": {
+        "type": "process",
+        "path": "k6",
+        "arguments": "run -e BASE_URL=${coordinador} --summary-export caos/resultados/01-latencia-ronda.json caos/carga/perfil.js"
+      }
+    }
+  ],
+  "rollbacks": [
+    {
+      "type": "action",
+      "name": "quitar-la-latencia",
+      "provider": {
+        "type": "process",
+        "path": "python",
+        "arguments": "caos/azure/deploy.py fault --latency-ms 0"
+      }
+    }
+  ],
+  "extensions": [
+    {
+      "name": "metadatos-del-experimento",
+      "responsable": "Juan",
+      "metrica_objetivo": "latencia p95 extremo a extremo (k6) y tasa de exito del flujo",
+      "radio_de_impacto": "solo las llamadas del coordinador hacia Mari; trafico sintetico de k6; nube de Azure",
+      "duracion_minutos": 3,
+      "condiciones_de_aborto": [
+        "tasa de exito del flujo < 50 %",
+        "p95 > 15000 ms durante 30 s"
+      ],
+      "interruptor_de_parada": "python caos/azure/deploy.py fault --latency-ms 0",
+      "plan_de_reversion": "el rollback quita la latencia y se verifica que /actuator/health responde 200 y que el p95 vuelve al estado estable",
+      "ronda": 0
+    }
+  ]
+}
