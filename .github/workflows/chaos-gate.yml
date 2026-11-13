@@ -1,0 +1,95 @@
+name: Chaos gate - latencia saliente
+
+# Puerta de calidad de caos: ejecuta el experimento declarado en caos/experimentos/01-latencia.json
+# (latencia inyectada en las llamadas del coordinador hacia un compañero, por cabecera, sin
+# credenciales de la nube) con el perfil de carga fijo, y FALLA si la métrica objetivo no cumple
+# el umbral. Deja el resumen de k6, el diario del experimento y una tabla que explica por qué.
+#
+#   - Con la falla y sin patrones de resiliencia (ronda 0) se espera que el gate RECHACE.
+#   - Con la falla y los patrones activos en el coordinador (ronda 1) se espera que APRUEBE.
+#
+# Regla del equipo: antes de ejecutarlo se avisa en el chat la hora de inicio y de fin, porque
+# el perfil de carga llega a las APIs de Mari y de Pipe.
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "URL del coordinador"
+        default: https://api-coordinador.jollybeach-fbb8b9ad.eastus.azurecontainerapps.io
+      trade_id:
+        description: "Id de un trade existente"
+        default: "5540"
+      fault_latency_ms:
+        description: "Latencia a inyectar en las llamadas hacia el compañero (0 = sin falla, estado estable)"
+        default: "3000"
+      fault_target:
+        description: "Compañero afectado"
+        type: choice
+        options: [mari, pipe, all]
+        default: mari
+      p95_ms:
+        description: "Umbral de p95 en milisegundos (estado estable declarado)"
+        default: "1600"
+      success_min:
+        description: "Tasa de éxito mínima, en porcentaje"
+        default: "99"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chaos
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Experimento y evaluación
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: grafana/setup-k6-action@v1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar Chaos Toolkit
+        run: pip install --quiet chaostoolkit
+
+      - name: Pruebas del evaluador
+        run: python -m unittest discover -s caos/gate -v
+
+      - name: Validar el experimento
+        run: chaos validate caos/experimentos/01-latencia.json
+
+      - name: Ejecutar el experimento (falla inyectada y carga)
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+          TRADE_ID: ${{ inputs.trade_id }}
+          FAULT_LATENCY_MS: ${{ inputs.fault_latency_ms }}
+          FAULT_TARGET: ${{ inputs.fault_target }}
+          P95_MS: ${{ inputs.p95_ms }}
+          RESUMEN_K6: caos/resultados/gate-resumen.json
+        run: chaos run --journal-path caos/resultados/gate-diario.json caos/experimentos/01-latencia.json
+
+      - name: Evaluar la puerta (falla si la métrica no cumple el umbral)
+        env:
+          P95_MS: ${{ inputs.p95_ms }}
+          SUCCESS_MIN: ${{ inputs.success_min }}
+          FAULT_LATENCY_MS: ${{ inputs.fault_latency_ms }}
+          FAULT_TARGET: ${{ inputs.fault_target }}
+        run: |
+          python caos/gate/evaluar.py --resumen caos/resultados/gate-resumen.json \
+            --p95-max "$P95_MS" --exito-min "$SUCCESS_MIN" \
+            --titulo "Chaos gate: ${FAULT_LATENCY_MS} ms de latencia hacia ${FAULT_TARGET}"
+
+      - name: Guardar la evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencia-chaos-gate
+          path: |
+            caos/resultados/gate-resumen.json
+            caos/resultados/gate-diario.json
+          if-no-files-found: ignore
