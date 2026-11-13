@@ -1,0 +1,47 @@
+// Consultas del tablero del coordinador (Azure Log Analytics).
+// Cada bloque se separa con una línea "// ===" y se puede pegar tal cual en Log Analytics
+// (Logs) o fijar como panel de un libro de trabajo (Workbook).
+//
+// De dónde salen los datos: el coordinador escribe UNA línea de acceso por petición con el
+// formato acordado por el grupo:
+//   2026-11-13T22:45:16.289Z  INFO [traceId=...] ... : event=request api=juanpa traceId=...
+//   method=GET route=/api/v2/trades/5540 status=200 ms=1025
+// Container Apps las envía a la tabla ContainerAppConsoleLogs_CL (columna Log_s).
+
+// === 1. Latencia extremo a extremo por minuto (p50, p95 y p99) ===
+ContainerAppConsoleLogs_CL
+| where Log_s has "event=request"
+| extend ruta = extract("route=(\\S+)", 1, Log_s), ms = todouble(extract("ms=(\\d+)", 1, Log_s))
+| where ruta startswith "/api/v2/"
+| summarize p50 = percentile(ms, 50), p95 = percentile(ms, 95), p99 = percentile(ms, 99), peticiones = count() by bin(TimeGenerated, 1m)
+| order by TimeGenerated asc
+
+// === 2. Tasa de error del flujo por minuto ===
+ContainerAppConsoleLogs_CL
+| where Log_s has "event=request"
+| extend ruta = extract("route=(\\S+)", 1, Log_s), estado = toint(extract("status=(\\d+)", 1, Log_s))
+| where ruta startswith "/api/v2/"
+| summarize errores = countif(estado >= 500), total = count() by bin(TimeGenerated, 1m)
+| extend tasa_error_pct = round(100.0 * errores / total, 2)
+| order by TimeGenerated asc
+
+// === 3. Ventana de inyección de la falla (peticiones que llevan la cabecera de latencia) ===
+ContainerAppConsoleLogs_CL
+| where Log_s has "event=outbound_fault_header"
+| extend latencia_inyectada_ms = toint(extract("latencyMs=(\\d+)", 1, Log_s)), objetivo = extract("target=(\\S+)", 1, Log_s)
+| summarize inyecciones = count(), latencia_ms = max(latencia_inyectada_ms) by bin(TimeGenerated, 1m), objetivo
+| order by TimeGenerated asc
+
+// === 4. Llamadas a los compañeros que fallaron o se cortaron (degradación) y circuito abierto ===
+ContainerAppConsoleLogs_CL
+| where Log_s has "No se pudo obtener" or Log_s has "Circuito abierto" or Log_s has "Circuit breaker"
+| extend companero = case(Log_s has "partidos" or Log_s has "predicciones" or Log_s has "mari", "mari",
+                          Log_s has "commerce" or Log_s has "products" or Log_s has "pipe", "pipe", "otro")
+| summarize eventos = count() by bin(TimeGenerated, 1m), companero
+| order by TimeGenerated asc
+
+// === 5. Seguir una petición por su trace id (cambia el valor) ===
+ContainerAppConsoleLogs_CL
+| where Log_s has "juanpa-mari-174517"
+| project TimeGenerated, Log_s
+| order by TimeGenerated asc
