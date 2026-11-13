@@ -30,35 +30,64 @@ public class CompanionClient {
 
     private final RestClient mariClient;
     private final RestClient pipeClient;
+    private final long faultLatencyMs;
+    private final String faultTarget;
 
+    // Los tiempos de espera salen de la configuración, y por defecto valen lo de
+    // siempre (5 s para conectar y 10 s para leer). Así la ronda 0 de un
+    // experimento de caos mide el comportamiento actual y la mejora se activa
+    // cambiando una variable, sin tocar el código.
+    //
+    // La latencia saliente es un interruptor de fallo: apagado por defecto
+    // (OUTBOUND_FAULT_LATENCY_MS=0). Añade esa espera antes de la llamada hacia
+    // el compañero indicado (mari, pipe o all) para simular una dependencia lenta
+    // en otra nube.
     public CompanionClient(
             @Value("${companions.mari.base-url}") String mariBaseUrl,
-            @Value("${companions.pipe.base-url}") String pipeBaseUrl) {
+            @Value("${companions.pipe.base-url}") String pipeBaseUrl,
+            @Value("${companions.connect-timeout-ms:5000}") long connectTimeoutMs,
+            @Value("${companions.read-timeout-ms:10000}") long readTimeoutMs,
+            @Value("${companions.fault.latency-ms:0}") long faultLatencyMs,
+            @Value("${companions.fault.target:all}") String faultTarget) {
+        this.faultLatencyMs = faultLatencyMs;
+        this.faultTarget = faultTarget;
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(Duration.ofSeconds(5));
-        requestFactory.setReadTimeout(Duration.ofSeconds(10));
+        requestFactory.setConnectTimeout(Duration.ofMillis(connectTimeoutMs));
+        requestFactory.setReadTimeout(Duration.ofMillis(readTimeoutMs));
         this.mariClient = RestClient.builder().baseUrl(mariBaseUrl).requestFactory(requestFactory).build();
         this.pipeClient = RestClient.builder().baseUrl(pipeBaseUrl).requestFactory(requestFactory).build();
     }
 
     public PartidoDto getPartido() {
-        return safeGetRandom(mariClient, "/api/v1/partidos", PartidoDto[].class);
+        return safeGetRandom(mariClient, "mari", "/api/v1/partidos", PartidoDto[].class);
     }
 
     public PrediccionDto getPrediccion() {
-        return safeGetRandom(mariClient, "/api/v1/predicciones", PrediccionDto[].class);
+        return safeGetRandom(mariClient, "mari", "/api/v1/predicciones", PrediccionDto[].class);
     }
 
     public CommerceDto getCommerce() {
-        return safeGetRandom(pipeClient, "/api/v1/commerce", CommerceDto[].class);
+        return safeGetRandom(pipeClient, "pipe", "/api/v1/commerce", CommerceDto[].class);
     }
 
     public ProductDto getProduct() {
-        return safeGetRandom(pipeClient, "/api/v1/products", ProductDto[].class);
+        return safeGetRandom(pipeClient, "pipe", "/api/v1/products", ProductDto[].class);
     }
 
-    private <T> T safeGetRandom(RestClient client, String uri, Class<T[]> arrayType) {
+    private void injectLatency(String target) {
+        if (faultLatencyMs <= 0 || !("all".equalsIgnoreCase(faultTarget) || target.equalsIgnoreCase(faultTarget))) {
+            return;
+        }
         try {
+            Thread.sleep(faultLatencyMs);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
+
+    private <T> T safeGetRandom(RestClient client, String target, String uri, Class<T[]> arrayType) {
+        try {
+            injectLatency(target);
             String traceId = MDC.get(RequestLoggingFilter.TRACE_ID_MDC_KEY);
             T[] items = client.get().uri(uri)
                     .header(RequestLoggingFilter.TRACE_ID_HEADER, traceId)

@@ -77,6 +77,13 @@ management:
           service.name: ${OTEL_SERVICE_NAME:trading-journal-api}
 
 companions:
+  # Tiempos de espera hacia Mari y Pipe. Los valores por defecto son los de siempre.
+  connect-timeout-ms: ${COMPANIONS_CONNECT_TIMEOUT_MS:5000}
+  read-timeout-ms: ${COMPANIONS_READ_TIMEOUT_MS:10000}
+  # Interruptor de fallo: latencia añadida a las llamadas salientes (apagado por defecto).
+  fault:
+    latency-ms: ${OUTBOUND_FAULT_LATENCY_MS:0}
+    target: ${OUTBOUND_FAULT_TARGET:all}
   mari:
     base-url: ${MARI_BASE_URL:http://34.57.56.128}
   pipe:
@@ -100,6 +107,8 @@ oci:
 app:
   version: ${APP_VERSION:dev}
   track: ${APP_TRACK:stable}
+  # Cuál de las tres APIs del grupo es esta (juan, mari o pipe): cabecera X-App-Name.
+  name: ${APP_NAME:juan}
 
 # Inyección de fallos (solo surte efecto en el track canary). Se activa al
 # desplegar una revisión con estas variables, para simular una regresión.
