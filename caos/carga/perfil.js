@@ -3,7 +3,7 @@
 //
 //   Escalones: 5 usuarios virtuales (60 s), luego 15 (60 s) y luego 30 (60 s). Total: 3 minutos.
 //   Petición:  GET {BASE_URL}/api/v2/trades/{TRADE_ID}, con un X-Trace-Id distinto por iteración.
-//   Umbrales:  menos de 1 % de fallos y p95 por debajo de P95_MS (se fija al medir el estado estable).
+//   Umbrales:  menos de 1 % de fallos y p95 por debajo de P95_MS (1600 ms, fijado al medir el estado estable).
 //
 // Uso:
 //   k6 run -e BASE_URL=https://... -e TRADE_ID=5540 -e P95_MS=1500 \
@@ -11,7 +11,7 @@
 import http from 'k6/http';
 import { check } from 'k6';
 
-const P95_MS = Number(__ENV.P95_MS || 1500);
+const P95_MS = Number(__ENV.P95_MS || 1600);
 
 export const options = {
   scenarios: {

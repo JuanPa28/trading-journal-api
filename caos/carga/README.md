@@ -14,7 +14,7 @@ Con k6 instalado:
 
 ```bash
 k6 run -e BASE_URL=https://api-coordinador.jollybeach-fbb8b9ad.eastus.azurecontainerapps.io \
-       -e TRADE_ID=<id de un trade existente> -e P95_MS=1500 \
+       -e TRADE_ID=<id de un trade existente> -e P95_MS=1600 \
        --summary-export caos/resultados/estado-estable-1.json caos/carga/perfil.js
 ```
 

@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "title": "Latencia saliente del coordinador hacia Mari",
-  "description": "Dado el perfil de carga fijo (caos/carga/perfil.js), cuando se inyecten 3000 ms de latencia en las llamadas del coordinador hacia la API de Mari durante 3 minutos, el flujo mantendra exito >= 99 % y p95 <= X ms (X sale de medir el estado estable).",
+  "description": "Dado el perfil de carga fijo (caos/carga/perfil.js), cuando se inyecten 3000 ms de latencia en las llamadas del coordinador hacia la API de Mari durante 3 minutos, el flujo mantendra exito >= 99 % y p95 <= 1600 ms (estado estable medido el 13 de noviembre: ver caos/resultados/estado-estable.md).",
   "tags": ["devops", "latencia", "juan", "azure"],
   "configuration": {
     "coordinador": "https://api-coordinador.jollybeach-fbb8b9ad.eastus.azurecontainerapps.io",
