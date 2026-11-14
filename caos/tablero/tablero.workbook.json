@@ -1,0 +1,121 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "name": "introduccion",
+      "content": {
+        "json": "## Caos: flujo de las tres nubes\n\nCada gráfica usa el **mismo eje de tiempo**: la ventana de inyección de la falla aparece justo debajo de la latencia y de los errores. Así se ve el instante exacto en que se inyecta la falla y cómo responde la métrica objetivo en la ronda 0 y en la ronda 1.\n\nFuente: la línea de acceso (`event=request`) que escribe el coordinador por cada petición."
+      }
+    },
+    {
+      "type": 9,
+      "name": "parametros",
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "parameters": [
+          {
+            "id": "fd8a097c-168d-5361-941e-99a2cb9b8d28",
+            "version": "KqlParameterItem/1.0",
+            "name": "Rango",
+            "label": "Rango de tiempo",
+            "type": 4,
+            "isRequired": true,
+            "value": {
+              "durationMs": 3600000
+            },
+            "typeSettings": {
+              "selectableValues": [
+                {
+                  "durationMs": 900000
+                },
+                {
+                  "durationMs": 3600000
+                },
+                {
+                  "durationMs": 14400000
+                },
+                {
+                  "durationMs": 86400000
+                }
+              ],
+              "allowCustom": true
+            }
+          }
+        ],
+        "style": "pills",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      }
+    },
+    {
+      "type": 3,
+      "name": "consulta-1",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where Log_s has \"event=request\"\n| extend ruta = extract(\"route=(\\\\S+)\", 1, Log_s), ms = todouble(extract(\"ms=(\\\\d+)\", 1, Log_s))\n| where ruta startswith \"/api/v2/\"\n| summarize p50 = percentile(ms, 50), p95 = percentile(ms, 95), p99 = percentile(ms, 99), peticiones = count() by bin(TimeGenerated, 1m)\n| order by TimeGenerated asc",
+        "size": 0,
+        "title": "Latencia extremo a extremo por minuto: p50, p95 y p99 (ms)",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Rango",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "timechart"
+      }
+    },
+    {
+      "type": 3,
+      "name": "consulta-2",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where Log_s has \"event=request\"\n| extend ruta = extract(\"route=(\\\\S+)\", 1, Log_s), estado = toint(extract(\"status=(\\\\d+)\", 1, Log_s))\n| where ruta startswith \"/api/v2/\"\n| summarize errores = countif(estado >= 500), total = count() by bin(TimeGenerated, 1m)\n| extend tasa_error_pct = round(100.0 * errores / total, 2)\n| order by TimeGenerated asc",
+        "size": 0,
+        "title": "Tasa de error del flujo por minuto (%)",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Rango",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "timechart"
+      }
+    },
+    {
+      "type": 3,
+      "name": "consulta-3",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where Log_s has \"event=outbound_fault_header\"\n| extend latencia_inyectada_ms = toint(extract(\"latencyMs=(\\\\d+)\", 1, Log_s)), objetivo = extract(\"target=(\\\\S+)\", 1, Log_s)\n| summarize inyecciones = count(), latencia_ms = max(latencia_inyectada_ms) by bin(TimeGenerated, 1m), objetivo\n| order by TimeGenerated asc",
+        "size": 0,
+        "title": "Ventana de inyección de la falla: peticiones con la cabecera de latencia por minuto",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Rango",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "barchart"
+      }
+    },
+    {
+      "type": 3,
+      "name": "consulta-4",
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "ContainerAppConsoleLogs_CL\n| where Log_s has \"No se pudo obtener\" or Log_s has \"Circuito abierto\" or Log_s has \"Circuit breaker\"\n| extend companero = case(Log_s has \"partidos\" or Log_s has \"predicciones\" or Log_s has \"mari\", \"mari\",\n                          Log_s has \"commerce\" or Log_s has \"products\" or Log_s has \"pipe\", \"pipe\", \"otro\")\n| summarize eventos = count() by bin(TimeGenerated, 1m), companero\n| order by TimeGenerated asc",
+        "size": 0,
+        "title": "Llamadas fallidas o cortadas hacia los compañeros y circuito abierto",
+        "timeContext": {
+          "durationMs": 0
+        },
+        "timeContextFromParameter": "Rango",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "visualization": "barchart"
+      }
+    }
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
