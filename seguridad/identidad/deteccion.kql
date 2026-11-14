@@ -1,0 +1,8 @@
+// Regla: listado de secretos de una Container App (Registro de actividad de Azure).
+// Técnica de ATT&CK: T1552.007 (Unsecured Credentials: Container API).
+// Se considera sospechoso todo intento (exitoso o fallido) de listar secretos.
+AzureActivity
+| where CategoryValue =~ "Administrative"
+| where OperationNameValue =~ "MICROSOFT.APP/CONTAINERAPPS/LISTSECRETS/ACTION"
+| where ActivityStatusValue in~ ("Success", "Succeeded", "Failed", "Failure")
+| project TimeGenerated, Caller, CallerIpAddress, ActivityStatusValue, ResourceId
