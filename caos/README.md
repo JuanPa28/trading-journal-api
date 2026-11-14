@@ -21,7 +21,11 @@ Mari · Google Cloud (GKE)      Pipe · AWS
 /api/v1/predicciones           /api/v1/products
 ```
 
-El coordinador llama en cadena a una entidad de cada compañero y reenvía el identificador de correlación. Cada API está en una nube distinta. *Diagrama con los puntos de inyección, la frontera del radio de impacto y los puntos de medición: pendiente.*
+El coordinador llama en cadena a una entidad de cada compañero y reenvía el identificador de correlación. Cada API está en una nube distinta.
+
+![Flujo con los puntos de inyección, el radio de impacto y las mediciones](../docs/arquitectura-caos.svg)
+
+**F1, F2 y F3** son los tres puntos de inyección (uno por integrante); la línea roja es la frontera del radio de impacto; **M1, M2 y M3** son los tres niveles de medición (extremo a extremo, cada API, plataforma).
 
 ### Qué se conserva y qué se retira del flujo anterior
 
