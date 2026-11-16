@@ -105,3 +105,28 @@ def test_una_version_alterada_no_se_acepta_como_restauracion(entorno):
     entorno.buckets[e.COPIA]["versiones"] = {n: [{"id": "x", "contenido": e.BASURA, "marca": False, "t": entorno.reloj}] for n in e.OBJETOS}
     e.restaurar(1)
     assert e.estado()["ronda1"]["recuperados"] == 0
+
+
+def test_un_aporte_con_hash_correcto_reemplaza_el_objeto_de_esa_api(tmp_path):
+    carpeta = tmp_path / "objetos" / "statsnostra"
+    carpeta.mkdir(parents=True)
+    contenido = b'{"partido": "real-shape", "prediccion": "3-0"}\n'
+    (carpeta / "prediccion.json").write_bytes(contenido)
+    (carpeta / "prediccion.json.sha256").write_text(e.sha(contenido) + "  prediccion.json\n", encoding="utf-8")
+    objetos = e.cargar_objetos(tmp_path / "objetos")
+    assert objetos["statsnostra/prediccion.json"] == contenido
+    assert "statsnostra/prediccion-001.json" not in objetos
+    assert "trading-journal/adjunto-001.txt" in objetos and "ecommerce/pedido-001.json" in objetos
+
+
+def test_un_aporte_con_hash_alterado_se_rechaza(tmp_path):
+    carpeta = tmp_path / "objetos" / "statsnostra"
+    carpeta.mkdir(parents=True)
+    (carpeta / "prediccion.json").write_bytes(b"contenido")
+    (carpeta / "prediccion.json.sha256").write_text("0" * 64 + "\n", encoding="utf-8")
+    with pytest.raises(SystemExit):
+        e.cargar_objetos(tmp_path / "objetos")
+
+
+def test_sin_carpeta_de_aportes_quedan_los_objetos_por_defecto(tmp_path):
+    assert e.cargar_objetos(tmp_path / "no-existe") == e.OBJETOS
