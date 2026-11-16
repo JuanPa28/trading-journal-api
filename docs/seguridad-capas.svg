@@ -1,0 +1,77 @@
+<svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <rect width="1000" height="600" fill="#ffffff"/>
+  <text x="500" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#111827">Defensa en profundidad: capas, experimentos y señales</text>
+
+  <!-- Capas (de afuera hacia adentro) -->
+  <rect x="14" y="44" width="760" height="86" rx="10" fill="#e3ecfd" stroke="#1d4ed8" stroke-width="1.6"/>
+  <text x="28" y="66" font-size="13" font-weight="700" fill="#1d4ed8">1 · IDENTIDAD</text>
+  <text x="28" y="86" font-size="11" fill="#1e3a8a">Secreto de la base de datos · usuario ADMIN (hueco) · sin rotación (hueco)</text>
+  <text x="28" y="106" font-size="11" fill="#1e3a8a">Mejoras: usuario TJ_APP de privilegios mínimos · detección del listado de secretos</text>
+  <rect x="560" y="54" width="204" height="66" rx="8" fill="#ffffff" stroke="#1d4ed8"/>
+  <text x="662" y="74" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 1 · Juan</text>
+  <text x="662" y="92" text-anchor="middle" font-size="10.5" fill="#1e3a8a">listSecrets de la Container App</text>
+  <text x="662" y="108" text-anchor="middle" font-size="10.5" fill="#1e3a8a">T1552.007 · D3-UAP · D3-CRO</text>
+
+  <rect x="14" y="140" width="760" height="86" rx="10" fill="#e0f4e8" stroke="#15803d" stroke-width="1.6"/>
+  <text x="28" y="162" font-size="13" font-weight="700" fill="#15803d">2 · RED</text>
+  <text x="28" y="182" font-size="11" fill="#14532d">Entrada HTTPS · base Oracle abierta a 0.0.0.0/0 (hueco) · sin filtrado de salida (hueco)</text>
+  <text x="28" y="202" font-size="11" fill="#14532d">GKE: NetworkPolicy de denegación por defecto y alerta de Services expuestos</text>
+  <rect x="560" y="150" width="204" height="66" rx="8" fill="#ffffff" stroke="#15803d"/>
+  <text x="662" y="170" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 2 · Mari</text>
+  <text x="662" y="188" text-anchor="middle" font-size="10.5" fill="#14532d">Exposición y segmentación</text>
+  <text x="662" y="204" text-anchor="middle" font-size="10.5" fill="#14532d">T1190 · T1021 · D3-NI · D3-ITF</text>
+
+  <rect x="14" y="236" width="760" height="86" rx="10" fill="#fdf0dc" stroke="#b45309" stroke-width="1.6"/>
+  <text x="28" y="258" font-size="13" font-weight="700" fill="#b45309">3 · CARGA DE TRABAJO</text>
+  <text x="28" y="278" font-size="11" fill="#78350f">Imagen mínima · proceso como root (hueco) · /actuator/prometheus público (hueco menor)</text>
+  <text x="28" y="298" font-size="11" fill="#78350f">GKE: imagen sin root, sin capacidades · AWS: tareas ECS con alarma de aborto</text>
+  <rect x="560" y="246" width="204" height="66" rx="8" fill="#ffffff" stroke="#b45309"/>
+  <text x="662" y="266" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 3 · Pipe</text>
+  <text x="662" y="284" text-anchor="middle" font-size="10.5" fill="#78350f">Telemetría y capa de IA</text>
+  <text x="662" y="300" text-anchor="middle" font-size="10.5" fill="#78350f">AML.T0051 · D3-ACH</text>
+
+  <rect x="14" y="332" width="760" height="86" rx="10" fill="#fce7f3" stroke="#be185d" stroke-width="1.6"/>
+  <text x="28" y="354" font-size="13" font-weight="700" fill="#be185d">4 · DATOS</text>
+  <text x="28" y="374" font-size="11" fill="#831843">Bucket de adjuntos sin versionado (hueco) · sin copia aislada (hueco) · cifrado en reposo</text>
+  <text x="28" y="394" font-size="11" fill="#831843">Mejoras: versionado del bucket · copia en un bucket aislado · RPO y RTO medidos</text>
+  <rect x="560" y="342" width="204" height="66" rx="8" fill="#ffffff" stroke="#be185d"/>
+  <text x="662" y="362" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 4 · Los tres</text>
+  <text x="662" y="380" text-anchor="middle" font-size="10.5" fill="#831843">Borrado y sobrescritura del bucket</text>
+  <text x="662" y="396" text-anchor="middle" font-size="10.5" fill="#831843">T1485 · T1486 · D3-RO</text>
+
+  <rect x="14" y="428" width="760" height="86" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="28" y="450" font-size="13" font-weight="700" fill="#5b21b6">5 · DETECCIÓN Y RESPUESTA</text>
+  <text x="28" y="470" font-size="11" fill="#3b0764">Línea de acceso con trace id · métricas en Log Analytics y Grafana · sin alertas de administración (hueco)</text>
+  <text x="28" y="490" font-size="11" fill="#3b0764">Mejoras: reglas como código con casos positivos y negativos · alerta con correo · analista de IA verificado</text>
+  <rect x="560" y="438" width="204" height="66" rx="8" fill="#ffffff" stroke="#7c3aed"/>
+  <text x="662" y="458" text-anchor="middle" font-size="11.5" font-weight="700" fill="#5b21b6">Medidas comunes</text>
+  <text x="662" y="476" text-anchor="middle" font-size="10.5" fill="#3b0764">MTTD · MTTC · cobertura</text>
+  <text x="662" y="492" text-anchor="middle" font-size="10.5" fill="#3b0764">falsos positivos · RPO · RTO</text>
+
+  <!-- Columna lateral: fronteras -->
+  <rect x="790" y="44" width="196" height="470" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-dasharray="5,3"/>
+  <text x="888" y="68" text-anchor="middle" font-size="12.5" font-weight="700" fill="#111827">Fronteras de confianza</text>
+  <text x="802" y="96" font-size="10.5" fill="#374151">• Internet frente al ingress</text>
+  <text x="802" y="116" font-size="10.5" fill="#374151">• Coordinador frente a Mari</text>
+  <text x="802" y="134" font-size="10.5" fill="#374151">  y Pipe (otras nubes)</text>
+  <text x="802" y="154" font-size="10.5" fill="#374151">• API frente a Oracle</text>
+  <text x="802" y="174" font-size="10.5" fill="#374151">• Operador frente a los</text>
+  <text x="802" y="192" font-size="10.5" fill="#374151">  secretos de la plataforma</text>
+  <text x="888" y="232" text-anchor="middle" font-size="12.5" font-weight="700" fill="#111827">Telemetría</text>
+  <text x="802" y="256" font-size="10.5" fill="#374151">• Registro de actividad</text>
+  <text x="802" y="274" font-size="10.5" fill="#374151">  de Azure (AzureActivity)</text>
+  <text x="802" y="294" font-size="10.5" fill="#374151">• Cloud Logging (GCP)</text>
+  <text x="802" y="314" font-size="10.5" fill="#374151">• CloudWatch (AWS)</text>
+  <text x="802" y="334" font-size="10.5" fill="#374151">• Eventos de Oracle</text>
+  <text x="802" y="354" font-size="10.5" fill="#374151">• Trace id en las 3 APIs</text>
+  <text x="888" y="394" text-anchor="middle" font-size="12.5" font-weight="700" fill="#111827">Alcance</text>
+  <text x="802" y="418" font-size="10.5" fill="#374151">Solo infraestructura del</text>
+  <text x="802" y="436" font-size="10.5" fill="#374151">grupo y datos sintéticos.</text>
+  <text x="802" y="456" font-size="10.5" fill="#374151">Interruptor de parada</text>
+  <text x="802" y="474" font-size="10.5" fill="#374151">y reversión probada.</text>
+
+  <rect x="14" y="526" width="972" height="62" rx="10" fill="#f3f4f6" stroke="#9ca3af"/>
+  <text x="30" y="548" font-size="11.5" font-weight="700" fill="#111827">Cómo leerlo</text>
+  <text x="30" y="567" font-size="10.5" fill="#374151">Cada capa muestra lo que hay hoy, con sus huecos marcados (ronda 0), y la mejora que los cierra (ronda 1). Los recuadros rojos son los experimentos del game day.</text>
+  <text x="30" y="582" font-size="10.5" fill="#374151">Si una capa falla, la siguiente debe detectar o contener: esa es la defensa en profundidad que se mide con MTTD, MTTC, RPO y RTO.</text>
+</svg>
