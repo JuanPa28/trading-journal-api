@@ -49,3 +49,4 @@ __pycache__/
 *.pyc
 chaostoolkit.log
 caos/informe/.perfil-pdf/
+seguridad/informe/.perfil-pdf/
