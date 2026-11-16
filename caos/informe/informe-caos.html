@@ -1,0 +1,132 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe de ingeniería del caos</title>
+<style>
+@page { size: A4; margin: 13mm 14mm; }
+body { font-family: "Segoe UI", Arial, sans-serif; font-size: 10.2pt; line-height: 1.42; color: #1f2937; }
+h1 { font-size: 17pt; margin: 0 0 2px; color: #111827; } .sub { color: #6b7280; margin-bottom: 6px; }
+h2 { font-size: 11.5pt; margin: 11px 0 3px; color: #1d4ed8; border-bottom: 1.5px solid #dbeafe; padding-bottom: 2px; break-after: avoid; }
+p { margin: 3px 0; } ul { margin: 3px 0 3px 16px; padding: 0; } li { margin: 1px 0; }
+table { border-collapse: collapse; width: 100%; margin: 5px 0; font-size: 9.2pt; break-inside: avoid; }
+th, td { border: 1px solid #d1d5db; padding: 2.5px 5px; text-align: left; vertical-align: top; } th { background: #eef2ff; }
+td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+.arq { width: 100%; height: auto; max-height: 330px; display: block; margin: 4px 0; }
+.pie { font-size: 9pt; color: #4b5563; } .graf { width: 100%; max-width: 640px; height: auto; display: block; margin: 2px 0; }
+.caja { background: #fef3c7; border-left: 4px solid #b45309; padding: 4px 8px; margin: 5px 0; break-inside: avoid; }
+.ok { color: #15803d; font-weight: 700; } .mal { color: #b91c1c; font-weight: 700; } code { background: #eef2ff; padding: 0 3px; border-radius: 3px; font-size: 8.4pt; }
+</style></head><body>
+<h1>Informe de ingeniería del caos</h1>
+<div class="sub">Flujo multinube de trading-journal · Azure, Google Cloud y AWS · 16 de noviembre de 2026 · Tag v5.0.0</div>
+
+<h2>1. Resumen y arquitectura</h2>
+<p>Un cliente consulta <code>GET /api/v2/trades/{id}</code> en el <b>coordinador</b> (Azure Container Apps, con base Oracle). Por cada consulta el coordinador llama a <b>StatsNostra</b> (Mari, GKE en Google Cloud) y a <b>ecommerce</b> (Pipe, AWS) y devuelve el registro unido. El mismo <code>X-Trace-Id</code> viaja por las tres nubes. Pregunta: <b>¿se mantiene el flujo rápido y disponible cuando una de las dependencias falla?</b> Un fallo por nube sobre el mismo flujo y el mismo perfil de carga: F1 latencia saliente hacia Mari (Juan, Azure), F2 indisponibilidad de tareas de Pipe (AWS) y F3 agotamiento de CPU de un pod de Mari (GKE).</p>
+<svg class="arq" viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Inter, Arial, sans-serif">
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L8,3 z" fill="#374151"/>
+    </marker>
+  </defs>
+  <rect width="1000" height="560" fill="#ffffff"/>
+  <text x="500" y="26" text-anchor="middle" font-size="17" font-weight="700" fill="#111827">Flujo multinube con puntos de inyección, radio de impacto y mediciones</text>
+
+  <!-- Frontera del radio de impacto -->
+  <rect x="226" y="44" width="760" height="404" rx="16" fill="none" stroke="#b91c1c" stroke-width="1.8" stroke-dasharray="8,5"/>
+  <text x="238" y="62" font-size="11" font-weight="700" fill="#b91c1c">FRONTERA DEL RADIO DE IMPACTO: solo infraestructura del grupo y datos sintéticos</text>
+
+  <!-- Cliente k6 -->
+  <rect x="14" y="170" width="170" height="110" rx="10" fill="#f3f4f6" stroke="#374151" stroke-width="1.6"/>
+  <text x="99" y="196" text-anchor="middle" font-size="14" font-weight="700" fill="#111827">k6</text>
+  <text x="99" y="216" text-anchor="middle" font-size="11" fill="#374151">perfil fijo: 5, 15 y 30 usuarios</text>
+  <text x="99" y="233" text-anchor="middle" font-size="11" fill="#374151">genera el X-Trace-Id</text>
+  <text x="99" y="256" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">M1: p95 y éxito del flujo</text>
+  <line x1="184" y1="225" x2="270" y2="225" stroke="#374151" stroke-width="1.8" marker-end="url(#a)"/>
+
+  <!-- Coordinador -->
+  <rect x="270" y="110" width="270" height="230" rx="12" fill="#e3ecfd" stroke="#1d4ed8" stroke-width="2"/>
+  <text x="405" y="136" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">AZURE · Juanpa (coordinador)</text>
+  <text x="405" y="158" text-anchor="middle" font-size="12" fill="#1d4ed8">GET /api/v2/trades/{id}</text>
+  <text x="405" y="178" text-anchor="middle" font-size="11" fill="#1d4ed8">Container Apps · base Oracle</text>
+  <text x="405" y="206" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F1 · latencia saliente (cabecera)</text>
+  <text x="405" y="224" text-anchor="middle" font-size="10.5" fill="#b91c1c">X-Inject-Outbound-Latency-Ms</text>
+  <text x="405" y="248" text-anchor="middle" font-size="11" font-weight="700" fill="#15803d">Patrones: timeout · circuit breaker</text>
+  <text x="405" y="266" text-anchor="middle" font-size="10.5" fill="#15803d">apagados en la ronda 0</text>
+  <text x="405" y="294" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">M2: línea de acceso (ms, status)</text>
+  <text x="405" y="312" text-anchor="middle" font-size="10.5" fill="#7c3aed">Log Analytics · tablero</text>
+
+  <!-- Mari -->
+  <rect x="680" y="76" width="296" height="130" rx="12" fill="#e0f4e8" stroke="#15803d" stroke-width="2"/>
+  <text x="828" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="#15803d">GOOGLE CLOUD · Mari (GKE)</text>
+  <text x="828" y="120" text-anchor="middle" font-size="11.5" fill="#15803d">/api/v1/partidos · /predicciones</text>
+  <text x="828" y="142" text-anchor="middle" font-size="10.5" fill="#15803d">2+ réplicas · probes · requests y limits</text>
+  <text x="828" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F3 · agotamiento de CPU (Chaos Mesh)</text>
+  <text x="828" y="190" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">M2/M3: Cloud Logging · Cloud Monitoring</text>
+
+  <!-- Pipe -->
+  <rect x="680" y="250" width="296" height="130" rx="12" fill="#fdf0dc" stroke="#b45309" stroke-width="2"/>
+  <text x="828" y="274" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309">AWS · Pipe</text>
+  <text x="828" y="294" text-anchor="middle" font-size="11.5" fill="#b45309">/api/v1/commerce · /products</text>
+  <text x="828" y="316" text-anchor="middle" font-size="10.5" fill="#b45309">balanceador · instancias</text>
+  <text x="828" y="340" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F2 · indisponibilidad de una instancia</text>
+  <text x="828" y="364" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">M2/M3: CloudWatch Logs y métricas</text>
+
+  <line x1="540" y1="190" x2="680" y2="148" stroke="#374151" stroke-width="1.8" marker-end="url(#a)"/>
+  <line x1="540" y1="262" x2="680" y2="310" stroke="#374151" stroke-width="1.8" marker-end="url(#a)"/>
+  <text x="600" y="156" font-size="10.5" fill="#374151">X-Trace-Id</text>
+  <text x="600" y="296" font-size="10.5" fill="#374151">X-Trace-Id</text>
+
+  <!-- Chaos Toolkit -->
+  <rect x="270" y="372" width="270" height="62" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="405" y="396" text-anchor="middle" font-size="12.5" font-weight="700" fill="#5b21b6">Chaos Toolkit · experimentos como código</text>
+  <text x="405" y="416" text-anchor="middle" font-size="10.5" fill="#5b21b6">estado estable · hipótesis · método · reversión</text>
+  <line x1="405" y1="372" x2="405" y2="340" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#a)"/>
+
+  <!-- Leyenda -->
+  <rect x="14" y="462" width="972" height="84" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-dasharray="5,3"/>
+  <text x="30" y="484" font-size="12" font-weight="700" fill="#111827">Dónde se mide cada métrica</text>
+  <text x="30" y="504" font-size="11" fill="#374151"><tspan font-weight="700" fill="#7c3aed">M1</tspan> métrica objetivo, de extremo a extremo: k6 (--summary-export) y caos/gate/evaluar.py.</text>
+  <text x="30" y="522" font-size="11" fill="#374151"><tspan font-weight="700" fill="#7c3aed">M2</tspan> métricas de cada API: línea de acceso del log (status y ms) en el servicio de logs de cada nube.</text>
+  <text x="30" y="540" font-size="11" fill="#374151"><tspan font-weight="700" fill="#7c3aed">M3</tspan> plataforma: CPU, memoria y reinicios, en el monitoreo nativo de cada nube.     <tspan font-weight="700" fill="#b91c1c">F1, F2, F3</tspan> puntos de inyección de fallos.</text>
+</svg>
+
+
+<h2>2. Estado estable medido y perfil de carga</h2>
+<p>Perfil fijo de k6: rampa de 5, 15 y 30 usuarios virtuales, 60 s cada uno, contra el flujo completo, con todos los interruptores y patrones de resiliencia apagados. Tres corridas el 16 de noviembre, con ventana avisada en el chat del equipo (versión <code>5.0.0-rc.2</code>):</p>
+<table><tr><th>Corrida</th><th class="n">Peticiones</th><th class="n">Éxito</th><th class="n">p50</th><th class="n">p95</th><th class="n">p99</th></tr><tr><td>1</td><td>4 198</td><td>100 %</td><td>429 ms</td><td>689 ms</td><td>972 ms</td></tr><tr><td>2</td><td>5 236</td><td>100 %</td><td>367 ms</td><td>477 ms</td><td>610 ms</td></tr><tr><td>3</td><td>5 232</td><td>100 %</td><td>364 ms</td><td>480 ms</td><td>603 ms</td></tr></table>
+<p><b>Estado estable declarado:</b> éxito ≥ 99 % y p95 extremo a extremo ≤ 1 600 ms. La mediana medida del p95 es <b>480 ms</b>; el umbral es el presupuesto de latencia aceptable para el usuario (3,3 veces por encima de lo medido), de modo que cruzarlo es un fallo real y no ruido. La corrida del 13 de noviembre se descartó porque coincidió con un reinicio de pods de Mari; esa regla dio origen al protocolo de avisar cada ventana. La corrida 1 fue más lenta por arranque en frío tras un cambio de configuración.</p>
+
+<h2>3. Hipótesis, métrica, instrumento y ventana (una por integrante)</h2>
+<table><tr><th>Integrante</th><th>Fallo y duración</th><th>Hipótesis</th><th>Métrica e instrumento</th></tr>
+<tr><td>Juan (Azure)</td><td>F1: 3 000 ms de latencia inyectada hacia Mari, 3 min</td><td>El flujo mantiene éxito ≥ 99 % y p95 ≤ 1 600 ms</td><td>p95 extremo a extremo: k6 (<code>--summary-export</code>) y línea de acceso en Log Analytics</td></tr>
+<tr><td>Mari (GCP)</td><td>F3: CPU de un pod de StatsNostra al 100 %, 3 min (Chaos Mesh)</td><td>El p95 del flujo se mantiene ≤ 1 511 ms (su estado estable: 1 208 ms)</td><td>p95 extremo a extremo: k6 y Cloud Monitoring. Ronda 0: 3 425 ms, <span class="mal">se refuta</span>. Ronda 1: 774 ms, <span class="ok">se cumple</span> (datos de su repositorio)</td></tr>
+<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS (AWS FIS)</td><td>El flujo sigue respondiendo y el servicio se recupera sin disparar la alarma de aborto</td><td>Éxito del flujo: k6 y CloudWatch. <b>Cifras de las rondas: pendientes de su evidencia.</b></td></tr></table>
+
+<h2>4. Método y radio de impacto</h2>
+<p>Cada experimento es un archivo de Chaos Toolkit (<code>caos/experimentos/</code>) con estado estable, hipótesis, método y reversión, ejecutado con el mismo comando en las dos rondas. La falla de Juan se activa con la cabecera <code>X-Inject-Outbound-Latency-Ms</code> (apagada por defecto; solo con <code>FAULT_HEADER_ENABLED=true</code>, tope de 10 s). <b>Radio de impacto:</b> solo las peticiones de k6 que llevan la cabecera; infraestructura del grupo; datos sintéticos; máximo 30 usuarios virtuales. <b>Abortos:</b> éxito &lt; 50 % o p95 &gt; 15 000 ms (k6 detiene la prueba a los 20 s). <b>Interruptor de parada:</b> quitar la cabecera o <code>FAULT_HEADER_ENABLED=false</code>. <b>Reversión probada antes de la ronda 0:</b> 662 ms sin falla, 6 709 ms con ella y 659 ms al apagarla. Como medición, tres niveles: M1 extremo a extremo (k6), M2 por API (línea de acceso con <code>traceId</code>, <code>status</code> y <code>ms</code>) y M3 de plataforma (CPU, memoria, reinicios).</p>
+
+<h2>5. Ronda 0: resultados y modo de fallo</h2>
+<svg viewBox="0 0 640 150" class="graf" role="img" aria-label="p95 por ronda"><text x="0" y="29" font-size="11" fill="#374151">Estado estable</text><rect x="170" y="14" width="28.8" height="24" rx="3" fill="#15803d"/><text x="204.8" y="30" font-size="11" font-weight="700" fill="#111827">480 ms</text><text x="0" y="67" font-size="11" fill="#374151">Ronda 0 (sin protección)</text><rect x="170" y="52" width="391.4" height="24" rx="3" fill="#b91c1c"/><text x="567.4" y="68" font-size="11" font-weight="700" fill="#111827">6 523 ms</text><text x="0" y="105" font-size="11" fill="#374151">Ronda 1 (timeout + breaker)</text><rect x="170" y="90" width="28.4" height="24" rx="3" fill="#1d4ed8"/><text x="204.4" y="106" font-size="11" font-weight="700" fill="#111827">474 ms</text><line x1="266.0" y1="6" x2="266.0" y2="128" stroke="#6b7280" stroke-dasharray="4,3"/><text x="270.0" y="140" font-size="10" fill="#6b7280">umbral 1 600 ms</text></svg>
+<p class="pie"><b>Figura 1.</b> p95 del flujo en el estado estable y en cada ronda (mediana de las tres corridas del estado estable). <b>Figura 2.</b> Tablero por minuto de las dos rondas (misma información que el Workbook de Azure; datos en <code>caos/resultados/serie-rondas.json</code>). La latencia salta a ~6,4 s en cuanto empieza la inyección y vuelve a 300 ms en la ronda 1 en cuanto el circuito se abre; el primer minuto de la ronda 1 (3 443 ms) es el circuito aprendiendo.</p>
+<svg viewBox="0 0 640 300" class="graf" role="img" aria-label="p95 y peticiones por minuto"><text x="0" y="12" font-size="10.5" font-weight="700" fill="#111827">p95 por minuto (ms)</text><line x1="54.0" y1="120.0" x2="614.0" y2="120.0" stroke="#e5e7eb"/><text x="50.0" y="123.0" text-anchor="end" font-size="9" fill="#6b7280">0</text><line x1="54.0" y1="95.4" x2="614.0" y2="95.4" stroke="#e5e7eb"/><text x="50.0" y="98.4" text-anchor="end" font-size="9" fill="#6b7280">2000</text><line x1="54.0" y1="70.9" x2="614.0" y2="70.9" stroke="#e5e7eb"/><text x="50.0" y="73.9" text-anchor="end" font-size="9" fill="#6b7280">4000</text><line x1="54.0" y1="46.3" x2="614.0" y2="46.3" stroke="#e5e7eb"/><text x="50.0" y="49.3" text-anchor="end" font-size="9" fill="#6b7280">6000</text><line x1="54.0" y1="100.3" x2="614.0" y2="100.3" stroke="#6b7280" stroke-dasharray="4,3"/><text x="612.0" y="97.3" text-anchor="end" font-size="9" fill="#6b7280">umbral 1 600 ms</text><rect x="62.0" y="35.8" width="40" height="84.2" fill="#b91c1c" rx="2"/><text x="82.0" y="31.8" text-anchor="middle" font-size="9" fill="#111827">6852</text><rect x="118.0" y="41.4" width="40" height="78.6" fill="#b91c1c" rx="2"/><text x="138.0" y="37.4" text-anchor="middle" font-size="9" fill="#111827">6398</text><rect x="174.0" y="41.7" width="40" height="78.3" fill="#b91c1c" rx="2"/><text x="194.0" y="37.7" text-anchor="middle" font-size="9" fill="#111827">6377</text><rect x="230.0" y="41.6" width="40" height="78.4" fill="#b91c1c" rx="2"/><text x="250.0" y="37.6" text-anchor="middle" font-size="9" fill="#111827">6382</text><text x="302.0" y="118" text-anchor="middle" font-size="8" fill="#9ca3af">pausa</text><text x="358.0" y="118" text-anchor="middle" font-size="8" fill="#9ca3af">pausa</text><rect x="398.0" y="77.7" width="40" height="42.3" fill="#1d4ed8" rx="2"/><text x="418.0" y="73.7" text-anchor="middle" font-size="9" fill="#111827">3443</text><rect x="454.0" y="116.2" width="40" height="3.8" fill="#1d4ed8" rx="2"/><text x="474.0" y="112.2" text-anchor="middle" font-size="9" fill="#111827">311</text><rect x="510.0" y="116.3" width="40" height="3.7" fill="#1d4ed8" rx="2"/><text x="530.0" y="112.3" text-anchor="middle" font-size="9" fill="#111827">299</text><rect x="566.0" y="115.0" width="40" height="5.0" fill="#1d4ed8" rx="2"/><text x="586.0" y="111.0" text-anchor="middle" font-size="9" fill="#111827">408</text><text x="0" y="158" font-size="10.5" font-weight="700" fill="#111827">Peticiones por minuto: totales y con la cabecera de falla (ventana de inyección)</text><line x1="54.0" y1="270.0" x2="614.0" y2="270.0" stroke="#e5e7eb"/><text x="50.0" y="273.0" text-anchor="end" font-size="9" fill="#6b7280">0</text><line x1="54.0" y1="237.9" x2="614.0" y2="237.9" stroke="#e5e7eb"/><text x="50.0" y="240.9" text-anchor="end" font-size="9" fill="#6b7280">1000</text><line x1="54.0" y1="205.7" x2="614.0" y2="205.7" stroke="#e5e7eb"/><text x="50.0" y="208.7" text-anchor="end" font-size="9" fill="#6b7280">2000</text><rect x="62.0" y="269.7" width="40" height="1.0" fill="#9ca3af" rx="2"/><text x="82.0" y="265.7" text-anchor="middle" font-size="9" fill="#111827">10</text><circle cx="82.0" cy="269.6" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="82.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:33</text><rect x="118.0" y="267.8" width="40" height="2.2" fill="#9ca3af" rx="2"/><text x="138.0" y="263.8" text-anchor="middle" font-size="9" fill="#111827">69</text><circle cx="138.0" cy="267.5" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="138.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:34</text><rect x="174.0" y="264.4" width="40" height="5.6" fill="#9ca3af" rx="2"/><text x="194.0" y="260.4" text-anchor="middle" font-size="9" fill="#111827">175</text><circle cx="194.0" cy="263.9" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="194.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:35</text><rect x="230.0" y="267.7" width="40" height="2.3" fill="#9ca3af" rx="2"/><text x="250.0" y="263.7" text-anchor="middle" font-size="9" fill="#111827">72</text><circle cx="250.0" cy="268.6" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="250.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:36</text><text x="306.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:37</text><text x="362.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:38</text><rect x="398.0" y="269.8" width="40" height="1.0" fill="#9ca3af" rx="2"/><text x="418.0" y="265.8" text-anchor="middle" font-size="9" fill="#111827">6</text><circle cx="418.0" cy="269.7" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="418.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:39</text><rect x="454.0" y="244.1" width="40" height="25.9" fill="#9ca3af" rx="2"/><text x="474.0" y="240.1" text-anchor="middle" font-size="9" fill="#111827">806</text><circle cx="474.0" cy="244.0" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="474.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:40</text><rect x="510.0" y="182.2" width="40" height="87.8" fill="#9ca3af" rx="2"/><text x="530.0" y="178.2" text-anchor="middle" font-size="9" fill="#111827">2731</text><circle cx="530.0" cy="181.8" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="530.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:41</text><rect x="566.0" y="192.2" width="40" height="77.8" fill="#9ca3af" rx="2"/><text x="586.0" y="188.2" text-anchor="middle" font-size="9" fill="#111827">2419</text><circle cx="586.0" cy="192.8" r="3.5" fill="#f59e0b" stroke="#92400e"/><text x="586.0" y="288" text-anchor="middle" font-size="9" fill="#374151">12:42</text><text x="614.0" y="298" text-anchor="end" font-size="8.5" fill="#6b7280">hora local de Colombia · rojo: ronda 0 · azul: ronda 1 · punto naranja: peticiones con cabecera de falla</text></svg>
+<p>Sin protección, el p95 sube a <b class="mal">6 523 ms</b> (p50 6 458 ms, máximo 16 433 ms) con <b>100 % de éxito</b>: <b>la hipótesis se refuta sin que haya un solo error</b>. El throughput cae de 29,0 a 1.7 req/s (325 peticiones atendidas contra más de 5 000): el sistema no se cae, se queda sin capacidad. <b>Modo de fallo: fallo en cascada por latencia.</b> El coordinador hace dos llamadas seguidas a Mari y espera cada una completa, así que 3 000 ms se pagan dos veces (≈ 6,4 s de piso). Diagnóstico con el trace id: la petición <code>k6-8-3</code> aparece en la línea de acceso del coordinador con <code>ms=6378</code>; la latencia se inyecta antes de llamar a Mari, de modo que la API de Mari responde en su tiempo normal. Un monitoreo basado solo en la tasa de error no habría visto nada.</p>
+
+<h2>6. Mejoras aplicadas y justificación</h2>
+<ul><li><b>Timeout por llamada</b> (<code>COMPANIONS_CALL_TIMEOUT_MS=1000</code>): una dependencia lenta no puede consumir todo el tiempo de la petición.</li>
+<li><b>Circuit breaker</b> de Resilience4j (<code>RESILIENCE_CB_ENABLED=true</code>): tras varias llamadas lentas o fallidas deja de llamar a Mari y responde de inmediato con esa entidad en <code>null</code> (degradación elegante), que el flujo ya sabía absorber.</li></ul>
+<p>Ambos están apagados por defecto: la ronda 0 mide el sistema sin protección y la ronda 1 se activa con dos variables, con el mismo perfil de carga y la misma versión del coordinador.</p>
+
+<h2>7. Ronda 1 y comparación</h2>
+<table><tr><th></th><th class="n">Estado estable</th><th class="n">Ronda 0</th><th class="n">Ronda 1</th><th class="n">Variación 0 → 1</th></tr>
+<tr><td>p50</td><td class="n">367 ms</td><td class="n">6 458 ms</td><td class="n">300 ms</td><td class="n">-95,4 %</td></tr>
+<tr><td><b>p95</b></td><td class="n">480 ms</td><td class="n">6 523 ms</td><td class="n"><b>474 ms</b></td><td class="n"><b>-92,7 %</b></td></tr>
+<tr><td>p99</td><td class="n">610 ms</td><td class="n">6 895 ms</td><td class="n">1 277 ms</td><td class="n">-81,5 %</td></tr>
+<tr><td>Éxito</td><td class="n">100 %</td><td class="n">100 %</td><td class="n">100 %</td><td class="n">sin cambio</td></tr>
+<tr><td>Throughput</td><td class="n">29,0 req/s</td><td class="n">1.7 req/s</td><td class="n">32.9 req/s</td><td class="n">×19</td></tr>
+<tr><td>Hipótesis</td><td></td><td class="n mal">se refuta</td><td class="n ok">se cumple</td><td></td></tr></table>
+<p>Con timeout y circuit breaker el p95 baja a <b class="ok">474 ms</b>, equivalente al estado estable, y el flujo recupera su capacidad. <b>Costo declarado:</b> en los logs de la ronda 1 hubo 66 llamadas cortadas por el timeout y unos 11 856 avisos de circuito abierto hacia Mari (≈ dos por petición): prácticamente todas las respuestas fueron 200 pero <b>sin los datos de Mari</b>. La mejora recupera latencia y disponibilidad del flujo, no los datos de la dependencia mientras dure la falla (que el p50 sea menor que el del estado estable se explica porque con el circuito abierto se hace menos trabajo). El resultado de Mari sigue el mismo patrón: su mejora (readiness por saturación, más CPU y HPA) devolvió el p95 de 3 425 ms a 774 ms.</p>
+
+<h2>8. Hallazgos inesperados y backlog de resiliencia</h2>
+<ul><li>La latencia de una dependencia se paga <b>multiplicada por el número de llamadas seguidas</b>. Backlog: llamar a las dependencias en paralelo.</li>
+<li>Una falla de latencia <b>no aparece en la tasa de error</b>: la alerta debe estar sobre el p95, no solo sobre errores.</li>
+<li>Durante el estado estable el balanceador de Pipe devolvió dos respuestas <code>502</code> al final de una rampa de 30 usuarios; el coordinador las absorbió. Backlog de Pipe: revisar el balanceador bajo esa carga.</li>
+<li>El circuito solo se cierra cuando las llamadas de sondeo vuelven a ser rápidas: mientras la falla persista, el flujo responde degradado.</li>
+<li>Un cambio ajeno (reinicio de pods de otra nube) arruina una medición: el aviso de ventana en el chat es parte del método.</li></ul>
+
+</body></html>
