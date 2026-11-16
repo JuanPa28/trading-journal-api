@@ -43,3 +43,8 @@ Thumbs.db
 
 # Informes locales del canary (la evidencia curada vive en canary/evidencias)
 canary/reports/
+
+# Python y registros locales de las herramientas
+__pycache__/
+*.pyc
+chaostoolkit.log
