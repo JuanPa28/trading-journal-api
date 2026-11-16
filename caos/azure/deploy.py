@@ -217,6 +217,12 @@ def grafana(activar: bool) -> None:
 
 
 def teardown() -> None:
+    # La configuración de diagnóstico del registro de actividad vive a nivel de suscripción
+    # (la crea seguridad/identidad/experimento.py mejorar): no se borra con el grupo de recursos.
+    sub = az("account", "show", "--query", "id", "-o", "tsv")
+    az("rest", "--method", "delete", "--url",
+       f"https://management.azure.com/subscriptions/{sub}/providers/microsoft.insights/diagnosticSettings/caos-actividad"
+       "?api-version=2021-05-01-preview", check=False)
     if not az("group", "exists", "-n", RESOURCE_GROUP) == "true":
         print(f"El grupo {RESOURCE_GROUP} no existe: nada que eliminar.")
         return
