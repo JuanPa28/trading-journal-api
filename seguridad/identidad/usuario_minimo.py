@@ -28,6 +28,8 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "caos" / "azure"))
 import deploy  # noqa: E402  (reutiliza az, tfvar, jdbc_url, set_env)
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from experimento import bitacora  # noqa: E402  (la misma bitácora del experimento 1)
 
 USUARIO = "TJ_APP"
 
@@ -73,11 +75,13 @@ def aplicar() -> None:
     with conectar(USUARIO, clave) as prueba:  # el usuario nuevo debe poder leer el esquema
         tablas = prueba.cursor().execute("SELECT COUNT(*) FROM all_tables WHERE owner = 'ADMIN'").fetchone()[0]
     print(f"{USUARIO} creado y probado: ve {tablas} tablas del esquema ADMIN")
+    bitacora("Mejora 2: creo TJ_APP (solo lectura y escritura de las tablas) y su trigger de esquema", f"creado y probado: ve {tablas} tablas")
     deploy.az("containerapp", "secret", "set", "-g", deploy.RESOURCE_GROUP, "-n", deploy.APP,
               "--secrets", f"db-password={clave}", "-o", "none")
     # ddl-auto=none: validar el esquema ajeno falla (Hibernate no ve las tablas de ADMIN) y TJ_APP
     # tampoco tiene permiso de alterarlas, así que la aplicación deja de tocar el esquema.
     deploy.set_env({"DB_USERNAME": USUARIO, "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"})
+    bitacora("Mejora 2: la API pasa a usar TJ_APP (secreto db-password nuevo, DB_USERNAME y ddl-auto=none)", "aplicada")
 
 
 def revertir() -> None:
