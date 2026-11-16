@@ -13,7 +13,9 @@ Evaluación final de Defensa en Profundidad. Verifica experimentalmente si los c
 | [`identidad/`](identidad/) | Experimento 1: regla de detección, script del experimento y mejoras |
 | [`datos/`](datos/) | Experimento 4 (grupal): resiliencia de los datos en Oracle Object Storage |
 | [`ia/`](ia/) | Analista de IA con sanitización de la entrada y verificación de la respuesta |
-| [`bitacora.md`](bitacora.md) y [`resultados/`](resultados/) | Bitácora de cada acción y resultados de cada ronda |
+| [`bitacora.md`](bitacora.md) y [`resultados/`](resultados/) | Bitácora de cada acción y resultados de cada ronda: [`01-identidad.md`](resultados/01-identidad.md) y [`04-resiliencia-de-datos.md`](resultados/04-resiliencia-de-datos.md) |
+| [`tendencias.md`](tendencias.md) | Tendencias verificables con fuente y fecha de consulta |
+| [`informe/`](informe/informe-seguridad.pdf) | Informe del game day (7 páginas), generado con `python seguridad/informe/generar_informe.py` |
 
 ## Experimentos
 
