@@ -56,7 +56,7 @@ def iso(momento: datetime) -> str:
 
 
 def az(*args: str, check: bool = True) -> str:
-    r = subprocess.run([shutil.which("az") or "az", *args], capture_output=True, text=True,
+    r = subprocess.run([shutil.which("az") or "az", *args], capture_output=True, text=True, encoding="utf-8", errors="replace",
                        env={**os.environ, "MSYS_NO_PATHCONV": "1"})
     if check and r.returncode != 0:
         raise SystemExit(f"az {' '.join(args[:3])} falló:\n{r.stderr.strip()[-500:]}")
@@ -120,7 +120,7 @@ def consultar_logs(consulta: str) -> list[list]:
         r = subprocess.run([shutil.which("az") or "az", "rest", "--method", "post",
                             "--url", f"https://api.loganalytics.io/v1/workspaces/{cliente}/query",
                             "--resource", "https://api.loganalytics.io", "--headers", "Content-Type=application/json",
-                            "--body", f"@{ruta}"], capture_output=True, text=True)
+                            "--body", f"@{ruta}"], capture_output=True, text=True, encoding="utf-8", errors="replace")
     finally:
         os.unlink(ruta)
     if r.returncode != 0:

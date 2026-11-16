@@ -38,7 +38,7 @@ def ejecutar(workspace: str) -> list[list]:
     r = subprocess.run([shutil.which("az"), "rest", "--method", "post",
                         "--url", f"https://api.loganalytics.io/v1/workspaces/{workspace}/query",
                         "--resource", "https://api.loganalytics.io", "--headers", "Content-Type=application/json",
-                        "--body", "@" + h.name], capture_output=True, text=True)
+                        "--body", "@" + h.name], capture_output=True, text=True, encoding="utf-8", errors="replace")
     os.unlink(h.name)
     if r.returncode:
         sys.exit("ERROR: " + r.stderr[-400:])
