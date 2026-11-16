@@ -130,3 +130,20 @@ def test_un_aporte_con_hash_alterado_se_rechaza(tmp_path):
 
 def test_sin_carpeta_de_aportes_quedan_los_objetos_por_defecto(tmp_path):
     assert e.cargar_objetos(tmp_path / "no-existe") == e.OBJETOS
+
+
+def test_las_versiones_sin_fecha_tambien_se_restauran(entorno, monkeypatch):
+    """La API real de Oracle devuelve time_created vacío en el listado de versiones."""
+    original = entorno.list_object_versions
+
+    def sin_fecha(ns, bucket, prefix=""):
+        resultado = original(ns, bucket, prefix)
+        for v in resultado.data.items:
+            v.time_created = None
+        return resultado
+
+    monkeypatch.setattr(entorno, "list_object_versions", sin_fecha)
+    e.mejorar()
+    e.atacar(1)
+    e.restaurar(1)
+    assert e.estado()["ronda1"]["recuperados"] == len(e.OBJETOS)

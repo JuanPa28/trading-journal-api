@@ -12,7 +12,7 @@ una guarda del flujo (adjunto de trading-journal, predicción de StatsNostra, pe
 Subcomandos (todo en el compartimento del grupo; solo datos sintéticos):
   preparar   Crea el bucket de prueba y el bucket de la copia aislada. Ronda 0: sin versionado.
   poblar     Sube los objetos sintéticos y guarda su suma de verificación (sha256).
-  atacar     Sobrescribe con basura y borra los objetos. Anota t0.
+  atacar     Sobrescribe con basura y borra los objetos. Anota t0. Con --ronda 2 borra también las versiones.
   restaurar  Recupera los objetos desde versiones anteriores o desde la copia aislada y los compara.
   mejorar    Ronda 1: activa el versionado del bucket y copia los objetos al bucket aislado.
   medir      Resume RPO, RTO e integridad en seguridad/resultados/04-ronda-N.json.
@@ -90,7 +90,7 @@ def bitacora(accion: str, resultado: str) -> None:
     archivo = RESULTADOS.parent / "bitacora.md"
     if not archivo.exists():
         archivo.write_text("# Bitácora de los experimentos de seguridad (trading-journal)\n\n"
-                           "| Hora (UTC) | Quién | Acción | Resultado |\n|---|---|---|---|\n", encoding="utf-8")
+                           "| Hora (Colombia) | Quién | Acción | Resultado |\n|---|---|---|---|\n", encoding="utf-8")
     with archivo.open("a", encoding="utf-8") as f:
         f.write(f"| {hora_colombia()} | Juan Pablo | {accion} | {resultado} |\n")
 
@@ -107,6 +107,14 @@ def guardar(datos: dict) -> None:
 
 def sha(contenido: bytes) -> str:
     return hashlib.sha256(contenido).hexdigest()
+
+
+EPOCA = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
+def momento(version) -> datetime:
+    """Fecha de una versión; la API de Oracle puede devolver `time_created` vacío en el listado."""
+    return getattr(version, "time_modified", None) or getattr(version, "time_created", None) or EPOCA
 
 
 def leer(almacen, ns, bucket, nombre, version=None) -> bytes | None:
@@ -151,6 +159,10 @@ def atacar(ronda: int) -> None:
     for nombre in objetos_del_ataque:
         almacen.put_object(ns, BUCKET, nombre, BASURA)   # sobrescritura (cifrado simulado)
         almacen.delete_object(ns, BUCKET, nombre)        # borrado
+    if ronda == 2:   # variante dura: el atacante también borra todas las versiones del bucket
+        for nombre in objetos_del_ataque:
+            for v in almacen.list_object_versions(ns, BUCKET, prefix=nombre).data.items:
+                almacen.delete_object(ns, BUCKET, v.name, version_id=v.version_id)
     datos = estado()
     datos[f"ronda{ronda}"] = {"t0": iso(t0)}
     guardar(datos)
@@ -166,7 +178,7 @@ def restaurar(ronda: int) -> None:
     for nombre, esperado in manifiesto.items():
         contenido, de = None, "ninguno"
         versiones = almacen.list_object_versions(ns, BUCKET, prefix=nombre).data.items
-        for v in sorted((v for v in versiones if not v.is_delete_marker), key=lambda v: v.time_created, reverse=True):
+        for v in sorted((v for v in versiones if not v.is_delete_marker), key=momento, reverse=True):
             candidato = leer(almacen, ns, BUCKET, nombre, v.version_id)
             if candidato is not None and sha(candidato) == esperado:
                 contenido, de = candidato, "versión anterior"
@@ -236,7 +248,7 @@ def main() -> None:
     for nombre in ("preparar", "poblar", "mejorar", "destruir"):
         sub.add_parser(nombre)
     for nombre in ("atacar", "restaurar", "medir"):
-        sub.add_parser(nombre).add_argument("--ronda", type=int, choices=[0, 1], required=True)
+        sub.add_parser(nombre).add_argument("--ronda", type=int, choices=[0, 1, 2], required=True, help="2 = ronda 1 con las versiones también borradas")
     a = parser.parse_args()
     acciones = {"preparar": preparar, "poblar": poblar, "mejorar": mejorar, "destruir": destruir,
                 "atacar": lambda: atacar(a.ronda), "restaurar": lambda: restaurar(a.ronda), "medir": lambda: medir(a.ronda)}
