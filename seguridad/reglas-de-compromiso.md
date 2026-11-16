@@ -77,5 +77,5 @@ Se ejecuta el interruptor de parada y se anota la causa si ocurre cualquiera de 
 | API | Aceptado | Fecha |
 |---|---|---|
 | trading-journal | [x] | 2026-11-16 |
-| StatsNostra | [ ] | |
+| StatsNostra | [x] | 2026-11-16 |
 | ecommerce | [ ] | |
