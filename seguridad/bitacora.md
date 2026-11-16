@@ -19,3 +19,9 @@
 | 13:03:01 | Juan Pablo | Ronda 2: sobrescribo y borro los objetos del bucket | 3 objetos afectados a las 2026-11-16T18:03:00Z |
 | 13:03:03 | Juan Pablo | Ronda 2: restauración | 3/3 objetos recuperados (copia aislada) |
 | 13:03:06 | Juan Pablo | Ronda 2: medición | {"ronda": 2, "objetos_total": 3, "objetos_recuperados": 3, "integros": 3, "rto_s": 3, "rpo": "0 objetos perdidos (última versión íntegra)"} |
+| 13:12:41 | Juan Pablo | Ronda 0: medición | no hubo alerta en la ventana de espera |
+| 13:22:42 | Juan Pablo | Mejora 1a: configuración de diagnóstico del registro de actividad hacia log-caos | creada |
+| 13:22:45 | Juan Pablo | Mejora 1b: grupo de acciones con correo | creado |
+| 13:22:57 | Juan Pablo | Mejora 1c: regla de alerta sobre deteccion.kql (cada 5 min, ventana de 10 min) | creada |
+| 13:49:40 | Juan Pablo | Ronda 1: listSecrets sobre api-coordinador | 4 secretos listados (valores descartados) a las 2026-11-16T18:49:38Z |
+| 13:59:03 | Juan Pablo | Ronda 1: medición | alerta a los 522 s |
