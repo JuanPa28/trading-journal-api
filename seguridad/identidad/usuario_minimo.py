@@ -84,9 +84,18 @@ def revertir() -> None:
     deploy.az("containerapp", "secret", "set", "-g", deploy.RESOURCE_GROUP, "-n", deploy.APP,
               "--secrets", f"db-password={deploy.tfvar('db_admin_password')}", "-o", "none")
     deploy.set_env({"DB_USERNAME": "ADMIN", "SPRING_JPA_HIBERNATE_DDL_AUTO": "update"})
+    import time
     with conectar("ADMIN", deploy.tfvar("db_admin_password")) as admin:
-        admin.cursor().execute("DROP TRIGGER ADMIN.TJ_APP_ESQUEMA")
-        admin.cursor().execute(f"DROP USER {USUARIO} CASCADE")
+        cur = admin.cursor()
+        for _ in range(24):   # la revisión anterior tarda en cerrar sus sesiones; Oracle no borra un usuario conectado
+            if cur.execute("SELECT COUNT(*) FROM v$session WHERE username = :u", u=USUARIO).fetchone()[0] == 0:
+                break
+            time.sleep(15)
+        for sentencia in ("DROP TRIGGER ADMIN.TJ_APP_ESQUEMA", f"DROP USER {USUARIO} CASCADE"):
+            try:
+                cur.execute(sentencia)
+            except Exception as error:   # un trigger o usuario ya borrado no es un fallo de la reversión
+                print("aviso:", sentencia, "->", str(error)[:70])
     print(f"{USUARIO} eliminado; la API vuelve a ADMIN")
 
 

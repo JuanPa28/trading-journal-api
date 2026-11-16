@@ -25,3 +25,5 @@
 | 13:22:57 | Juan Pablo | Mejora 1c: regla de alerta sobre deteccion.kql (cada 5 min, ventana de 10 min) | creada |
 | 13:49:40 | Juan Pablo | Ronda 1: listSecrets sobre api-coordinador | 4 secretos listados (valores descartados) a las 2026-11-16T18:49:38Z |
 | 13:59:03 | Juan Pablo | Ronda 1: medición | alerta a los 522 s |
+| 14:04:31 | Juan Pablo | Reversión: elimino regla, grupo de acciones y diagnóstico | estado de la ronda 0 |
+| 14:06:15 | Juan Pablo | Reversión del experimento 1: API de vuelta a ADMIN; elimino TJ_APP y su trigger (esperé a que cerraran las sesiones de la revisión anterior) | estado de la ronda 0 verificado: sin regla, sin grupo de acciones, sin diagnóstico, sin TJ_APP |
