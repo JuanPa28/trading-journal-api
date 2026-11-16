@@ -1,0 +1,88 @@
+{
+ "desde": "2026-11-16T17:28:00Z",
+ "hasta": "2026-11-16T17:46:00Z",
+ "flujo": [
+  {
+   "minuto": "2026-11-16T17:33:00Z",
+   "peticiones": 10,
+   "p95_ms": 6852,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:34:00Z",
+   "peticiones": 69,
+   "p95_ms": 6398,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:35:00Z",
+   "peticiones": 175,
+   "p95_ms": 6377,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:36:00Z",
+   "peticiones": 72,
+   "p95_ms": 6382,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:39:00Z",
+   "peticiones": 6,
+   "p95_ms": 3443,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:40:00Z",
+   "peticiones": 806,
+   "p95_ms": 311,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:41:00Z",
+   "peticiones": 2731,
+   "p95_ms": 299,
+   "errores": 0
+  },
+  {
+   "minuto": "2026-11-16T17:42:00Z",
+   "peticiones": 2419,
+   "p95_ms": 408,
+   "errores": 0
+  }
+ ],
+ "inyeccion": [
+  {
+   "minuto": "2026-11-16T17:33:00Z",
+   "con_cabecera": 14
+  },
+  {
+   "minuto": "2026-11-16T17:34:00Z",
+   "con_cabecera": 78
+  },
+  {
+   "minuto": "2026-11-16T17:35:00Z",
+   "con_cabecera": 189
+  },
+  {
+   "minuto": "2026-11-16T17:36:00Z",
+   "con_cabecera": 44
+  },
+  {
+   "minuto": "2026-11-16T17:39:00Z",
+   "con_cabecera": 8
+  },
+  {
+   "minuto": "2026-11-16T17:40:00Z",
+   "con_cabecera": 809
+  },
+  {
+   "minuto": "2026-11-16T17:41:00Z",
+   "con_cabecera": 2743
+  },
+  {
+   "minuto": "2026-11-16T17:42:00Z",
+   "con_cabecera": 2401
+  }
+ ]
+}
