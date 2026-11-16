@@ -1,16 +1,19 @@
-# Reglas de compromiso del game day
+# Reglas de compromiso
 
-Equipo: Juan Pablo, Mari y Pipe. **Deben estar aceptadas por los tres antes de ejecutar cualquier experimento.** Cada API completa en su repositorio los valores de sus experimentos con este mismo formato. Esta versión es la de trading-journal (coordinador en Azure y datos en Oracle): experimentos 1 y 4.
+Acuerdo del grupo para los experimentos de seguridad. Mientras las tres APIs no lo acepten, no se
+ejecuta ningún experimento. Los valores de la sección 4 en adelante son los de trading-journal
+(experimentos 1, identidad, y 4, datos); StatsNostra y ecommerce completan los suyos en sus
+repositorios con el mismo formato.
 
 ## 1. Ventana
 
 Hora de Colombia. Propuesta, a confirmar en el grupo antes de cada ronda. Durante la ventana nadie manda carga ni reinicia nada contra el coordinador.
 
-| Ronda | Experimento | Inicio | Fin |
-|---|---|---|---|
-| Medición de línea base | 1 y 4 | por confirmar en el grupo | +30 min |
-| Ronda 0 | 1 y 4 | por confirmar en el grupo | +40 min |
-| Ronda 1 | 1 y 4 | por confirmar en el grupo | +40 min |
+| Ronda | Inicio | Fin |
+|---|---|---|
+| Medición del estado estable de seguridad | por confirmar en el grupo | +30 min |
+| Ronda 0 | por confirmar en el grupo | +40 min |
+| Ronda 1 | por confirmar en el grupo | +40 min |
 
 Fuera de la ventana no se crea, modifica ni borra ningún recurso del experimento.
 
@@ -56,7 +59,7 @@ Se verifica con `GET /health` del coordinador (200) y una consulta del flujo com
 
 ## 7. Bitácora
 
-Cada acción con hora (UTC), responsable y resultado, en [`resultados/bitacora.md`](resultados/bitacora.md).
+Cada acción se registra con hora, responsable y resultado en [`bitacora.md`](bitacora.md).
 
 ## 8. Condiciones de aborto
 
@@ -71,8 +74,8 @@ Se ejecuta el interruptor de parada y se anota la causa si ocurre cualquiera de 
 
 ## Aceptan
 
-| Integrante | Acepta | Fecha |
+| API | Aceptado | Fecha |
 |---|---|---|
-| Juan Pablo | sí | 2026-11-16 |
-| Mari | pendiente de confirmar esta versión (aceptó la de StatsNostra) | |
-| Pipe | pendiente de confirmar esta versión | |
+| trading-journal | [x] | 2026-11-16 |
+| StatsNostra | [ ] | |
+| ecommerce | [ ] | |
