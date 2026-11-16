@@ -40,6 +40,7 @@ AJUSTE = "caos-actividad"
 GRUPO = "ag-caos"
 REGLA = "alerta-listar-secretos"
 RESPONSABLE = "Juan Pablo"
+UMBRAL_DETECCION_S = 900   # T1 de la hipótesis: alerta en 15 minutos o menos
 
 
 def ahora() -> datetime:
@@ -148,6 +149,7 @@ def medir(ronda: int, espera: int) -> None:
     t0 = datetime.strptime(datos["t0"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     limite = time.time() + espera
     visible = alerta = None
+    alertas_regla = 0
     while time.time() < limite:
         filas = consultar_logs(
             f'AzureActivity | where TimeGenerated > datetime({datos["t0"]}) - 1m '
@@ -162,12 +164,16 @@ def medir(ronda: int, espera: int) -> None:
             inicio = datetime.fromisoformat(esenciales["startDateTime"].replace("Z", "+00:00"))
             if REGLA in esenciales.get("alertRule", "") and inicio >= t0:
                 alerta = inicio
+                alertas_regla += 1
         if alerta:
             break
         time.sleep(30)
     datos["evento_visible_en_logs_s"] = round((visible - t0).total_seconds()) if visible else None
     datos["mttd_s"] = round((alerta - t0).total_seconds()) if alerta else None
     datos["detectado"] = alerta is not None
+    datos["alertas_de_la_regla"] = alertas_regla
+    datos["umbral_hipotesis_s"] = UMBRAL_DETECCION_S
+    datos["cumple_t1"] = bool(alerta) and datos["mttd_s"] <= UMBRAL_DETECCION_S
     archivo.write_text(json.dumps(datos, indent=2), encoding="utf-8")
     bitacora(f"Ronda {ronda}: medición", "alerta a los %s s" % datos["mttd_s"] if alerta else "no hubo alerta en la ventana de espera")
     print(json.dumps(datos, indent=2))

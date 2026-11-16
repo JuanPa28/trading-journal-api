@@ -32,6 +32,7 @@ import oci
 
 RAIZ = Path(__file__).resolve().parents[2]
 RESULTADOS = RAIZ / "seguridad" / "resultados"
+UMBRAL_RTO_S = 600   # hipótesis: recuperación completa con RTO de 10 minutos o menos
 BUCKET = "caos-datos-sinteticos"
 COPIA = "caos-datos-copia-aislada"
 OBJETOS = {
@@ -219,7 +220,7 @@ def medir(ronda: int) -> None:
     almacen, ns, _ = cliente()
     integros = sum(1 for n, esperado in datos["manifiesto"].items()
                    if (c := leer(almacen, ns, BUCKET, n)) is not None and sha(c) == esperado)
-    salida = {"ronda": ronda, "objetos_total": r["total"], "objetos_recuperados": r["recuperados"], "integros": integros,
+    salida = {"ronda": ronda, "umbral_rto_s": UMBRAL_RTO_S, "objetos_total": r["total"], "objetos_recuperados": r["recuperados"], "integros": integros,
               "rto_s": round((fin - t0).total_seconds()) if r["recuperados"] else None,
               "rpo": "pérdida total: no había copia" if r["recuperados"] == 0 else "0 objetos perdidos (última versión íntegra)"}
     RESULTADOS.mkdir(parents=True, exist_ok=True)
