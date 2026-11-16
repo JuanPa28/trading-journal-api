@@ -23,7 +23,7 @@ Para el contraste se usan **dos asistentes distintos** con la misma `entrada.md`
 python -m pytest seguridad/ia/test_analista.py
 ```
 
-Cubren cinco líneas de inyección (español e inglés, orden de revelar secretos, falso mensaje de sistema, cierre del bloque de datos), una línea normal que no se debe tocar, caracteres de control y la verificación de cifras e identificadores inventados.
+Cubren las inyecciones plantadas en una **URL** (con `%20`, `+` o guiones en lugar de espacios, que un atacante puede dejar en el campo `route` de un log), cinco líneas de inyección (español e inglés, orden de revelar secretos, falso mensaje de sistema, cierre del bloque de datos), una línea normal que no se debe tocar, caracteres de control y la verificación de cifras e identificadores inventados.
 
 ## Límites
 
