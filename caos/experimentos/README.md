@@ -6,7 +6,7 @@ Cada experimento es un archivo JSON de [Chaos Toolkit](https://chaostoolkit.org/
 |---|---|---|---|---|
 | 1 | [`01-latencia.json`](01-latencia.json) | Latencia saliente del coordinador hacia Mari | Juan | listo; falta ejecutar la ronda 0 |
 | 2 | [`02-indisponibilidad.json`](02-indisponibilidad.json) | Una instancia de la API de Pipe deja de estar disponible | Pipe | estructura lista; falta `acciones/pipe-inyectar.sh` y `pipe-revertir.sh` |
-| 3 | [`03-agotamiento.json`](03-agotamiento.json) | CPU de un pod de la API de Mari al 100 % | Mari | estructura lista; falta ajustar `NAMESPACE` y `APP_LABEL` |
+| 3 | [`03-agotamiento.json`](03-agotamiento.json) | CPU de un pod de la API de Mari al 100 % | Mari | ejecutado por Mari en su repositorio (ronda 0: p95 de 3 425 ms; ronda 1: 774 ms) |
 
 ## Validar y ensayar (sin ejecutar nada)
 
