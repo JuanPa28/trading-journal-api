@@ -4,7 +4,7 @@ Seguimiento #4 (DevOps). Un flujo síncrono de punta a punta, con un generador d
 
 > Estado del flujo (13 de noviembre): las tres APIs responden y el coordinador recorre las tres nubes; ver [`resultados/01-flujo-por-las-tres-nubes.md`](resultados/01-flujo-por-las-tres-nubes.md).
 
-> Estado: **en construcción** (entrega el 18 de noviembre de 2026). Las secciones marcadas como *pendiente* se completan al ejecutar las rondas.
+> Estado: rondas 0 y 1 del coordinador ejecutadas el 16 de noviembre de 2026; informe en [`informe/informe-caos.pdf`](informe/informe-caos.pdf). Entrega el 18 de noviembre (tag v5.0.0). Pendiente: la evidencia de Pipe.
 
 ## El flujo
 
@@ -37,9 +37,9 @@ El coordinador llama en cadena a una entidad de cada compañero y reenvía el id
 
 | Integrante | Fallo | Métrica objetivo | Patrones de resiliencia |
 |---|---|---|---|
-| Juan (Azure) | (a) latencia inyectada en la llamada saliente hacia Mari | latencia p95 extremo a extremo | pendiente: timeout, paralelismo, circuit breaker, degradación |
-| Pipe (AWS) | (b) indisponibilidad de su API | tasa de error del flujo y MTTR | pendiente |
-| Mari (GKE) | (c) agotamiento de CPU de un pod | latencia p95 o throughput sostenido | pendiente |
+| Juan (Azure) | (a) latencia inyectada en la llamada saliente hacia Mari | latencia p95 extremo a extremo | timeout por llamada y circuit breaker con degradación (aplicados); paralelismo en el backlog |
+| Pipe (AWS) | (b) indisponibilidad de su API (detener el 50 % de las tareas ECS) | éxito del flujo y MTTR | pendiente de su evidencia |
+| Mari (GKE) | (c) agotamiento de CPU de un pod | latencia p95 extremo a extremo | readiness por saturación, más CPU y HPA (en su repositorio: p95 de 3 425 ms a 774 ms) |
 
 ## Piezas
 
@@ -81,4 +81,14 @@ Cuando el circuito se abre o se cierra queda una línea de log (`Circuit breaker
 
 ## Resultados
 
-*Pendiente:* estado estable medido, ronda 0, diagnóstico, mejoras, ronda 1 y tabla comparativa.
+| | Estado estable | Ronda 0 (sin protección) | Ronda 1 (timeout 1 s + circuit breaker) |
+|---|---|---|---|
+| p95 | 480 ms | **6 523 ms** | **474 ms** (−92,7 %) |
+| Éxito | 100 % | 100 % | 100 % |
+| Throughput | 29,0 req/s | 1,7 req/s | 32,9 req/s |
+| Hipótesis (éxito ≥ 99 % y p95 ≤ 1 600 ms) | | se refuta | se cumple |
+
+- [`resultados/estado-estable.md`](resultados/estado-estable.md): tres corridas del 16 de noviembre y el estado estable declarado.
+- [`resultados/03-ronda-0-y-1.md`](resultados/03-ronda-0-y-1.md): comparación de las rondas, modo de fallo (fallo en cascada por latencia, sin errores) y **costo de la mejora**: casi todas las respuestas de la ronda 1 salieron sin los datos de Mari.
+- [`informe/informe-caos.pdf`](informe/informe-caos.pdf): informe de 3 páginas (se regenera con `python caos/informe/generar_informe.py`).
+- `resultados/serie-rondas.json`: la serie por minuto del tablero.
