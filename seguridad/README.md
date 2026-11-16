@@ -2,7 +2,7 @@
 
 Evaluación final de Defensa en Profundidad. Verifica experimentalmente si los controles de las capas de identidad, red, carga de trabajo, datos y detección y respuesta **detectan, contienen y resisten** condiciones adversas, sobre la arquitectura multinube construida en el énfasis de DevOps (Azure, Google Cloud, AWS y Oracle). Esta carpeta es la parte de trading-journal (coordinador en Azure y datos en Oracle); StatsNostra (GKE) y ecommerce (AWS) documentan la suya en sus repositorios con el mismo formato.
 
-> Estado: en ejecución. Entrega el 18 de noviembre de 2026 (release v5.1.0).
+> Estado: experimentos 1 y 4 ejecutados el 16 de noviembre de 2026 (rondas 0 y 1); informe en [`informe/informe-seguridad.pdf`](informe/informe-seguridad.pdf). Entrega el 18 de noviembre (release v5.1.0). Pendiente: la evidencia de Pipe y el contraste con un segundo asistente de IA.
 
 ![Capas, experimentos y señales](../docs/seguridad-capas.svg)
 
