@@ -196,6 +196,26 @@ def set_env(pairs: dict[str, str]) -> None:
     print("La API responde salud 200:", "sí" if wait_healthy() else "NO (revisar)")
 
 
+def grafana(activar: bool) -> None:
+    """Activa o apaga el envío de métricas por OTLP a Grafana Cloud.
+
+    Las credenciales se leen de ~/.caos-secretos/grafana-otlp.env (fuera del repositorio) y el
+    encabezado de autenticación se guarda como secreto de la Container App; nunca se imprime.
+    """
+    import base64
+    if not activar:
+        set_env({"OTEL_EXPORTER_OTLP_METRICS_ENABLED": "false"})
+        return
+    archivo = Path.home() / ".caos-secretos" / "grafana-otlp.env"
+    datos = dict(l.split("=", 1) for l in archivo.read_text(encoding="utf-8").splitlines() if "=" in l)
+    cabecera = "Basic " + base64.b64encode(f"{datos['GRAFANA_INSTANCE_ID']}:{datos['GRAFANA_OTLP_TOKEN']}".encode()).decode()
+    az("containerapp", "secret", "set", "-g", RESOURCE_GROUP, "-n", APP, "--secrets", f"grafana-auth={cabecera}", "-o", "none")
+    set_env({"OTEL_EXPORTER_OTLP_METRICS_ENABLED": "true",
+             "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT": datos["GRAFANA_OTLP_ENDPOINT"].rstrip("/") + "/v1/metrics",
+             "GRAFANA_OTLP_AUTH_HEADER": "secretref:grafana-auth",
+             "OTEL_SERVICE_NAME": "trading-journal-api"})
+
+
 def teardown() -> None:
     if not az("group", "exists", "-n", RESOURCE_GROUP) == "true":
         print(f"El grupo {RESOURCE_GROUP} no existe: nada que eliminar.")
@@ -218,6 +238,8 @@ def main() -> None:
     p.add_argument("--target", default="all", choices=["all", "mari", "pipe"])
     p = sub.add_parser("env", help="cambia variables de entorno, por ejemplo COMPANIONS_READ_TIMEOUT_MS=1000")
     p.add_argument("pairs", nargs="+", metavar="CLAVE=VALOR")
+    p = sub.add_parser("grafana", help="activa (o apaga con --off) las métricas OTLP hacia Grafana Cloud")
+    p.add_argument("--off", action="store_true")
     sub.add_parser("teardown")
     args = parser.parse_args()
     if args.command == "deploy":
@@ -226,6 +248,8 @@ def main() -> None:
         set_env({"OUTBOUND_FAULT_LATENCY_MS": str(args.latency_ms), "OUTBOUND_FAULT_TARGET": args.target})
     elif args.command == "env":
         set_env(dict(pair.split("=", 1) for pair in args.pairs))
+    elif args.command == "grafana":
+        grafana(not args.off)
     else:
         teardown()
 
