@@ -25,7 +25,7 @@ import hashlib
 import json
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import oci
@@ -46,6 +46,10 @@ def ahora() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def hora_colombia() -> str:
+    return (ahora() - timedelta(hours=5)).strftime("%H:%M:%S")
+
+
 def iso(m: datetime) -> str:
     return m.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -60,12 +64,12 @@ def cliente():
 
 def bitacora(accion: str, resultado: str) -> None:
     RESULTADOS.mkdir(parents=True, exist_ok=True)
-    archivo = RESULTADOS / "bitacora.md"
+    archivo = RESULTADOS.parent / "bitacora.md"
     if not archivo.exists():
         archivo.write_text("# Bitácora de los experimentos de seguridad (trading-journal)\n\n"
                            "| Hora (UTC) | Quién | Acción | Resultado |\n|---|---|---|---|\n", encoding="utf-8")
     with archivo.open("a", encoding="utf-8") as f:
-        f.write(f"| {iso(ahora())} | Juan Pablo | {accion} | {resultado} |\n")
+        f.write(f"| {hora_colombia()} | Juan Pablo | {accion} | {resultado} |\n")
 
 
 def estado(ronda: int | None = None) -> dict:

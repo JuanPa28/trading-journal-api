@@ -14,7 +14,7 @@ Subcomandos:
                       acciones con correo y regla de alerta (deteccion.kql).
   revertir            Elimina lo que creó `mejorar` y deja el estado de la ronda 0.
 
-Todo queda en seguridad/resultados/bitacora.md (hora UTC, responsable, acción y resultado) y en
+Todo queda en seguridad/bitacora.md (hora de Colombia, responsable, acción y resultado) y en
 seguridad/resultados/01-ronda-N.json. El correo de la alerta sale de la variable ALERT_EMAIL o del
 archivo ~/.caos-secretos/alerta.env, nunca del repositorio.
 """
@@ -28,7 +28,7 @@ import subprocess
 import sys
 import tempfile
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 AQUI = Path(__file__).resolve().parent
@@ -44,6 +44,10 @@ RESPONSABLE = "Juan Pablo"
 
 def ahora() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def hora_colombia() -> str:
+    return (ahora() - timedelta(hours=5)).strftime("%H:%M:%S")
 
 
 def iso(momento: datetime) -> str:
@@ -81,12 +85,12 @@ def suscripcion() -> str:
 
 def bitacora(accion: str, resultado: str) -> None:
     RESULTADOS.mkdir(parents=True, exist_ok=True)
-    archivo = RESULTADOS / "bitacora.md"
+    archivo = RESULTADOS.parent / "bitacora.md"
     if not archivo.exists():
         archivo.write_text("# Bitácora de los experimentos de seguridad (trading-journal)\n\n"
                            "| Hora (UTC) | Quién | Acción | Resultado |\n|---|---|---|---|\n", encoding="utf-8")
     with archivo.open("a", encoding="utf-8") as f:
-        f.write(f"| {iso(ahora())} | {RESPONSABLE} | {accion} | {resultado} |\n")
+        f.write(f"| {hora_colombia()} | {RESPONSABLE} | {accion} | {resultado} |\n")
 
 
 def correo() -> str:
