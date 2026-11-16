@@ -23,6 +23,10 @@
 | 13:22:42 | Juan Pablo | Mejora 1a: configuración de diagnóstico del registro de actividad hacia log-caos | creada |
 | 13:22:45 | Juan Pablo | Mejora 1b: grupo de acciones con correo | creado |
 | 13:22:57 | Juan Pablo | Mejora 1c: regla de alerta sobre deteccion.kql (cada 5 min, ventana de 10 min) | creada |
+| 13:24 (aprox.) | Juan Pablo | Mejora 2: creo TJ_APP con lectura y escritura de las 3 tablas y 3 secuencias, cambio el secreto db-password y DB_USERNAME (registro retroactivo a partir de las revisiones de la Container App) | la revisión 19 no arranca: Hibernate no valida un esquema ajeno («missing table»); la API sigue sirviendo con la revisión anterior |
+| 13:33 (aprox.) | Juan Pablo | Mejora 2: ddl-auto=none y esquema por variable de entorno (registro retroactivo) | ORA-00942 en las consultas: Spring no convierte la variable en hibernate.default_schema |
+| 13:35 (aprox.) | Juan Pablo | Mejora 2: esquema por SQL de inicio de Hikari (registro retroactivo) | la revisión 22 no arranca: az en Windows mutila un valor con espacios |
+| 13:40 (aprox.) | Juan Pablo | Mejora 2: creo un trigger de inicio de sesión que fija el esquema ADMIN para TJ_APP y retiro la variable (registro retroactivo) | API sana como TJ_APP; el flujo trae los datos de las tres APIs |
 | 13:49:40 | Juan Pablo | Ronda 1: listSecrets sobre api-coordinador | 4 secretos listados (valores descartados) a las 2026-11-16T18:49:38Z |
 | 13:59:03 | Juan Pablo | Ronda 1: medición | alerta a los 522 s |
 | 14:04:31 | Juan Pablo | Reversión: elimino regla, grupo de acciones y diagnóstico | estado de la ronda 0 |
