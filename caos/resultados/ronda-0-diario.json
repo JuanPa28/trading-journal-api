@@ -1,0 +1,309 @@
+{
+  "chaoslib-version": "1.45.1",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "node": "PC-de-Juanpa",
+  "experiment": {
+    "version": "1.0.0",
+    "title": "Latencia saliente del coordinador hacia Mari",
+    "description": "Dado el perfil de carga fijo (caos/carga/perfil.js), cuando se inyecten 3000 ms de latencia en las llamadas del coordinador hacia la API de Mari durante 3 minutos, el flujo mantendra una tasa de exito >= 99 % y un p95 extremo a extremo <= 1600 ms (estado estable medido el 13 de noviembre: caos/resultados/estado-estable.md).",
+    "tags": [
+      "devops",
+      "latencia",
+      "juan",
+      "azure"
+    ],
+    "configuration": {
+      "coordinador": {
+        "type": "env",
+        "key": "BASE_URL",
+        "default": "https://api-coordinador.jollybeach-fbb8b9ad.eastus.azurecontainerapps.io"
+      },
+      "trade_id": {
+        "type": "env",
+        "key": "TRADE_ID",
+        "default": "5540"
+      },
+      "latencia_ms": {
+        "type": "env",
+        "key": "FAULT_LATENCY_MS",
+        "default": "3000"
+      },
+      "objetivo": {
+        "type": "env",
+        "key": "FAULT_TARGET",
+        "default": "mari"
+      },
+      "p95_ms": {
+        "type": "env",
+        "key": "P95_MS",
+        "default": "1600"
+      },
+      "resumen": {
+        "type": "env",
+        "key": "RESUMEN_K6",
+        "default": "caos/resultados/gate-resumen.json"
+      }
+    },
+    "steady-state-hypothesis": {
+      "title": "El coordinador esta sano antes y despues del experimento",
+      "probes": [
+        {
+          "type": "probe",
+          "name": "salud-del-coordinador",
+          "tolerance": 200,
+          "provider": {
+            "type": "http",
+            "url": "${coordinador}/actuator/health",
+            "timeout": 30
+          }
+        }
+      ]
+    },
+    "method": [
+      {
+        "type": "action",
+        "name": "inyectar-latencia-saliente-y-correr-el-perfil-de-carga",
+        "provider": {
+          "type": "process",
+          "path": "k6",
+          "arguments": "run -q --summary-trend-stats avg,min,med,max,p(90),p(95),p(99) -e BASE_URL=${coordinador} -e TRADE_ID=${trade_id} -e FAULT_LATENCY_MS=${latencia_ms} -e FAULT_TARGET=${objetivo} -e P95_MS=${p95_ms} --summary-export ${resumen} caos/carga/perfil.js",
+          "timeout": 600
+        }
+      }
+    ],
+    "rollbacks": [
+      {
+        "type": "action",
+        "name": "verificar-la-reversion",
+        "provider": {
+          "type": "http",
+          "url": "${coordinador}/api/v2/trades/${trade_id}",
+          "timeout": 30
+        }
+      }
+    ],
+    "extensions": [
+      {
+        "name": "metadatos-del-experimento",
+        "responsable": "Juan",
+        "metrica_objetivo": "latencia p95 extremo a extremo (k6) y tasa de exito del flujo",
+        "metodo_de_inyeccion": "cabecera X-Inject-Outbound-Latency-Ms en cada peticion de k6; el coordinador espera ese tiempo antes de llamar a Mari (requiere FAULT_HEADER_ENABLED=true)",
+        "radio_de_impacto": "solo las peticiones de k6 que llevan la cabecera; las llamadas del coordinador hacia Mari; el resto del trafico no se afecta; datos sinteticos",
+        "duracion_minutos": 3,
+        "condiciones_de_aborto": [
+          "tasa de exito del flujo < 50 % (k6 detiene la prueba tras 20 s)",
+          "p95 > 15000 ms (k6 detiene la prueba tras 20 s)"
+        ],
+        "interruptor_de_parada": "quitar la cabecera o poner FAULT_HEADER_ENABLED=false en el coordinador",
+        "plan_de_reversion": "la falla vive solo en las peticiones con cabecera: al terminar la prueba se revierte sola; el rollback verifica que el flujo responde 200 sin la cabecera",
+        "evaluacion": "python caos/gate/evaluar.py --resumen ${resumen} --p95-max 1600 --exito-min 99",
+        "ronda": 0
+      }
+    ],
+    "dry": null
+  },
+  "start": "2026-11-16T17:33:10.119576+00:00",
+  "status": "completed",
+  "deviated": false,
+  "steady_states": {
+    "before": {
+      "steady_state_met": true,
+      "probes": [
+        {
+          "activity": {
+            "type": "probe",
+            "name": "salud-del-coordinador",
+            "tolerance": 200,
+            "provider": {
+              "type": "http",
+              "url": "${coordinador}/actuator/health",
+              "timeout": 30
+            }
+          },
+          "output": {
+            "status": 200,
+            "headers": {
+              "x-app-version": "5.0.0-rc.2",
+              "x-app-track": "stable",
+              "x-app-name": "juanpa",
+              "x-trace-id": "e4dce8fb-ed40-435f-950a-38d7fdb68ef2",
+              "content-type": "application/vnd.spring-boot.actuator.v3+json",
+              "date": "Mon, 16 Nov 2026 17:33:08 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "{\"groups\":[\"liveness\",\"readiness\"],\"status\":\"UP\"}"
+          },
+          "start": "2026-11-16T17:33:10.120169+00:00",
+          "status": "succeeded",
+          "end": "2026-11-16T17:33:10.965187+00:00",
+          "duration": 0.845018,
+          "tolerance_met": true
+        }
+      ]
+    },
+    "after": {
+      "steady_state_met": true,
+      "probes": [
+        {
+          "activity": {
+            "type": "probe",
+            "name": "salud-del-coordinador",
+            "tolerance": 200,
+            "provider": {
+              "type": "http",
+              "url": "${coordinador}/actuator/health",
+              "timeout": 30
+            }
+          },
+          "output": {
+            "status": 200,
+            "headers": {
+              "x-app-version": "5.0.0-rc.2",
+              "x-app-track": "stable",
+              "x-app-name": "juanpa",
+              "x-trace-id": "eb135c6f-1b85-44ad-976c-64027f926521",
+              "content-type": "application/vnd.spring-boot.actuator.v3+json",
+              "date": "Mon, 16 Nov 2026 17:36:19 GMT",
+              "transfer-encoding": "chunked"
+            },
+            "body": "{\"groups\":[\"liveness\",\"readiness\"],\"status\":\"UP\"}"
+          },
+          "start": "2026-11-16T17:36:20.829694+00:00",
+          "status": "succeeded",
+          "end": "2026-11-16T17:36:21.663035+00:00",
+          "duration": 0.833341,
+          "tolerance_met": true
+        }
+      ]
+    },
+    "during": []
+  },
+  "run": [
+    {
+      "activity": {
+        "type": "action",
+        "name": "inyectar-latencia-saliente-y-correr-el-perfil-de-carga",
+        "provider": {
+          "type": "process",
+          "path": "k6",
+          "arguments": "run -q --summary-trend-stats avg,min,med,max,p(90),p(95),p(99) -e BASE_URL=${coordinador} -e TRADE_ID=${trade_id} -e FAULT_LATENCY_MS=${latencia_ms} -e FAULT_TARGET=${objetivo} -e P95_MS=${p95_ms} --summary-export ${resumen} caos/carga/perfil.js",
+          "timeout": 600
+        }
+      },
+      "output": {
+        "status": 99,
+        "stdout": "\n\n  █ THRESHOLDS \n\n    http_req_duration\n    ✗ 'p(95)<1600' p(95)=6.52s\n    ✓ 'p(95)<15000' p(95)=6.52s\n\n    http_req_failed\n    ✓ 'rate<0.01' rate=0.00%\n    ✓ 'rate<0.5' rate=0.00%\n\n\n  █ TOTAL RESULTS \n\n    checks_total.......: 325     1.716836/s\n    checks_succeeded...: 100.00% 325 out of 325\n    checks_failed......: 0.00%   0 out of 325\n\n    ✓ status 200\n\n    HTTP\n    http_req_duration..............: avg=6.48s min=6.35s med=6.45s max=16.43s p(90)=6.49s p(95)=6.52s p(99)=6.89s\n      { expected_response:true }...: avg=6.48s min=6.35s med=6.45s max=16.43s p(90)=6.49s p(95)=6.52s p(99)=6.89s\n    http_req_failed................: 0.00%  0 out of 325\n    http_reqs......................: 325    1.716836/s\n\n    EXECUTION\n    iteration_duration.............: avg=6.5s  min=6.35s med=6.46s max=16.43s p(90)=6.56s p(95)=6.67s p(99)=6.92s\n    iterations.....................: 325    1.716836/s\n    vus............................: 1      min=0        max=29\n    vus_max........................: 30     min=30       max=30\n\n    NETWORK\n    data_received..................: 688 kB 3.6 kB/s\n    data_sent......................: 72 kB  382 B/s\n\n\n\n",
+        "stderr": "time=\"2026-11-16T12:36:20-05:00\" level=error msg=\"thresholds on metrics 'http_req_duration' have been crossed\"\n"
+      },
+      "start": "2026-11-16T17:33:10.965732+00:00",
+      "status": "succeeded",
+      "end": "2026-11-16T17:36:20.828230+00:00",
+      "duration": 189.862498
+    }
+  ],
+  "rollbacks": [
+    {
+      "activity": {
+        "type": "action",
+        "name": "verificar-la-reversion",
+        "provider": {
+          "type": "http",
+          "url": "${coordinador}/api/v2/trades/${trade_id}",
+          "timeout": 30
+        }
+      },
+      "output": {
+        "status": 200,
+        "headers": {
+          "x-app-version": "5.0.0-rc.2",
+          "x-app-track": "stable",
+          "x-app-name": "juanpa",
+          "x-trace-id": "ee388ca6-7d92-4ce2-81a3-a1c1763c8492",
+          "content-type": "application/json",
+          "content-length": "1358",
+          "date": "Mon, 16 Nov 2026 17:36:20 GMT"
+        },
+        "body": {
+          "trade": {
+            "id": 5540,
+            "traderId": 102,
+            "strategy": {
+              "id": 5545,
+              "htfPdArray": true,
+              "ifvg": true,
+              "cisd": false,
+              "followedRules": true,
+              "continuation": false,
+              "reversal": false,
+              "correctRisk": true,
+              "createdAt": "2026-11-13T18:58:02.577586946"
+            },
+            "externalId": "flujo",
+            "contract": "MNQU26",
+            "size": 1,
+            "direction": "LONG",
+            "entryTime": "2026-11-13T09:00:00",
+            "exitTime": null,
+            "entryPrice": 100,
+            "exitPrice": null,
+            "pnl": null,
+            "commissions": null,
+            "fees": null,
+            "notes": "flujo del equipo",
+            "open": true,
+            "setupScore": 4,
+            "setupGrade": "B"
+          },
+          "companions": {
+            "partido": {
+              "id": 3,
+              "deporte": "Futbol",
+              "liga": "Premier League",
+              "equipoLocal": "Arsenal",
+              "equipoVisitante": "Chelsea",
+              "fechaHora": "2026-07-10T18:00:00Z",
+              "estado": "FINALIZADO",
+              "resultadoLocal": 3,
+              "resultadoVisitante": 0
+            },
+            "prediccion": {
+              "id": 11,
+              "apostadorId": 4,
+              "partidoId": 6,
+              "golesLocalPred": 2,
+              "golesVisitantePred": 2,
+              "fechaPrediccion": "2026-11-13T21:13:29.388867Z",
+              "acertada": null,
+              "puntos": null
+            },
+            "commerce": {
+              "nit": 3247283,
+              "legalName": "Mercado libre S.A.",
+              "shortName": "Mercado Libre",
+              "address": "calle 10 # 2-23",
+              "contactNumber": "+57 364 021 4698",
+              "email": "mercadolibre@mercadolibre.com",
+              "createdAt": "2026-11-13T18:55:13.448Z"
+            },
+            "product": {
+              "id": "8c135032-7e9b-459f-9653-d24851833361",
+              "shortName": "Iphone",
+              "fullName": "Celular Iphone 16e",
+              "description": "Buen celular",
+              "price": 1500.0,
+              "amountAvailable": 3,
+              "createdAt": "2026-11-13T18:52:42.318Z",
+              "commerceNit": 238479238
+            }
+          }
+        }
+      },
+      "start": "2026-11-16T17:36:21.664718+00:00",
+      "status": "succeeded",
+      "end": "2026-11-16T17:36:22.604965+00:00",
+      "duration": 0.940247
+    }
+  ],
+  "end": "2026-11-16T17:36:22.605120+00:00",
+  "duration": 192.48556089401245
+}
