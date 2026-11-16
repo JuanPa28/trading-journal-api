@@ -22,6 +22,7 @@ import argparse
 import re
 import sys
 import unicodedata
+from urllib.parse import unquote_plus
 from pathlib import Path
 
 PATRONES_INYECCION = [
@@ -37,6 +38,7 @@ PATRONES_INYECCION = [
     r"new\s+instructions",
 ]
 RE_INYECCION = re.compile("|".join(PATRONES_INYECCION), flags=re.IGNORECASE)
+RE_SEPARADORES = re.compile(r"[-_.,;]+")   # un atacante puede separar las palabras con guiones o puntos en una ruta
 RE_CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 RE_NUMERO = re.compile(r"(?<![\w.])(\d+(?:[.,]\d+)?)\s?(ms|s|min|%)(?![\w])", flags=re.IGNORECASE)
 RE_ID = re.compile(r"\b(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|k6-\d+-\d+|reversion-[\w-]+)\b", flags=re.IGNORECASE)
@@ -51,6 +53,13 @@ def sanitizar(texto: str) -> tuple[str, int]:
     lineas = []
     for linea in texto.splitlines():
         linea, n = RE_INYECCION.subn("[INSTRUCCION-NEUTRALIZADA]", linea)
+        if n == 0:
+            # Texto plantado en una URL: %20, + o guiones en lugar de espacios. Se detecta sobre la versión
+            # decodificada y, si coincide, la línea se reemplaza por esa versión ya neutralizada.
+            plana = RE_SEPARADORES.sub(" ", unquote_plus(linea))
+            plana_limpia, n = RE_INYECCION.subn("[INSTRUCCION-NEUTRALIZADA]", plana)
+            if n:
+                linea = "[LINEA-CODIFICADA] " + plana_limpia
         neutralizadas += n
         linea = linea.replace("```", "'''").replace("<datos>", "&lt;datos&gt;").replace("</datos>", "&lt;/datos&gt;")
         lineas.append(linea[:MAX_LINEA])
