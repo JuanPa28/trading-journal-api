@@ -78,4 +78,4 @@ Se ejecuta el interruptor de parada y se anota la causa si ocurre cualquiera de 
 |---|---|---|
 | trading-journal | [x] | 2026-11-16 |
 | StatsNostra | [x] | 2026-11-16 |
-| ecommerce | [ ] | |
+| ecommerce | [x] | 2026-11-16 |
