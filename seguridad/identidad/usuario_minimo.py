@@ -7,9 +7,14 @@ con permiso de conectarse y de leer y escribir (SELECT, INSERT, UPDATE, DELETE) 
 esquema ADMIN, sin crear tablas ni tocar otros esquemas, y cambia la API para usarlo
 (D3FEND: User Account Permissions, D3-UAP; ISO 27001:2022 A.8.2; NIST 800-53 AC-6).
 
-  aplicar    Crea TJ_APP con una contraseña aleatoria, concede lo mínimo, prueba la conexión y cambia
-             la Container App (secreto db-password, DB_USERNAME y esquema por defecto).
-  revertir   Devuelve la Container App a ADMIN y elimina TJ_APP.
+  aplicar    Crea TJ_APP con una contraseña aleatoria, concede lo mínimo, crea un trigger que fija el
+             esquema ADMIN para sus sesiones, prueba la conexión y cambia la Container App
+             (secreto db-password, DB_USERNAME y ddl-auto=none).
+  revertir   Devuelve la Container App a ADMIN y elimina TJ_APP y su trigger.
+
+Por qué un trigger de inicio de sesión y no una propiedad de Hibernate: Spring no puede convertir una
+variable de entorno en `hibernate.default_schema` (por el guion bajo), y `az` en Windows mutila un valor
+con espacios como el SQL de inicio de Hikari. El trigger deja la aplicación sin cambios.
 
 Requiere: pip install oracledb. Las contraseñas nunca se imprimen.
 """
@@ -25,6 +30,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "caos" / "azure"))
 import deploy  # noqa: E402  (reutiliza az, tfvar, jdbc_url, set_env)
 
 USUARIO = "TJ_APP"
+
+TRIGGER = ("CREATE OR REPLACE TRIGGER ADMIN.TJ_APP_ESQUEMA AFTER LOGON ON TJ_APP.SCHEMA "
+           "BEGIN EXECUTE IMMEDIATE 'ALTER SESSION SET CURRENT_SCHEMA = ADMIN'; END;")
 
 CONCEDER = """
 DECLARE
@@ -61,23 +69,23 @@ def aplicar() -> None:
             cur.execute(f'CREATE USER {USUARIO} IDENTIFIED BY "{clave}"')
         cur.execute(f"GRANT CREATE SESSION TO {USUARIO}")
         cur.execute(CONCEDER % USUARIO)
+        cur.execute(TRIGGER)
     with conectar(USUARIO, clave) as prueba:  # el usuario nuevo debe poder leer el esquema
         tablas = prueba.cursor().execute("SELECT COUNT(*) FROM all_tables WHERE owner = 'ADMIN'").fetchone()[0]
     print(f"{USUARIO} creado y probado: ve {tablas} tablas del esquema ADMIN")
     deploy.az("containerapp", "secret", "set", "-g", deploy.RESOURCE_GROUP, "-n", deploy.APP,
               "--secrets", f"db-password={clave}", "-o", "none")
-    deploy.set_env({"DB_USERNAME": USUARIO,
-                    "SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA": "ADMIN",
-                    "SPRING_JPA_HIBERNATE_DDL_AUTO": "validate"})
+    # ddl-auto=none: validar el esquema ajeno falla (Hibernate no ve las tablas de ADMIN) y TJ_APP
+    # tampoco tiene permiso de alterarlas, así que la aplicación deja de tocar el esquema.
+    deploy.set_env({"DB_USERNAME": USUARIO, "SPRING_JPA_HIBERNATE_DDL_AUTO": "none"})
 
 
 def revertir() -> None:
     deploy.az("containerapp", "secret", "set", "-g", deploy.RESOURCE_GROUP, "-n", deploy.APP,
               "--secrets", f"db-password={deploy.tfvar('db_admin_password')}", "-o", "none")
-    deploy.az("containerapp", "update", "-g", deploy.RESOURCE_GROUP, "-n", deploy.APP, "--remove-env-vars",
-              "SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA", "-o", "none", check=False)
     deploy.set_env({"DB_USERNAME": "ADMIN", "SPRING_JPA_HIBERNATE_DDL_AUTO": "update"})
     with conectar("ADMIN", deploy.tfvar("db_admin_password")) as admin:
+        admin.cursor().execute("DROP TRIGGER ADMIN.TJ_APP_ESQUEMA")
         admin.cursor().execute(f"DROP USER {USUARIO} CASCADE")
     print(f"{USUARIO} eliminado; la API vuelve a ADMIN")
 
