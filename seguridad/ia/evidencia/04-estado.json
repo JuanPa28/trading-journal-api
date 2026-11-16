@@ -1,0 +1,42 @@
+{
+  "manifiesto": {
+    "trading-journal/adjunto-001.txt": "9c8882bdec9f910d4e0055192e60d842ae327c5c4f5fefb3a48b3035e059e8e5",
+    "statsnostra/prediccion-001.json": "727772c2c9671e186ede7429296a5dfb0c4a7fcedb84c7143e6732f27a4a3f81",
+    "ecommerce/pedido-001.json": "2141d905826fc6380bddfa55861d44c7de0ebb6d69bbe268d1a9ea1170b600af"
+  },
+  "poblado": "2026-11-16T17:58:16Z",
+  "ronda0": {
+    "t0": "2026-11-16T18:00:54Z",
+    "fin_restauracion": "2026-11-16T18:00:56Z",
+    "recuperados": 0,
+    "total": 3,
+    "origen": {
+      "trading-journal/adjunto-001.txt": "ninguno",
+      "statsnostra/prediccion-001.json": "ninguno",
+      "ecommerce/pedido-001.json": "ninguno"
+    }
+  },
+  "ultima_copia": "2026-11-16T18:01:28Z",
+  "ronda1": {
+    "t0": "2026-11-16T18:02:27Z",
+    "fin_restauracion": "2026-11-16T18:02:30Z",
+    "recuperados": 3,
+    "total": 3,
+    "origen": {
+      "trading-journal/adjunto-001.txt": "versi\u00f3n anterior",
+      "statsnostra/prediccion-001.json": "versi\u00f3n anterior",
+      "ecommerce/pedido-001.json": "versi\u00f3n anterior"
+    }
+  },
+  "ronda2": {
+    "t0": "2026-11-16T18:03:00Z",
+    "fin_restauracion": "2026-11-16T18:03:03Z",
+    "recuperados": 3,
+    "total": 3,
+    "origen": {
+      "trading-journal/adjunto-001.txt": "copia aislada",
+      "statsnostra/prediccion-001.json": "copia aislada",
+      "ecommerce/pedido-001.json": "copia aislada"
+    }
+  }
+}
