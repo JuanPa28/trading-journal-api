@@ -40,6 +40,29 @@ OBJETOS = {
     "ecommerce/pedido-001.json": b'{"pedido": "sintetico-1", "total": 125000}\n',
 }
 BASURA = b"CIFRADO-SIMULADO-DE-LA-PRUEBA\n"
+APORTES = Path(__file__).resolve().parent / "objetos"
+
+
+def cargar_objetos(carpeta: Path = APORTES) -> dict[str, bytes]:
+    """Objetos sintéticos de la prueba: los de cada API del grupo si la carpeta `objetos/` trae su aporte.
+
+    Un aporte es un archivo en `objetos/<api>/<nombre>`; si junto a él hay un `<nombre>.sha256`, el hash
+    declarado por quien lo aportó debe coincidir con el contenido (si no, se rechaza). Las APIs que no
+    aportan archivo quedan con el objeto sintético por defecto.
+    """
+    objetos = dict(OBJETOS)
+    if carpeta.is_dir():
+        for archivo in sorted(p for p in carpeta.rglob("*") if p.is_file() and p.suffix != ".sha256"):
+            contenido = archivo.read_bytes()
+            declarado = archivo.with_name(archivo.name + ".sha256")
+            if declarado.exists() and declarado.read_text(encoding="utf-8").split()[0].lower() != sha(contenido):
+                raise SystemExit(f"El hash declarado de {archivo.name} no coincide con su contenido")
+            clave = archivo.relative_to(carpeta).as_posix()
+            api = clave.split("/")[0]
+            for por_defecto in [k for k in objetos if k.startswith(api + "/")]:
+                del objetos[por_defecto]   # el aporte reemplaza al objeto por defecto de esa API
+            objetos[clave] = contenido
+    return objetos
 
 
 def ahora() -> datetime:
@@ -110,7 +133,7 @@ def preparar() -> None:
 def poblar() -> None:
     almacen, ns, _ = cliente()
     manifiesto = {}
-    for nombre, contenido in OBJETOS.items():
+    for nombre, contenido in cargar_objetos().items():
         almacen.put_object(ns, BUCKET, nombre, contenido)
         manifiesto[nombre] = sha(contenido)
     datos = estado()
@@ -124,13 +147,14 @@ def poblar() -> None:
 def atacar(ronda: int) -> None:
     almacen, ns, _ = cliente()
     t0 = ahora()
-    for nombre in OBJETOS:
+    objetos_del_ataque = estado()["manifiesto"]
+    for nombre in objetos_del_ataque:
         almacen.put_object(ns, BUCKET, nombre, BASURA)   # sobrescritura (cifrado simulado)
         almacen.delete_object(ns, BUCKET, nombre)        # borrado
     datos = estado()
     datos[f"ronda{ronda}"] = {"t0": iso(t0)}
     guardar(datos)
-    bitacora(f"Ronda {ronda}: sobrescribo y borro los objetos del bucket", f"{len(OBJETOS)} objetos afectados a las {iso(t0)}")
+    bitacora(f"Ronda {ronda}: sobrescribo y borro los objetos del bucket", f"{len(objetos_del_ataque)} objetos afectados a las {iso(t0)}")
     print("Ataque simulado hecho; t0 =", iso(t0))
 
 
@@ -166,7 +190,7 @@ def mejorar() -> None:
     almacen, ns, _ = cliente()
     almacen.update_bucket(ns, BUCKET, oci.object_storage.models.UpdateBucketDetails(versioning="Enabled"))
     datos = estado()
-    for nombre, contenido in OBJETOS.items():
+    for nombre, contenido in cargar_objetos().items():
         almacen.put_object(ns, BUCKET, nombre, contenido)       # vuelve a quedar la versión buena
         almacen.put_object(ns, COPIA, nombre, contenido)        # copia aislada (otro bucket, sin escritura de la API)
     datos["ultima_copia"] = iso(ahora())
