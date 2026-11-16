@@ -48,3 +48,4 @@ canary/reports/
 __pycache__/
 *.pyc
 chaostoolkit.log
+caos/informe/.perfil-pdf/
