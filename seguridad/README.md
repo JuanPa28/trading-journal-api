@@ -13,7 +13,7 @@ Evaluación final de Defensa en Profundidad. Verifica experimentalmente si los c
 | [`identidad/`](identidad/) | Experimento 1: regla de detección, script del experimento y mejoras |
 | [`datos/`](datos/) | Experimento 4 (grupal): resiliencia de los datos en Oracle Object Storage |
 | [`ia/`](ia/) | Analista de IA con sanitización de la entrada y verificación de la respuesta |
-| [`resultados/`](resultados/) | Bitácora y resultados de cada ronda |
+| [`bitacora.md`](bitacora.md) y [`resultados/`](resultados/) | Bitácora de cada acción y resultados de cada ronda |
 
 ## Experimentos
 
@@ -69,7 +69,7 @@ La lógica de restauración se prueba con un almacén de objetos simulado (`pyth
 | Control o mejora | Riesgo que mitiga | ATT&CK | D3FEND | ISO/IEC 27001:2022 | NIST SP 800-53 | Evidencia |
 |---|---|---|---|---|---|---|
 | Alerta sobre `listSecrets` en el registro de actividad | Robo de credenciales sin que nadie lo vea | T1552.007 | | 8.15, 8.16 | AU-6, SI-4 | `resultados/01-ronda-*.json` |
-| Usuario `TJ_APP` de privilegios mínimos en lugar de `ADMIN` | Una credencial robada da control total de la base | T1552.007, T1078.004 | D3-UAP | 8.2, 5.15 | AC-6 | `resultados/bitacora.md` |
+| Usuario `TJ_APP` de privilegios mínimos en lugar de `ADMIN` | Una credencial robada da control total de la base | T1552.007, T1078.004 | D3-UAP | 8.2, 5.15 | AC-6 | `bitacora.md` |
 | Contraseña nueva y aleatoria en el secreto (la de `ADMIN` sale de la Container App) | Credencial vieja y expuesta que sigue válida en la plataforma | T1552.007 | D3-CRO | 5.17 | IA-5 | `usuario_minimo.py` y la bitácora |
 | Versionado del bucket de objetos | Borrado o sobrescritura irreversible | T1485, T1486 | D3-RO | 8.13 | CP-9 | `resultados/04-ronda-*.json` |
 | Copia aislada de los objetos | Un actor con acceso al bucket destruye también las copias | T1485 | D3-RO | 8.13 | CP-6, CP-9 | `resultados/04-ronda-*.json` |
