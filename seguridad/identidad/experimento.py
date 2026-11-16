@@ -62,9 +62,10 @@ def az(*args: str, check: bool = True) -> str:
     return r.stdout.strip()
 
 
-def arm(metodo: str, ruta: str, version: str, cuerpo: dict | None = None) -> dict:
+def arm(metodo: str, ruta: str, version: str, cuerpo: dict | None = None, parametros: list[str] | None = None) -> dict:
     """Llamada a Azure Resource Manager; el cuerpo viaja por archivo para no mezclar comillas."""
-    argumentos = ["rest", "--method", metodo, "--url", f"https://management.azure.com{ruta}?api-version={version}"]
+    # Los parámetros extra van por --url-parameters: az.cmd rompe un "&" dentro de la URL en Windows.
+    argumentos = ["rest", "--method", metodo, "--url", f"https://management.azure.com{ruta}", "--url-parameters", f"api-version={version}", *(parametros or [])]
     ruta_cuerpo = None
     if cuerpo is not None:
         with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as f:
@@ -88,7 +89,7 @@ def bitacora(accion: str, resultado: str) -> None:
     archivo = RESULTADOS.parent / "bitacora.md"
     if not archivo.exists():
         archivo.write_text("# Bitácora de los experimentos de seguridad (trading-journal)\n\n"
-                           "| Hora (UTC) | Quién | Acción | Resultado |\n|---|---|---|---|\n", encoding="utf-8")
+                           "| Hora (Colombia) | Quién | Acción | Resultado |\n|---|---|---|---|\n", encoding="utf-8")
     with archivo.open("a", encoding="utf-8") as f:
         f.write(f"| {hora_colombia()} | {RESPONSABLE} | {accion} | {resultado} |\n")
 
@@ -155,7 +156,7 @@ def medir(ronda: int, espera: int) -> None:
         if filas and filas[0][0] and visible is None:
             visible = datetime.fromisoformat(filas[0][1].replace("Z", "+00:00"))
         alertas = arm("GET", f"/subscriptions/{suscripcion()}/providers/Microsoft.AlertsManagement/alerts",
-                      "2019-03-01&timeRange=1d").get("value", [])
+                      "2019-03-01", parametros=["timeRange=1d"]).get("value", [])
         for a in alertas:
             esenciales = a["properties"]["essentials"]
             inicio = datetime.fromisoformat(esenciales["startDateTime"].replace("Z", "+00:00"))
