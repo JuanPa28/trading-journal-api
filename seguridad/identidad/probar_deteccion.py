@@ -24,8 +24,9 @@ CASOS = [
 
 def consulta() -> str:
     filas = ",\n".join(
-        f'    datetime(2026-11-18T15:00:00Z), "{n}", "{c}", "{o}", "{e}", "usuario-prueba", "203.0.113.7", "/subscriptions/x/resourceGroups/rg/providers/Microsoft.App/containerApps/api"'
-        for n, c, o, e, _ in CASOS)
+        # cada caso se identifica por su número (ASCII): la comparación no depende de la codificación de az
+        f'    datetime(2026-11-18T15:00:00Z), "{i}", "{c}", "{o}", "{e}", "usuario-prueba", "203.0.113.7", "/subscriptions/x/resourceGroups/rg/providers/Microsoft.App/containerApps/api"'
+        for i, (n, c, o, e, _) in enumerate(CASOS))
     tabla = ("let AzureActivity = datatable(TimeGenerated:datetime, Caso:string, CategoryValue:string, "
              "OperationNameValue:string, ActivityStatusValue:string, Caller:string, CallerIpAddress:string, ResourceId:string)[\n" + filas + "\n];\n")
     cuerpo = REGLA.replace("| project TimeGenerated, Caller", "| project Caso, TimeGenerated, Caller")
@@ -48,8 +49,8 @@ def ejecutar(workspace: str) -> list[list]:
 def main() -> int:
     alertaron = {fila[0] for fila in ejecutar(sys.argv[1])}
     fallos = 0
-    for nombre, *_, esperado in CASOS:
-        obtenido = nombre in alertaron
+    for i, (nombre, *_, esperado) in enumerate(CASOS):
+        obtenido = str(i) in alertaron
         ok = obtenido == esperado
         fallos += not ok
         print(("OK   " if ok else "FALLA"), f"{nombre}: esperado={'alerta' if esperado else 'silencio'} obtenido={'alerta' if obtenido else 'silencio'}")
