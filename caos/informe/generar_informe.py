@@ -104,6 +104,52 @@ def serie_svg() -> str:
     return "".join(p)
 
 
+def pipe_secciones() -> dict:
+    """Bloques del informe con la evidencia de ecommerce (Pipe), importada con importar_pipe.py."""
+    archivo = RES / "ecommerce-resumen.json"
+    if not archivo.exists():
+        return {"fila": '<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS</td><td>El flujo mantiene éxito ≥ 99 % y p95 dentro del umbral</td><td><b>Cifras: pendientes de su evidencia.</b></td></tr>',
+                "seccion7": "", "hallazgos": ""}
+    d = json.loads(archivo.read_text(encoding="utf-8"))
+    e2, e4 = d["estable_2_tareas"]["mediana"], d["estable_4_tareas"]["mediana"]
+    r0, r1 = d["ronda_0"]["mediana"], d["ronda_1"]["mediana"]
+    m1 = d["ronda_1"]["mttr_s"]
+    hip = d["hipotesis"]
+
+    def v(a, b):
+        return f"{100 * (b - a) / a:+.1f} %".replace(".", ",")
+
+    sobre_e4 = [100 * (c["p95"] - e4["p95"]) / e4["p95"] for c in d["ronda_1"]["corridas"]]
+    dentro = sum(1 for x in sobre_e4 if x <= 20)
+    fila = (f'<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS, 8 min de carga (Chaos Toolkit)</td>'
+            f'<td>Original: éxito ≥ 99 % y p95 ≤ {hip["original_p95_ms"]} ms. Revisada (endurecida después de ver la ronda 0): p95 ≤ {hip["revisada_p95_ms"]} ms y MTTR ≤ {hip["revisada_mttr_s"]} s</td>'
+            f'<td>p95 extremo a extremo de su API: k6 y Chaos Toolkit. Ronda 0: {ms(r0["p95"])}; la original <span class="ok">se cumple</span> y la revisada <span class="mal">se refuta</span>. Ronda 1: {ms(r1["p95"])}, <span class="ok">se cumple</span> (datos de su repositorio, commit {d["commit"]})</td></tr>')
+    encabezado = (f'<tr><th></th><th class="n">Estable, 2 tareas ({len(d["estable_2_tareas"]["corridas"])} corridas)</th><th class="n">Ronda 0: 2 tareas, se detiene 1 ({len(d["ronda_0"]["corridas"])} corrida)</th>'
+                  f'<th class="n">Estable, 4 tareas ({len(d["estable_4_tareas"]["corridas"])} corridas)</th><th class="n">Ronda 1: 4 tareas, se detienen 2 ({len(d["ronda_1"]["corridas"])} corridas)</th><th class="n">Variación 0 → 1</th></tr>')
+
+    def fila_t(nombre, k, formato, negrita=False):
+        b = (lambda t: f"<b>{t}</b>") if negrita else (lambda t: t)
+        return (f'<tr><td>{b(nombre)}</td><td class="n">{formato(e2[k])}</td><td class="n">{formato(r0[k])}</td><td class="n">{formato(e4[k])}</td>'
+                f'<td class="n">{b(formato(r1[k]))}</td><td class="n">{b(v(r0[k], r1[k]))}</td></tr>')
+
+    tabla = (encabezado + fila_t("p50", "p50", ms) + fila_t("p95", "p95", ms, True) + fila_t("Máximo", "max", ms)
+             + f'<tr><td>Éxito</td><td class="n">{e2["exito_pct"]:.3f} %</td><td class="n">{r0["exito_pct"]:.3f} %</td><td class="n">{e4["exito_pct"]:.3f} %</td><td class="n">{r1["exito_pct"]:.3f} %</td><td class="n">sin cambio</td></tr>'
+             + fila_t("Throughput", "throughput", lambda x: f"{x:.0f} req/s")
+             + f'<tr><td>MTTR (tareas en ejecución = deseadas)</td><td></td><td class="n">{d["ronda_0"]["mttr_s"][0]} s</td><td></td><td class="n">{", ".join(str(x) for x in m1)} s</td><td class="n">sin diferencia concluyente</td></tr>')
+    texto = (f'<p><b>Modo de fallo:</b> sin errores (éxito ≈ 100 %); la falla pierde capacidad y el p95 sube un {v(e2["p95"], r0["p95"])} respecto al estado estable de 2 tareas. '
+             f'<b>Mejora:</b> pasar de 2 a 4 tareas, para que perder la mitad deje la capacidad del estado estable original. '
+             f'<b>Resultado:</b> la hipótesis original ya se cumplía en la ronda 0 ({ms(r0["p95"])} frente a {hip["original_p95_ms"]} ms); la revisada se refuta en la ronda 0 y se cumple en las {len(m1)} corridas de la ronda 1 con el umbral absoluto de {hip["revisada_p95_ms"]} ms. '
+             f'<b>Reservas declaradas:</b> (1) el umbral revisado se fijó <b>después</b> de ver la ronda 0; '
+             f'(2) frente a su propio estado estable de 4 tareas, la mediana de la ronda 1 se degrada {v(e4["p95"], r1["p95"])}, pero {dentro} de {len(sobre_e4)} corridas quedan dentro del +20 % (la primera llega a {sobre_e4[0]:+.1f} %); '
+             f'(3) la ronda 0 tiene una sola corrida contra tres de la ronda 1; '
+             f'(4) el MTTR de la ronda 1 va de {min(m1)} a {max(m1)} s y el de la ronda 0 ({d["ronda_0"]["mttr_s"][0]} s) cae dentro de ese rango; '
+             f'(5) 4 tareas cuestan el doble por hora; (6) quedan unas 2 a 18 peticiones fallidas por corrida (≈ 0,01 %) sin causa explicada.</p>')
+    seccion7 = '<h3>ecommerce (Pipe): el mismo experimento en AWS</h3><table>' + tabla + '</table>' + texto
+    hallazgos = ('<li><b>ecommerce:</b> detener la mitad de las tareas no produce errores sino pérdida de capacidad, que una alerta solo sobre errores no vería. '
+                 'Al cambiar la capacidad (2 a 4 tareas) hubo que volver a medir el estado estable: sin eso la comparación habría sido engañosa.</li>')
+    return {"fila": fila, "seccion7": seccion7, "hallazgos": hallazgos}
+
+
 def construir(con_ia: str | None) -> str:
     est = [k6(f"estado-estable-{i}.json") for i in (1, 2, 3)]
     med = sorted(e["p95"] for e in est)[1]
@@ -114,6 +160,7 @@ def construir(con_ia: str | None) -> str:
         f"<tr><td>{i + 1}</td><td>{e['n']:,}</td><td>{e['exito']:.0f} %</td><td>{ms(e['p50'])}</td><td>{ms(e['p95'])}</td><td>{ms(e['p99'])}</td></tr>".replace(",", " ")
         for i, e in enumerate(est))
     ia = (f"<h2>9. Uso de IA</h2>{con_ia}" if con_ia else "")
+    pipe = pipe_secciones()
     return f"""<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe de ingeniería del caos</title>
 <style>
 @page {{ size: A4; margin: 13mm 14mm; }}
@@ -145,7 +192,7 @@ td.n, th.n {{ text-align: right; font-variant-numeric: tabular-nums; }}
 <table><tr><th>Integrante</th><th>Fallo y duración</th><th>Hipótesis</th><th>Métrica e instrumento</th></tr>
 <tr><td>Juan (Azure)</td><td>F1: 3 000 ms de latencia inyectada hacia Mari, 3 min</td><td>El flujo mantiene éxito ≥ 99 % y p95 ≤ 1 600 ms</td><td>p95 extremo a extremo: k6 (<code>--summary-export</code>) y línea de acceso en Log Analytics</td></tr>
 <tr><td>Mari (GCP)</td><td>F3: CPU de un pod de StatsNostra al 100 %, 3 min (Chaos Mesh)</td><td>El p95 del flujo se mantiene ≤ 1 511 ms (su estado estable: 1 208 ms)</td><td>p95 extremo a extremo: k6 y Cloud Monitoring. Ronda 0: 3 425 ms, <span class="mal">se refuta</span>. Ronda 1: 774 ms, <span class="ok">se cumple</span> (datos de su repositorio)</td></tr>
-<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS (AWS FIS)</td><td>El flujo sigue respondiendo y el servicio se recupera sin disparar la alarma de aborto</td><td>Éxito del flujo: k6 y CloudWatch. <b>Cifras de las rondas: pendientes de su evidencia.</b></td></tr></table>
+{pipe['fila']}</table>
 
 <h2>4. Método y radio de impacto</h2>
 <p>Cada experimento es un archivo de Chaos Toolkit (<code>caos/experimentos/</code>) con estado estable, hipótesis, método y reversión, ejecutado con el mismo comando en las dos rondas. La falla de Juan se activa con la cabecera <code>X-Inject-Outbound-Latency-Ms</code> (apagada por defecto; solo con <code>FAULT_HEADER_ENABLED=true</code>, tope de 10 s). <b>Radio de impacto:</b> solo las peticiones de k6 que llevan la cabecera; infraestructura del grupo; datos sintéticos; máximo 30 usuarios virtuales. <b>Abortos:</b> éxito &lt; 50 % o p95 &gt; 15 000 ms (k6 detiene la prueba a los 20 s). <b>Interruptor de parada:</b> quitar la cabecera o <code>FAULT_HEADER_ENABLED=false</code>. <b>Reversión probada antes de la ronda 0:</b> 662 ms sin falla, 6 709 ms con ella y 659 ms al apagarla. Como medición, tres niveles: M1 extremo a extremo (k6), M2 por API (línea de acceso con <code>traceId</code>, <code>status</code> y <code>ms</code>) y M3 de plataforma (CPU, memoria, reinicios).</p>
@@ -170,13 +217,14 @@ td.n, th.n {{ text-align: right; font-variant-numeric: tabular-nums; }}
 <tr><td>Throughput</td><td class="n">29,0 req/s</td><td class="n">{r0['tps']:.1f} req/s</td><td class="n">{r1['tps']:.1f} req/s</td><td class="n">×{r1['tps'] / r0['tps']:.0f}</td></tr>
 <tr><td>Hipótesis</td><td></td><td class="n mal">se refuta</td><td class="n ok">se cumple</td><td></td></tr></table>
 <p>Con timeout y circuit breaker el p95 baja a <b class="ok">{ms(r1['p95'])}</b>, equivalente al estado estable, y el flujo recupera su capacidad. <b>Costo declarado:</b> en los logs de la ronda 1 hubo 66 llamadas cortadas por el timeout y unos 11 856 avisos de circuito abierto hacia Mari (≈ dos por petición): prácticamente todas las respuestas fueron 200 pero <b>sin los datos de Mari</b>. La mejora recupera latencia y disponibilidad del flujo, no los datos de la dependencia mientras dure la falla (que el p50 sea menor que el del estado estable se explica porque con el circuito abierto se hace menos trabajo). El resultado de Mari sigue el mismo patrón: su mejora (readiness por saturación, más CPU y HPA) devolvió el p95 de 3 425 ms a 774 ms.</p>
+{pipe['seccion7']}
 
 <h2>8. Hallazgos inesperados y backlog de resiliencia</h2>
 <ul><li>La latencia de una dependencia se paga <b>multiplicada por el número de llamadas seguidas</b>. Backlog: llamar a las dependencias en paralelo.</li>
 <li>Una falla de latencia <b>no aparece en la tasa de error</b>: la alerta debe estar sobre el p95, no solo sobre errores.</li>
 <li>Durante el estado estable el balanceador de Pipe devolvió dos respuestas <code>502</code> al final de una rampa de 30 usuarios; el coordinador las absorbió. Backlog de Pipe: revisar el balanceador bajo esa carga.</li>
 <li>El circuito solo se cierra cuando las llamadas de sondeo vuelven a ser rápidas: mientras la falla persista, el flujo responde degradado.</li>
-<li>Un cambio ajeno (reinicio de pods de otra nube) arruina una medición: el aviso de ventana en el chat es parte del método.</li></ul>
+<li>Un cambio ajeno (reinicio de pods de otra nube) arruina una medición: el aviso de ventana en el chat es parte del método.</li>{pipe['hallazgos']}</ul>
 {ia}
 </body></html>"""
 
