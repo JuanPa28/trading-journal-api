@@ -92,3 +92,4 @@ Cuando el circuito se abre o se cierra queda una línea de log (`Circuit breaker
 - [`resultados/03-ronda-0-y-1.md`](resultados/03-ronda-0-y-1.md): comparación de las rondas, modo de fallo (fallo en cascada por latencia, sin errores) y **costo de la mejora**: casi todas las respuestas de la ronda 1 salieron sin los datos de Mari.
 - [`informe/informe-caos-final.pdf`](informe/informe-caos-final.pdf): informe final de 5 páginas: el de Juan y Pipe más la sección de Mari (se regenera con `python caos/informe/generar_informe.py` y se ensambla con `python caos/informe/ensamblar.py caos`).
 - `resultados/serie-rondas.json`: la serie por minuto del tablero.
+- [`resultados/04-chaos-gate.md`](resultados/04-chaos-gate.md): el chaos gate en GitHub Actions: **rechazó** al sistema sin protección (p95 de 6 400 ms) y lo **aprobó** con timeout y circuit breaker (759 ms), con la evidencia de cada ejecución y el primer intento fallido por un error propio.
