@@ -4,7 +4,7 @@ Seguimiento #4 (DevOps). Un flujo síncrono de punta a punta, con un generador d
 
 > Estado del flujo (13 de noviembre): las tres APIs responden y el coordinador recorre las tres nubes; ver [`resultados/01-flujo-por-las-tres-nubes.md`](resultados/01-flujo-por-las-tres-nubes.md).
 
-> Estado: rondas 0 y 1 del coordinador ejecutadas el 16 de noviembre de 2026; informe en [`informe/informe-caos.pdf`](informe/informe-caos.pdf). Entrega el 18 de noviembre (tag v5.0.0). Pendiente: la evidencia de Pipe.
+> Estado: rondas 0 y 1 del coordinador ejecutadas el 16 de noviembre de 2026; informe en [`informe/informe-caos-final.pdf`](informe/informe-caos-final.pdf). Entrega el 18 de noviembre (tag v5.0.0). Pendiente: la evidencia de Pipe.
 
 ## El flujo
 
@@ -90,5 +90,5 @@ Cuando el circuito se abre o se cierra queda una línea de log (`Circuit breaker
 
 - [`resultados/estado-estable.md`](resultados/estado-estable.md): tres corridas del 16 de noviembre y el estado estable declarado.
 - [`resultados/03-ronda-0-y-1.md`](resultados/03-ronda-0-y-1.md): comparación de las rondas, modo de fallo (fallo en cascada por latencia, sin errores) y **costo de la mejora**: casi todas las respuestas de la ronda 1 salieron sin los datos de Mari.
-- [`informe/informe-caos.pdf`](informe/informe-caos.pdf): informe de 3 páginas (se regenera con `python caos/informe/generar_informe.py`).
+- [`informe/informe-caos-final.pdf`](informe/informe-caos-final.pdf): informe final de 5 páginas: el de Juan y Pipe más la sección de Mari (se regenera con `python caos/informe/generar_informe.py` y se ensambla con `python caos/informe/ensamblar.py caos`).
 - `resultados/serie-rondas.json`: la serie por minuto del tablero.

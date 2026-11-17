@@ -2,7 +2,7 @@
 
 Evaluación final de Defensa en Profundidad. Verifica experimentalmente si los controles de las capas de identidad, red, carga de trabajo, datos y detección y respuesta **detectan, contienen y resisten** condiciones adversas, sobre la arquitectura multinube construida en el énfasis de DevOps (Azure, Google Cloud, AWS y Oracle). Esta carpeta es la parte de trading-journal (coordinador en Azure y datos en Oracle); StatsNostra (GKE) y ecommerce (AWS) documentan la suya en sus repositorios con el mismo formato.
 
-> Estado: experimentos 1 y 4 ejecutados el 16 de noviembre de 2026 (rondas 0 y 1); informe en [`informe/informe-seguridad.pdf`](informe/informe-seguridad.pdf). Entrega el 18 de noviembre (release v5.1.0). Pendiente: la evidencia de Pipe y el contraste con un segundo asistente de IA.
+> Estado: experimentos 1 y 4 ejecutados el 16 de noviembre de 2026 (rondas 0 y 1); informe en [`informe/informe-seguridad-final.pdf`](informe/informe-seguridad-final.pdf). Entrega el 18 de noviembre (release v5.1.0). Pendiente: la evidencia de Pipe y el contraste con un segundo asistente de IA.
 
 ![Capas, experimentos y señales](../docs/seguridad-capas.svg)
 
@@ -15,7 +15,7 @@ Evaluación final de Defensa en Profundidad. Verifica experimentalmente si los c
 | [`ia/`](ia/) | Analista de IA con sanitización de la entrada y verificación de la respuesta |
 | [`bitacora.md`](bitacora.md) y [`resultados/`](resultados/) | Bitácora de cada acción y resultados de cada ronda: [`01-identidad.md`](resultados/01-identidad.md) y [`04-resiliencia-de-datos.md`](resultados/04-resiliencia-de-datos.md) |
 | [`tendencias.md`](tendencias.md) | Tendencias verificables con fuente y fecha de consulta |
-| [`informe/`](informe/informe-seguridad.pdf) | Informe del game day (7 páginas), generado con `python seguridad/informe/generar_informe.py` |
+| [`informe/`](informe/informe-seguridad-final.pdf) | Informe final del game day (9 páginas: el de Juan y Pipe más la sección de Mari), generado con `python seguridad/informe/generar_informe.py` y ensamblado con `python caos/informe/ensamblar.py seguridad` |
 
 ## Experimentos
 

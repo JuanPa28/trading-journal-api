@@ -47,8 +47,8 @@ El mismo flujo multinube (coordinador en Azure, StatsNostra en Google Cloud y ec
 
 | | Qué mide | Dónde |
 |---|---|---|
-| **Ingeniería del caos** (v5.0.0) | Si el flujo se mantiene rápido y disponible cuando una dependencia falla: estado estable, hipótesis, ronda 0, mejora, ronda 1 | [`caos/`](caos/README.md) · informe: [`caos/informe/informe-caos.pdf`](caos/informe/informe-caos.pdf) |
-| **Caos de seguridad** (v5.1.0) | Si los controles de cinco capas detectan, contienen y resisten: reglas de compromiso, detección como código, resiliencia de los datos, analista de IA | [`seguridad/`](seguridad/README.md) · informe: [`seguridad/informe/informe-seguridad.pdf`](seguridad/informe/informe-seguridad.pdf) |
+| **Ingeniería del caos** (v5.0.0) | Si el flujo se mantiene rápido y disponible cuando una dependencia falla: estado estable, hipótesis, ronda 0, mejora, ronda 1 | [`caos/`](caos/README.md) · informe: [`caos/informe/informe-caos-final.pdf`](caos/informe/informe-caos-final.pdf) |
+| **Caos de seguridad** (v5.1.0) | Si los controles de cinco capas detectan, contienen y resisten: reglas de compromiso, detección como código, resiliencia de los datos, analista de IA | [`seguridad/`](seguridad/README.md) · informe: [`seguridad/informe/informe-seguridad-final.pdf`](seguridad/informe/informe-seguridad-final.pdf) |
 
 ## Diagrama de arquitectura de la Entrega 2
 
