@@ -23,6 +23,9 @@ const FAULT_LATENCY_MS = __ENV.FAULT_LATENCY_MS || '';
 const FAULT_TARGET = __ENV.FAULT_TARGET || 'all';
 
 export const options = {
+  // Las estadísticas del resumen van aquí y no en la línea de comandos: los paréntesis de p(95) rompen el comando
+  // cuando Chaos Toolkit lo ejecuta con /bin/sh en Linux (GitHub Actions).
+  summaryTrendStats: ['avg', 'min', 'med', 'max', 'p(90)', 'p(95)', 'p(99)'],
   scenarios: {
     perfil: {
       executor: 'ramping-vus',
