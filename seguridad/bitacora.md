@@ -31,3 +31,17 @@
 | 13:59:03 | Juan Pablo | Ronda 1: medición | alerta a los 522 s |
 | 14:04:31 | Juan Pablo | Reversión: elimino regla, grupo de acciones y diagnóstico | estado de la ronda 0 |
 | 14:06:15 | Juan Pablo | Reversión del experimento 1: API de vuelta a ADMIN; elimino TJ_APP y su trigger (esperé a que cerraran las sesiones de la revisión anterior) | estado de la ronda 0 verificado: sin regla, sin grupo de acciones, sin diagnóstico, sin TJ_APP |
+| 16:36:32 | Juan Pablo | Experimento 4, repetición con el archivo real de StatsNostra (statsnostra-prediccion.json, 270 bytes, sha256 4ccc709d…7915 verificado): recreo los buckets para volver a la ronda 0 | se repiten las rondas 0, 1 y 2; la primera ejecución (objeto por defecto) queda en el historial de git |
+| 16:36:39 | Juan Pablo | Limpieza: elimino los buckets de prueba | eliminados |
+| 16:36:40 | Juan Pablo | Preparación: creo los buckets de prueba y de copia aislada (sin versionado) | listos |
+| 16:36:42 | Juan Pablo | Poblar: subo los objetos sintéticos | 3 objetos |
+| 16:36:45 | Juan Pablo | Ronda 0: sobrescribo y borro los objetos del bucket | 3 objetos afectados a las 2026-11-17T21:36:44Z |
+| 16:36:47 | Juan Pablo | Ronda 0: restauración | 0/3 objetos recuperados (ninguno) |
+| 16:36:48 | Juan Pablo | Ronda 0: medición | {"ronda": 0, "umbral_rto_s": 600, "objetos_total": 3, "objetos_recuperados": 0, "integros": 0, "rto_s": null, "rpo": "pérdida total: no había copia"} |
+| 16:36:53 | Juan Pablo | Mejoras: versionado del bucket y copia a un bucket aislado | aplicadas |
+| 16:36:55 | Juan Pablo | Ronda 1: sobrescribo y borro los objetos del bucket | 3 objetos afectados a las 2026-11-17T21:36:55Z |
+| 16:36:57 | Juan Pablo | Ronda 1: restauración | 3/3 objetos recuperados (versión anterior) |
+| 16:36:59 | Juan Pablo | Ronda 1: medición | {"ronda": 1, "umbral_rto_s": 600, "objetos_total": 3, "objetos_recuperados": 3, "integros": 3, "rto_s": 2, "rpo": "0 objetos perdidos (última versión íntegra)"} |
+| 16:37:02 | Juan Pablo | Ronda 2: sobrescribo y borro los objetos del bucket | 3 objetos afectados a las 2026-11-17T21:37:01Z |
+| 16:37:04 | Juan Pablo | Ronda 2: restauración | 3/3 objetos recuperados (copia aislada) |
+| 16:37:06 | Juan Pablo | Ronda 2: medición | {"ronda": 2, "umbral_rto_s": 600, "objetos_total": 3, "objetos_recuperados": 3, "integros": 3, "rto_s": 3, "rpo": "0 objetos perdidos (última versión íntegra)"} |

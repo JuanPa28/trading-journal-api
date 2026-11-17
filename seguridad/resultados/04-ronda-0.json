@@ -1,5 +1,6 @@
 {
   "ronda": 0,
+  "umbral_rto_s": 600,
   "objetos_total": 3,
   "objetos_recuperados": 0,
   "integros": 0,
