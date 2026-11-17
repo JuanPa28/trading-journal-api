@@ -111,6 +111,7 @@ td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
 <ul><li><b>Timeout por llamada</b> (<code>COMPANIONS_CALL_TIMEOUT_MS=1000</code>): una dependencia lenta no puede consumir todo el tiempo de la petición.</li>
 <li><b>Circuit breaker</b> de Resilience4j (<code>RESILIENCE_CB_ENABLED=true</code>): tras varias llamadas lentas o fallidas deja de llamar a Mari y responde de inmediato con esa entidad en <code>null</code> (degradación elegante), que el flujo ya sabía absorber.</li></ul>
 <p>Ambos están apagados por defecto: la ronda 0 mide el sistema sin protección y la ronda 1 se activa con dos variables, con el mismo perfil de carga y la misma versión del coordinador.</p>
+<p><b>Puerta de calidad en el pipeline.</b> El mismo experimento corre en GitHub Actions (<code>chaos-gate.yml</code>) y <b>falla si el p95 o el éxito no cumplen el umbral</b>. Sin protección el gate <span class="mal">rechazó</span> al sistema (p95 de 6 400 ms desde el runner, límite de 1 600 ms) y con timeout y circuit breaker lo <span class="ok">aprobó</span> (759 ms, éxito 100 %). Un primer intento falló por un error propio: <code>p(95)</code> en los argumentos rompe el comando en <code>/bin/sh</code> de Linux y k6 nunca corrió; se distinguió del rechazo real leyendo el diario del experimento.</p>
 
 <h2>7. Ronda 1 y comparación</h2>
 <table><tr><th></th><th class="n">Estado estable</th><th class="n">Ronda 0</th><th class="n">Ronda 1</th><th class="n">Variación 0 → 1</th></tr>
