@@ -83,13 +83,13 @@ def test_ronda_1_con_versionado_y_copia_se_recupera_todo(entorno):
     e.atacar(1)
     e.restaurar(1)
     datos = e.estado()["ronda1"]
-    assert datos["recuperados"] == len(e.OBJETOS)
+    assert datos["recuperados"] == len(e.cargar_objetos())
     assert set(datos["origen"].values()) == {"versión anterior"}
     e.medir(1)
 
 
 def test_si_solo_hay_copia_aislada_se_recupera_desde_ella(entorno):
-    for nombre, contenido in e.OBJETOS.items():
+    for nombre, contenido in e.cargar_objetos().items():
         entorno.put_object("ns", e.COPIA, nombre, contenido)   # copia sin versionado en el bucket principal
     e.atacar(1)
     e.restaurar(1)
@@ -102,7 +102,7 @@ def test_una_version_alterada_no_se_acepta_como_restauracion(entorno):
     # un atacante sube basura como "última versión buena" a la copia y borra las versiones buenas
     entorno.buckets[e.BUCKET]["versiones"] = {n: [v for v in vs if v["contenido"] == e.BASURA or v["marca"]]
                                               for n, vs in entorno.buckets[e.BUCKET]["versiones"].items()}
-    entorno.buckets[e.COPIA]["versiones"] = {n: [{"id": "x", "contenido": e.BASURA, "marca": False, "t": entorno.reloj}] for n in e.OBJETOS}
+    entorno.buckets[e.COPIA]["versiones"] = {n: [{"id": "x", "contenido": e.BASURA, "marca": False, "t": entorno.reloj}] for n in e.cargar_objetos()}
     e.restaurar(1)
     assert e.estado()["ronda1"]["recuperados"] == 0
 
@@ -146,4 +146,4 @@ def test_las_versiones_sin_fecha_tambien_se_restauran(entorno, monkeypatch):
     e.mejorar()
     e.atacar(1)
     e.restaurar(1)
-    assert e.estado()["ronda1"]["recuperados"] == len(e.OBJETOS)
+    assert e.estado()["ronda1"]["recuperados"] == len(e.cargar_objetos())

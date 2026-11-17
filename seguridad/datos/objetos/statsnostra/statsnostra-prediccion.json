@@ -1,0 +1,13 @@
+{
+  "api": "statsnostra",
+  "tipo": "prediccion",
+  "sintetico": true,
+  "id": 9001,
+  "apostador_id": 9007,
+  "partido_id": 9012,
+  "goles_local_pred": 2,
+  "goles_visitante_pred": 1,
+  "fecha_prediccion": "2026-11-16T15:00:00Z",
+  "acertada": null,
+  "puntos": null
+}
