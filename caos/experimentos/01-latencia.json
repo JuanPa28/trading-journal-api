@@ -37,7 +37,7 @@
       "provider": {
         "type": "process",
         "path": "k6",
-        "arguments": "run -q --summary-trend-stats avg,min,med,max,p(90),p(95),p(99) -e BASE_URL=${coordinador} -e TRADE_ID=${trade_id} -e FAULT_LATENCY_MS=${latencia_ms} -e FAULT_TARGET=${objetivo} -e P95_MS=${p95_ms} --summary-export ${resumen} caos/carga/perfil.js",
+        "arguments": "run -q -e BASE_URL=${coordinador} -e TRADE_ID=${trade_id} -e FAULT_LATENCY_MS=${latencia_ms} -e FAULT_TARGET=${objetivo} -e P95_MS=${p95_ms} --summary-export ${resumen} caos/carga/perfil.js",
         "timeout": 600
       }
     }
