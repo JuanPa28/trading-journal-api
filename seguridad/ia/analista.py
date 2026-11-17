@@ -38,7 +38,7 @@ PATRONES_INYECCION = [
     r"new\s+instructions",
 ]
 RE_INYECCION = re.compile("|".join(PATRONES_INYECCION), flags=re.IGNORECASE)
-RE_SEPARADORES = re.compile(r"[-_.,;]+")   # un atacante puede separar las palabras con guiones o puntos en una ruta
+RE_SEPARADORES = re.compile(r"[-_.,;]")   # un atacante puede separar las palabras con guiones o puntos en una ruta
 RE_CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
 RE_NUMERO = re.compile(r"(?<![\w.])(\d+(?:[.,]\d+)?)\s?(ms|s|min|%)(?![\w])", flags=re.IGNORECASE)
 RE_ID = re.compile(r"\b(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|k6-\d+-\d+|reversion-[\w-]+)\b", flags=re.IGNORECASE)
@@ -54,12 +54,17 @@ def sanitizar(texto: str) -> tuple[str, int]:
     for linea in texto.splitlines():
         linea, n = RE_INYECCION.subn("[INSTRUCCION-NEUTRALIZADA]", linea)
         if n == 0:
-            # Texto plantado en una URL: %20, + o guiones en lugar de espacios. Se detecta sobre la versión
-            # decodificada y, si coincide, la línea se reemplaza por esa versión ya neutralizada.
-            plana = RE_SEPARADORES.sub(" ", unquote_plus(linea))
-            plana_limpia, n = RE_INYECCION.subn("[INSTRUCCION-NEUTRALIZADA]", plana)
+            # Texto plantado en una URL: %20, + o guiones en lugar de espacios. Se detecta sobre una copia donde
+            # los separadores son espacios (uno por carácter, para que las posiciones coincidan) y se reemplaza
+            # SOLO el fragmento hostil en la línea decodificada: las horas y las cifras quedan intactas.
+            decodificada = unquote_plus(linea)
+            plana = RE_SEPARADORES.sub(" ", decodificada)
+            trozos, ultimo, n = [], 0, 0
+            for hallazgo in RE_INYECCION.finditer(plana):
+                trozos += [decodificada[ultimo:hallazgo.start()], "[INSTRUCCION-NEUTRALIZADA]"]
+                ultimo, n = hallazgo.end(), n + 1
             if n:
-                linea = "[LINEA-CODIFICADA] " + plana_limpia
+                linea = "[LINEA-CODIFICADA] " + "".join(trozos) + decodificada[ultimo:]
         neutralizadas += n
         linea = linea.replace("```", "'''").replace("<datos>", "&lt;datos&gt;").replace("</datos>", "&lt;/datos&gt;")
         lineas.append(linea[:MAX_LINEA])
