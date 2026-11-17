@@ -121,7 +121,7 @@ def pipe_secciones() -> dict:
 
     sobre_e4 = [100 * (c["p95"] - e4["p95"]) / e4["p95"] for c in d["ronda_1"]["corridas"]]
     dentro = sum(1 for x in sobre_e4 if x <= 20)
-    fila = (f'<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS, 8 min de carga (Chaos Toolkit)</td>'
+    fila = (f'<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS, 7 min de carga (Chaos Toolkit)</td>'
             f'<td>Original: éxito ≥ 99 % y p95 ≤ {hip["original_p95_ms"]} ms. Revisada (endurecida después de ver la ronda 0): p95 ≤ {hip["revisada_p95_ms"]} ms y MTTR ≤ {hip["revisada_mttr_s"]} s</td>'
             f'<td>p95 extremo a extremo de su API: k6 y Chaos Toolkit. Ronda 0: {ms(r0["p95"])}; la original <span class="ok">se cumple</span> y la revisada <span class="mal">se refuta</span>. Ronda 1: {ms(r1["p95"])}, <span class="ok">se cumple</span> (datos de su repositorio, commit {d["commit"]})</td></tr>')
     encabezado = (f'<tr><th></th><th class="n">Estable, 2 tareas ({len(d["estable_2_tareas"]["corridas"])} corridas)</th><th class="n">Ronda 0: 2 tareas, se detiene 1 ({len(d["ronda_0"]["corridas"])} corrida)</th>'
@@ -163,15 +163,15 @@ def construir(con_ia: str | None) -> str:
     pipe = pipe_secciones()
     return f"""<!doctype html><html lang="es"><head><meta charset="utf-8"><title>Informe de ingeniería del caos</title>
 <style>
-@page {{ size: A4; margin: 13mm 14mm; }}
-body {{ font-family: "Segoe UI", Arial, sans-serif; font-size: 10.2pt; line-height: 1.42; color: #1f2937; }}
+@page {{ size: A4; margin: 11mm 13mm; }}
+body {{ font-family: "Segoe UI", Arial, sans-serif; font-size: 9.2pt; line-height: 1.34; color: #1f2937; }}
 h1 {{ font-size: 17pt; margin: 0 0 2px; color: #111827; }} .sub {{ color: #6b7280; margin-bottom: 6px; }}
 h2 {{ font-size: 11.5pt; margin: 11px 0 3px; color: #1d4ed8; border-bottom: 1.5px solid #dbeafe; padding-bottom: 2px; break-after: avoid; }}
 p {{ margin: 3px 0; }} ul {{ margin: 3px 0 3px 16px; padding: 0; }} li {{ margin: 1px 0; }}
-table {{ border-collapse: collapse; width: 100%; margin: 5px 0; font-size: 9.2pt; break-inside: avoid; }}
+table {{ border-collapse: collapse; width: 100%; margin: 5px 0; font-size: 8.5pt; break-inside: avoid; }}
 th, td {{ border: 1px solid #d1d5db; padding: 2.5px 5px; text-align: left; vertical-align: top; }} th {{ background: #eef2ff; }}
 td.n, th.n {{ text-align: right; font-variant-numeric: tabular-nums; }}
-.arq {{ width: 100%; height: auto; max-height: 330px; display: block; margin: 4px 0; }}
+.arq {{ width: 100%; height: auto; max-height: 240px; display: block; margin: 4px 0; }}
 .pie {{ font-size: 9pt; color: #4b5563; }} .graf {{ width: 100%; max-width: 640px; height: auto; display: block; margin: 2px 0; }}
 .caja {{ background: #fef3c7; border-left: 4px solid #b45309; padding: 4px 8px; margin: 5px 0; break-inside: avoid; }}
 .ok {{ color: #15803d; font-weight: 700; }} .mal {{ color: #b91c1c; font-weight: 700; }} code {{ background: #eef2ff; padding: 0 3px; border-radius: 3px; font-size: 8.4pt; }}
