@@ -10,7 +10,7 @@
 | Objetos recuperados | **0 de 3** | **3 de 3** | **3 de 3** |
 | Íntegros (sha256 igual al original) | 0 | 3 | 3 |
 | Origen de la restauración | ninguno | versión anterior | **copia aislada** |
-| RTO (ataque a restauración completa) | no se pudo restaurar | 3 s | 3 s |
+| RTO (ataque a restauración completa) | no se pudo restaurar | 2 s | 3 s |
 | Pérdida de datos | **total** | ninguna | ninguna |
 | Hipótesis | **se refuta** | **se cumple** | **se cumple** |
 
@@ -22,12 +22,12 @@
 
 ## Límites que hay que declarar
 
-- Los objetos son de pocos bytes, así que el RTO de 3 s **no es extrapolable**: con datos reales crece con el volumen. Sirve para demostrar el mecanismo, no para dimensionar el RTO de producción.
+- Los objetos son de pocos bytes, así que el RTO de 2 a 3 s **no es extrapolable**: con datos reales crece con el volumen. Sirve para demostrar el mecanismo, no para dimensionar el RTO de producción.
 - La copia aislada es **otro bucket de la misma cuenta de Oracle**. Protege contra un borrado en el bucket principal, pero no contra la pérdida de la cuenta o de las credenciales con permiso sobre ambos buckets. Un aislamiento real exige otra cuenta o región con permisos separados (siguiente paso).
 - La copia se hizo en el mismo comando de la mejora (`mejorar`); no hay copia periódica, así que el RPO real depende de cada cuánto se copie. Hoy es el instante de la última copia.
 - No hay detección: el borrado masivo no genera alerta. Está en el inventario como hueco de la capa de detección y respuesta.
 - Un primer intento de restauración de la ronda 1 falló porque el listado de versiones de Oracle devuelve la fecha vacía (lo que la simulación de las pruebas no reproducía). No hubo pérdida de datos (el versionado estaba activo); se corrigió el script, se agregó una prueba y la ronda 1 se repitió desde el ataque. Está en la bitácora.
-- El aporte de StatsNostra fue el objeto por defecto: Mari propuso entregar un archivo con la forma real de su API y un hash, que se incorporará con `seguridad/datos/objetos/` si llega antes de la entrega.
+- **El aporte de StatsNostra es un archivo real de su API**: `statsnostra-prediccion.json` (270 bytes, una predicción sintética con la forma de su API) con su hash `sha256` `4ccc709d…7915`, que el script verifica antes de usarlo y que coincide con el que Mari informó. El experimento se **repitió completo con ese archivo** (los buckets se recrearon para volver a la ronda 0); la primera ejecución, con un objeto por defecto, dio los mismos resultados y queda en el historial de git y en la bitácora.
 
 ## Mapeo
 
