@@ -8,7 +8,7 @@
   <text x="28" y="86" font-size="11" fill="#1e3a8a">Secreto de la base de datos · usuario ADMIN (hueco) · sin rotación (hueco)</text>
   <text x="28" y="106" font-size="11" fill="#1e3a8a">Mejoras: usuario TJ_APP de privilegios mínimos · detección del listado de secretos</text>
   <rect x="560" y="54" width="204" height="66" rx="8" fill="#ffffff" stroke="#1d4ed8"/>
-  <text x="662" y="74" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 1 · Juan</text>
+  <text x="662" y="74" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXP. 1 · trading-journal</text>
   <text x="662" y="92" text-anchor="middle" font-size="10.5" fill="#1e3a8a">listSecrets de la Container App</text>
   <text x="662" y="108" text-anchor="middle" font-size="10.5" fill="#1e3a8a">T1552.007 · D3-UAP · D3-CRO</text>
 
@@ -17,7 +17,7 @@
   <text x="28" y="182" font-size="11" fill="#14532d">Entrada HTTPS · base Oracle abierta a 0.0.0.0/0 (hueco) · sin filtrado de salida (hueco)</text>
   <text x="28" y="202" font-size="11" fill="#14532d">GKE: NetworkPolicy de denegación por defecto y alerta de Services expuestos</text>
   <rect x="560" y="150" width="204" height="66" rx="8" fill="#ffffff" stroke="#15803d"/>
-  <text x="662" y="170" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 2 · Mari</text>
+  <text x="662" y="170" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXP. 2 · StatsNostra</text>
   <text x="662" y="188" text-anchor="middle" font-size="10.5" fill="#14532d">Exposición y segmentación</text>
   <text x="662" y="204" text-anchor="middle" font-size="10.5" fill="#14532d">T1190 · T1021 · D3-NI · D3-ITF</text>
 
@@ -26,7 +26,7 @@
   <text x="28" y="278" font-size="11" fill="#78350f">Imagen mínima · proceso como root (hueco) · /actuator/prometheus público (hueco menor)</text>
   <text x="28" y="298" font-size="11" fill="#78350f">GKE: imagen sin root, sin capacidades · AWS: tareas ECS con alarma de aborto</text>
   <rect x="560" y="246" width="204" height="66" rx="8" fill="#ffffff" stroke="#b45309"/>
-  <text x="662" y="266" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 3 · Pipe</text>
+  <text x="662" y="266" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXP. 3 · ecommerce</text>
   <text x="662" y="284" text-anchor="middle" font-size="10.5" fill="#78350f">Telemetría y capa de IA</text>
   <text x="662" y="300" text-anchor="middle" font-size="10.5" fill="#78350f">AML.T0051 · D3-ACH</text>
 
@@ -35,7 +35,7 @@
   <text x="28" y="374" font-size="11" fill="#831843">Bucket de adjuntos sin versionado (hueco) · sin copia aislada (hueco) · cifrado en reposo</text>
   <text x="28" y="394" font-size="11" fill="#831843">Mejoras: versionado del bucket · copia en un bucket aislado · RPO y RTO medidos</text>
   <rect x="560" y="342" width="204" height="66" rx="8" fill="#ffffff" stroke="#be185d"/>
-  <text x="662" y="362" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXPERIMENTO 4 · Los tres</text>
+  <text x="662" y="362" text-anchor="middle" font-size="11.5" font-weight="700" fill="#b91c1c">EXP. 4 · Los tres</text>
   <text x="662" y="380" text-anchor="middle" font-size="10.5" fill="#831843">Borrado y sobrescritura del bucket</text>
   <text x="662" y="396" text-anchor="middle" font-size="10.5" fill="#831843">T1485 · T1486 · D3-RO</text>
 
@@ -52,8 +52,8 @@
   <rect x="790" y="44" width="196" height="470" rx="10" fill="#f9fafb" stroke="#9ca3af" stroke-dasharray="5,3"/>
   <text x="888" y="68" text-anchor="middle" font-size="12.5" font-weight="700" fill="#111827">Fronteras de confianza</text>
   <text x="802" y="96" font-size="10.5" fill="#374151">• Internet frente al ingress</text>
-  <text x="802" y="116" font-size="10.5" fill="#374151">• Coordinador frente a Mari</text>
-  <text x="802" y="134" font-size="10.5" fill="#374151">  y Pipe (otras nubes)</text>
+  <text x="802" y="116" font-size="10.5" fill="#374151">• Coordinador frente a StatsNostra</text>
+  <text x="802" y="134" font-size="10.5" fill="#374151">  y ecommerce (otras nubes)</text>
   <text x="802" y="154" font-size="10.5" fill="#374151">• API frente a Oracle</text>
   <text x="802" y="174" font-size="10.5" fill="#374151">• Operador frente a los</text>
   <text x="802" y="192" font-size="10.5" fill="#374151">  secretos de la plataforma</text>

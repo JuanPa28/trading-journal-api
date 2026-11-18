@@ -21,7 +21,7 @@
 
   <!-- Coordinador -->
   <rect x="270" y="110" width="270" height="230" rx="12" fill="#e3ecfd" stroke="#1d4ed8" stroke-width="2"/>
-  <text x="405" y="136" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">AZURE · Juanpa (coordinador)</text>
+  <text x="405" y="136" text-anchor="middle" font-size="14" font-weight="700" fill="#1d4ed8">AZURE · trading-journal</text>
   <text x="405" y="158" text-anchor="middle" font-size="12" fill="#1d4ed8">GET /api/v2/trades/{id}</text>
   <text x="405" y="178" text-anchor="middle" font-size="11" fill="#1d4ed8">Container Apps · base Oracle</text>
   <text x="405" y="206" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F1 · latencia saliente (cabecera)</text>
@@ -31,17 +31,17 @@
   <text x="405" y="294" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">M2: línea de acceso (ms, status)</text>
   <text x="405" y="312" text-anchor="middle" font-size="10.5" fill="#7c3aed">Log Analytics · tablero</text>
 
-  <!-- Mari -->
+  <!-- StatsNostra -->
   <rect x="680" y="76" width="296" height="130" rx="12" fill="#e0f4e8" stroke="#15803d" stroke-width="2"/>
-  <text x="828" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="#15803d">GOOGLE CLOUD · Mari (GKE)</text>
+  <text x="828" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="#15803d">GOOGLE CLOUD · StatsNostra (GKE)</text>
   <text x="828" y="120" text-anchor="middle" font-size="11.5" fill="#15803d">/api/v1/partidos · /predicciones</text>
   <text x="828" y="142" text-anchor="middle" font-size="10.5" fill="#15803d">2+ réplicas · probes · requests y limits</text>
-  <text x="828" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F3 · agotamiento de CPU (Chaos Mesh)</text>
+  <text x="828" y="166" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F3 · agotamiento de CPU (Chaos Toolkit)</text>
   <text x="828" y="190" text-anchor="middle" font-size="11" font-weight="700" fill="#7c3aed">M2/M3: Cloud Logging · Cloud Monitoring</text>
 
-  <!-- Pipe -->
+  <!-- ecommerce -->
   <rect x="680" y="250" width="296" height="130" rx="12" fill="#fdf0dc" stroke="#b45309" stroke-width="2"/>
-  <text x="828" y="274" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309">AWS · Pipe</text>
+  <text x="828" y="274" text-anchor="middle" font-size="14" font-weight="700" fill="#b45309">AWS · ecommerce</text>
   <text x="828" y="294" text-anchor="middle" font-size="11.5" fill="#b45309">/api/v1/commerce · /products</text>
   <text x="828" y="316" text-anchor="middle" font-size="10.5" fill="#b45309">balanceador · instancias</text>
   <text x="828" y="340" text-anchor="middle" font-size="11" font-weight="700" fill="#b91c1c">F2 · indisponibilidad de una instancia</text>
