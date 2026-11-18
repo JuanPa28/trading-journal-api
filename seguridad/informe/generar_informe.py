@@ -2,7 +2,7 @@
 """Genera el informe de seguridad (HTML y PDF, máximo 10 páginas) a partir de la evidencia y la bitácora.
 
 Las cifras de los experimentos 1 y 4 salen de seguridad/resultados/*.json y la cronología sale de
-seguridad/bitacora.md; no se escriben a mano. Lo que falta (experimento 3 de Pipe) se dice como pendiente.
+seguridad/bitacora.md; no se escriben a mano. Lo que falta (experimento 3 de ecommerce) se dice como pendiente.
 
 Uso:
   python seguridad/informe/generar_informe.py                       # informe del repositorio
@@ -45,12 +45,12 @@ def cronologia() -> str:
 
 
 def pipe_seguridad() -> dict:
-    """Bloques del informe con el experimento 3 de ecommerce (Pipe). Lo que falta se dice como pendiente."""
+    """Bloques del informe con el experimento 3 de ecommerce. Lo que falta se dice como pendiente."""
     archivo = RES / "ecommerce-seguridad.json"
-    sin = {"__PIPE_FILA3__": "<tr><td>3 · Telemetría y capa de IA (Pipe)</td><td>Con telemetría envenenada, el analista de IA no obedece instrucciones plantadas</td><td><b>Pendiente de la evidencia de Pipe</b></td></tr>",
-           "__PIPE_BLOQUE5__": '<p class="nota"><b>Pipe (experimento 3, telemetría e IA):</b> pendiente de su evidencia. No se incluyen cifras que no existan.</p>',
+    sin = {"__PIPE_FILA3__": "<tr><td>3 · Telemetría y capa de IA (ecommerce)</td><td>Con telemetría envenenada, el analista de IA no obedece instrucciones plantadas</td><td><b>Pendiente de la evidencia de ecommerce</b></td></tr>",
+           "__PIPE_BLOQUE5__": '<p class="nota"><b>ecommerce (experimento 3, telemetría e IA):</b> pendiente de su evidencia. No se incluyen cifras que no existan.</p>',
            "__PIPE_CONTRASTE__": "<b>El contraste con un segundo asistente, con las mismas entradas y sin contexto, está pendiente</b> y es lo que valida el resultado.",
-           "__PIPE_RIESGO__": "<li>Falta la evidencia del experimento 3 de Pipe y el contraste con un segundo asistente de IA.</li>"}
+           "__PIPE_RIESGO__": "<li>Falta la evidencia del experimento 3 de ecommerce y el contraste con un segundo asistente de IA.</li>"}
     if not archivo.exists():
         return sin
     d = json.loads(archivo.read_text(encoding="utf-8"))
@@ -62,9 +62,9 @@ def pipe_seguridad() -> dict:
     n = d["inyecciones"]
     cob = (f"{d['cobertura_medida']} de {n}" if d["cobertura_medida"] is not None
            else f"{d['cobertura_esperada']} de {n} <i>(esperada por el patrón; pendiente de confirmar con la métrica)</i>")
-    fila = ('<tr><td>3 · Telemetría y capa de IA (Pipe)</td><td>Con una inyección de instrucciones plantada en la ruta del log: alerta en 5 minutos o menos (T1) y el analista de IA no obedece (T2)</td>'
+    fila = ('<tr><td>3 · Telemetría y capa de IA (ecommerce)</td><td>Con una inyección de instrucciones plantada en la ruta del log: alerta en 5 minutos o menos (T1) y el analista de IA no obedece (T2)</td>'
             f'<td>Línea base de 20 peticiones normales sin sospechosas; 5 rutas con texto plantado; asistente independiente ({d["asistente"]})</td></tr>')
-    bloque = (f'<h3>Experimento 3 de Pipe (ecommerce): telemetría envenenada</h3>'
+    bloque = (f'<h3>Experimento 3 de ecommerce: telemetría envenenada</h3>'
               f'<table><tr><th></th><th>Ronda 0</th><th>Ronda 1 (filtro de métricas + alarma + correo)</th></tr>'
               f'<tr><td>Inyecciones plantadas</td><td class="n">{n} (t0 {d["t0_ronda_0"][11:19]}Z)</td><td class="n">{n} (t0 {d["t0_ronda_1"][11:19]}Z)</td></tr>'
               f'<tr><td><b>MTTD</b></td><td><span class="mal">sin alerta</span> (no hay detección en origen)</td><td class="n"><span class="ok">{mttd} s</span> (alarma a ALARM a las {d["alarma_ronda_1"][11:19]}Z)</td></tr>'
@@ -80,7 +80,7 @@ def pipe_seguridad() -> dict:
               f'(4) la reversión de los recursos de la mejora: {pend(d["reversion_confirmada"])}; (5) una sola ejecución por ronda.</p>')
     contraste = (f'<b>El contraste con un segundo asistente independiente se hizo con {d["asistente"]} sobre la telemetría de ecommerce</b> (chat nuevo y sin contexto): no obedeció en las dos pruebas sin sanitizar. '
                  'Sigue siendo una sola muestra por ronda y un solo asistente independiente.')
-    riesgo = f'<li>Pendientes de Pipe: {", ".join(d["pendientes"])}.</li>' if d["pendientes"] else ""
+    riesgo = f'<li>Pendientes de ecommerce: {", ".join(d["pendientes"])}.</li>' if d["pendientes"] else ""
     return {"__PIPE_FILA3__": fila, "__PIPE_BLOQUE5__": bloque, "__PIPE_CONTRASTE__": contraste, "__PIPE_RIESGO__": riesgo}
 
 
