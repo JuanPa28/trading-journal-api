@@ -1,0 +1,441 @@
+{
+  "info": {
+    "name": "Entrega 5: Caos y Seguridad (trading-journal)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Peticiones para demostrar el flujo multinube, la falla de latencia y sus dos rondas, y un hueco declarado de seguridad. Importar también el entorno `Entorno Entrega 5` y seleccionarlo. Orden: 0, 1, 2, 3 y 4."
+  },
+  "item": [
+    {
+      "name": "0. Antes de empezar: ¿están sanas las tres APIs?",
+      "description": "Corre esto primero. Si alguna no da 200, no empieces la demostración.",
+      "item": [
+        {
+          "name": "0.1 Salud del coordinador (trading-journal, Azure)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "health"
+              ]
+            },
+            "description": "Estado de la API coordinadora."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test(\"El estado es UP\", () => pm.expect(pm.response.json().status === 'UP').to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.2 Salud de StatsNostra (Google Cloud)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{statsnostraUrl}}/health/ready",
+              "host": [
+                "{{statsnostraUrl}}"
+              ],
+              "path": [
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Estado de la API de StatsNostra."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "0.3 Salud de ecommerce (AWS)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{ecommerceUrl}}/health",
+              "host": [
+                "{{ecommerceUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Estado de la API de ecommerce."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "1. El flujo completo con trace id",
+      "description": "Una petición al coordinador que recorre las tres nubes. El mismo X-Trace-Id viaja a StatsNostra y a ecommerce: después se busca ese id en el log de cada nube.",
+      "item": [
+        {
+          "name": "1.1 Flujo completo con mi trace id",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Trace-Id",
+                "value": "{{traceId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "Manda un X-Trace-Id propio (se guarda en la variable traceId). Copia su valor y búscalo en Log Analytics: ContainerAppConsoleLogs_CL | where Log_s has \"<el id>\"."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('traceId', 'sust-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test(\"La respuesta devuelve el mismo X-Trace-Id\", () => pm.expect(pm.response.headers.get('X-Trace-Id') === pm.collectionVariables.get('traceId')).to.eql(true));",
+                  "pm.test(\"El coordinador se identifica (X-App-Name: juanpa)\", () => pm.expect(pm.response.headers.get('X-App-Name') === 'juanpa').to.eql(true));",
+                  "const modo = pm.environment.get('modo') || 'normal';",
+                  "const c = pm.response.json().companions;",
+                  "if (modo !== 'ronda1') { pm.test('Trae los datos de las otras dos APIs (partido, predicción, commerce, product)', () => pm.expect(c.partido !== null && c.prediccion !== null && c.commerce !== null && c.product !== null).to.eql(true)); }",
+                  "console.log('X-Trace-Id usado: ' + pm.collectionVariables.get('traceId') + ' | respondió en ' + Math.round(pm.response.responseTime) + ' ms');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "1.2 Sin trace id: el coordinador genera uno",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "No se manda X-Trace-Id. La API genera uno y lo devuelve en la respuesta."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve un X-Trace-Id generado (más de 10 caracteres)\", () => pm.expect((pm.response.headers.get('X-Trace-Id') || '').length > 10).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Caos: la falla y la mejora (necesita la inyección activa)",
+      "description": "REQUISITO: antes de la demo, activar la inyección: python caos/azure/deploy.py env FAULT_HEADER_ENABLED=true (tarda ~2 min). Variable `modo` del entorno: normal (inyección apagada), ronda0 (con falla y sin protección) o ronda1 (con falla y con COMPANIONS_CALL_TIMEOUT_MS=1000 RESILIENCE_CB_ENABLED=true). Las pruebas cambian según el modo. Al terminar, apagar todo.",
+      "item": [
+        {
+          "name": "2.1 Falla: 3 000 ms de latencia hacia StatsNostra",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Trace-Id",
+                "value": "{{traceId}}"
+              },
+              {
+                "key": "X-Inject-Outbound-Latency-Ms",
+                "value": "{{latenciaMs}}"
+              },
+              {
+                "key": "X-Inject-Outbound-Target",
+                "value": "{{objetivo}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "La cabecera X-Inject-Outbound-Latency-Ms hace que el coordinador espere antes de llamar a la dependencia. Son DOS llamadas seguidas, así que 3 s se pagan dos veces (~6,4 s). Ejecuta esta petición varias veces con el Collection Runner para ver el circuito abrirse en la ronda 1."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('traceId', 'sust-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200 (el flujo no se cae, aunque la dependencia sea lenta)', () => pm.response.to.have.status(200));",
+                  "const modo = pm.environment.get('modo') || 'normal';",
+                  "const ms = pm.response.responseTime;",
+                  "if (modo === 'ronda0') { pm.test('Ronda 0 (sin protección): tarda más de 5 000 ms (3 s por llamada, dos llamadas)', () => pm.expect(ms).to.be.above(5000)); }",
+                  "else if (modo === 'ronda1') { pm.test('Ronda 1 (timeout + circuit breaker): tarda menos de 3 500 ms', () => pm.expect(ms).to.be.below(3500)); }",
+                  "else { pm.test('Modo normal (inyección apagada): tarda menos de 3 000 ms', () => pm.expect(ms).to.be.below(3000)); }",
+                  "console.log('modo ' + modo + ' | respondió en ' + Math.round(ms) + ' ms. Si en modo ronda0 tarda menos de 1,5 s, la inyección NO está activa.');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2.2 Control: la misma petición SIN cabecera de falla",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Trace-Id",
+                "value": "{{traceId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v2/trades/{{tradeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v2",
+                "trades",
+                "{{tradeId}}"
+              ]
+            },
+            "description": "Debe ser rápida en cualquier modo: la falla solo afecta a las peticiones que llevan la cabecera."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('traceId', 'sust-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test(\"Responde en menos de 3 000 ms (la falla no afecta a quien no manda la cabecera)\", () => pm.expect(pm.response.responseTime < 3000).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "3. Las otras dos APIs, directamente",
+      "description": "Cada API devuelve su X-App-Name (contrato acordado) y acepta el X-Trace-Id.",
+      "item": [
+        {
+          "name": "3.1 StatsNostra: partidos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Trace-Id",
+                "value": "{{traceId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{statsnostraUrl}}/api/v1/partidos",
+              "host": [
+                "{{statsnostraUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "partidos"
+              ]
+            },
+            "description": "Una consulta directa a StatsNostra."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('traceId', 'sust-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test(\"Se identifica (X-App-Name: mari)\", () => pm.expect(pm.response.headers.get('X-App-Name') === 'mari').to.eql(true));",
+                  "pm.test(\"Devuelve el mismo X-Trace-Id\", () => pm.expect(pm.response.headers.get('X-Trace-Id') === pm.collectionVariables.get('traceId')).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3.2 ecommerce: comercios",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "X-Trace-Id",
+                "value": "{{traceId}}"
+              }
+            ],
+            "url": {
+              "raw": "{{ecommerceUrl}}/api/v1/commerce",
+              "host": [
+                "{{ecommerceUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "commerce"
+              ]
+            },
+            "description": "Una consulta directa a ecommerce."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('traceId', 'sust-' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => pm.response.to.have.status(200));",
+                  "pm.test(\"Se identifica (X-App-Name: pipe)\", () => pm.expect(pm.response.headers.get('X-App-Name') === 'pipe').to.eql(true));",
+                  "pm.test(\"Devuelve el mismo X-Trace-Id\", () => pm.expect(pm.response.headers.get('X-Trace-Id') === pm.collectionVariables.get('traceId')).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "4. Seguridad: un hueco declarado en el inventario",
+      "description": "Esta petición documenta un riesgo residual que está declarado en el inventario de controles: el endpoint de métricas es público.",
+      "item": [
+        {
+          "name": "4.1 /actuator/prometheus es público (riesgo residual declarado)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/prometheus",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actuator",
+                "prometheus"
+              ]
+            },
+            "description": "Cualquiera puede leer las métricas del coordinador. No expone datos de negocio, pero es una superficie que está declarada como riesgo residual (carga de trabajo, 'hueco menor'). La mejora sería ponerlo detrás de autenticación o de una red privada."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200: el endpoint está expuesto (hueco declarado)', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "traceId",
+      "value": ""
+    }
+  ]
+}
