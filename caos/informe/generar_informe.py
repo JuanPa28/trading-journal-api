@@ -2,7 +2,7 @@
 """Genera el informe de caos (HTML y PDF, máximo 6 páginas) a partir de la evidencia y de una plantilla.
 
 Las cifras salen de caos/resultados/*.json (resúmenes de k6), no se escriben a mano. La sección de
-Pipe y la de uso de IA son opcionales: si faltan, el informe lo dice en lugar de inventarlas.
+ecommerce y la de uso de IA son opcionales: si faltan, el informe lo dice en lugar de inventarlas.
 
 Uso:
   python caos/informe/generar_informe.py                 # escribe informe-caos.html y el PDF
@@ -105,10 +105,10 @@ def serie_svg() -> str:
 
 
 def pipe_secciones() -> dict:
-    """Bloques del informe con la evidencia de ecommerce (Pipe), importada con importar_pipe.py."""
+    """Bloques del informe con la evidencia de ecommerce, importada con importar_pipe.py."""
     archivo = RES / "ecommerce-resumen.json"
     if not archivo.exists():
-        return {"fila": '<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS</td><td>El flujo mantiene éxito ≥ 99 % y p95 dentro del umbral</td><td><b>Cifras: pendientes de su evidencia.</b></td></tr>',
+        return {"fila": '<tr><td>ecommerce (AWS)</td><td>F2: detener el 50 % de las tareas ECS</td><td>El flujo mantiene éxito ≥ 99 % y p95 dentro del umbral</td><td><b>Cifras: pendientes de su evidencia.</b></td></tr>',
                 "seccion7": "", "hallazgos": ""}
     d = json.loads(archivo.read_text(encoding="utf-8"))
     e2, e4 = d["estable_2_tareas"]["mediana"], d["estable_4_tareas"]["mediana"]
@@ -121,7 +121,7 @@ def pipe_secciones() -> dict:
 
     sobre_e4 = [100 * (c["p95"] - e4["p95"]) / e4["p95"] for c in d["ronda_1"]["corridas"]]
     dentro = sum(1 for x in sobre_e4 if x <= 20)
-    fila = (f'<tr><td>Pipe (AWS)</td><td>F2: detener el 50 % de las tareas ECS, 7 min de carga (Chaos Toolkit)</td>'
+    fila = (f'<tr><td>ecommerce (AWS)</td><td>F2: detener el 50 % de las tareas ECS, 7 min de carga (Chaos Toolkit)</td>'
             f'<td>Original: éxito ≥ 99 % y p95 ≤ {hip["original_p95_ms"]} ms. Revisada (endurecida después de ver la ronda 0): p95 ≤ {hip["revisada_p95_ms"]} ms y MTTR ≤ {hip["revisada_mttr_s"]} s</td>'
             f'<td>p95 extremo a extremo de su API: k6 y Chaos Toolkit. Ronda 0: {ms(r0["p95"])}; la original <span class="ok">se cumple</span> y la revisada <span class="mal">se refuta</span>. Ronda 1: {ms(r1["p95"])}, <span class="ok">se cumple</span> (datos de su repositorio, commit {d["commit"]})</td></tr>')
     encabezado = (f'<tr><th></th><th class="n">Estable, 2 tareas ({len(d["estable_2_tareas"]["corridas"])} corridas)</th><th class="n">Ronda 0: 2 tareas, se detiene 1 ({len(d["ronda_0"]["corridas"])} corrida)</th>'
@@ -144,7 +144,7 @@ def pipe_secciones() -> dict:
              f'(3) la ronda 0 tiene una sola corrida contra tres de la ronda 1; '
              f'(4) el MTTR de la ronda 1 va de {min(m1)} a {max(m1)} s y el de la ronda 0 ({d["ronda_0"]["mttr_s"][0]} s) cae dentro de ese rango; '
              f'(5) 4 tareas cuestan el doble por hora; (6) quedan unas 2 a 18 peticiones fallidas por corrida (≈ 0,01 %) sin causa explicada.</p>')
-    seccion7 = '<h3>ecommerce (Pipe): el mismo experimento en AWS</h3><table>' + tabla + '</table>' + texto
+    seccion7 = '<h3>ecommerce: el mismo experimento en AWS</h3><table>' + tabla + '</table>' + texto
     hallazgos = ('<li><b>ecommerce:</b> detener la mitad de las tareas no produce errores sino pérdida de capacidad, que una alerta solo sobre errores no vería. '
                  'Al cambiar la capacidad (2 a 4 tareas) hubo que volver a medir el estado estable: sin eso la comparación habría sido engañosa.</li>')
     return {"fila": fila, "seccion7": seccion7, "hallazgos": hallazgos}
@@ -180,32 +180,32 @@ td.n, th.n {{ text-align: right; font-variant-numeric: tabular-nums; }}
 <div class="sub">Flujo multinube de trading-journal · Azure, Google Cloud y AWS · 16 de noviembre de 2026 · Tag v5.0.0</div>
 
 <h2>1. Resumen y arquitectura</h2>
-<p>Un cliente consulta <code>GET /api/v2/trades/{{id}}</code> en el <b>coordinador</b> (Azure Container Apps, con base Oracle). Por cada consulta el coordinador llama a <b>StatsNostra</b> (Mari, GKE en Google Cloud) y a <b>ecommerce</b> (Pipe, AWS) y devuelve el registro unido. El mismo <code>X-Trace-Id</code> viaja por las tres nubes. Pregunta: <b>¿se mantiene el flujo rápido y disponible cuando una de las dependencias falla?</b> Un fallo por nube sobre el mismo flujo y el mismo perfil de carga: F1 latencia saliente hacia Mari (Juan, Azure), F2 indisponibilidad de tareas de Pipe (AWS) y F3 agotamiento de CPU de un pod de Mari (GKE).</p>
+<p>Un cliente consulta <code>GET /api/v2/trades/{{id}}</code> en el <b>coordinador</b> (Azure Container Apps, con base Oracle). Por cada consulta el coordinador llama a <b>StatsNostra</b> (GKE en Google Cloud) y a <b>ecommerce</b> (AWS) y devuelve el registro unido. El mismo <code>X-Trace-Id</code> viaja por las tres nubes. Pregunta: <b>¿se mantiene el flujo rápido y disponible cuando una de las dependencias falla?</b> Un fallo por nube sobre el mismo flujo y el mismo perfil de carga: F1 latencia saliente del coordinador hacia StatsNostra (trading-journal, Azure), F2 pérdida de tareas de ecommerce (AWS) y F3 agotamiento de CPU de un pod de StatsNostra (GKE).</p>
 {svg}
 
 <h2>2. Estado estable medido y perfil de carga</h2>
 <p>Perfil fijo de k6: rampa de 5, 15 y 30 usuarios virtuales, 60 s cada uno, contra el flujo completo, con todos los interruptores y patrones de resiliencia apagados. Tres corridas el 16 de noviembre, con ventana avisada en el chat del equipo (versión <code>5.0.0-rc.2</code>):</p>
 <table><tr><th>Corrida</th><th class="n">Peticiones</th><th class="n">Éxito</th><th class="n">p50</th><th class="n">p95</th><th class="n">p99</th></tr>{filas_est}</table>
-<p><b>Estado estable declarado:</b> éxito ≥ 99 % y p95 extremo a extremo ≤ 1 600 ms. La mediana medida del p95 es <b>{ms(med)}</b>; el umbral es el presupuesto de latencia aceptable para el usuario (3,3 veces por encima de lo medido), de modo que cruzarlo es un fallo real y no ruido. La corrida del 13 de noviembre se descartó porque coincidió con un reinicio de pods de Mari; esa regla dio origen al protocolo de avisar cada ventana. La corrida 1 fue más lenta por arranque en frío tras un cambio de configuración.</p>
+<p><b>Estado estable declarado:</b> éxito ≥ 99 % y p95 extremo a extremo ≤ 1 600 ms. La mediana medida del p95 es <b>{ms(med)}</b>; el umbral es el presupuesto de latencia aceptable para el usuario (3,3 veces por encima de lo medido), de modo que cruzarlo es un fallo real y no ruido. La corrida del 13 de noviembre se descartó porque coincidió con un reinicio de pods de StatsNostra; esa regla dio origen al protocolo de avisar cada ventana. La corrida 1 fue más lenta por arranque en frío tras un cambio de configuración.</p>
 
 <h2>3. Hipótesis, métrica, instrumento y ventana (una por integrante)</h2>
-<table><tr><th>Integrante</th><th>Fallo y duración</th><th>Hipótesis</th><th>Métrica e instrumento</th></tr>
-<tr><td>Juan (Azure)</td><td>F1: 3 000 ms de latencia inyectada hacia Mari, 3 min</td><td>El flujo mantiene éxito ≥ 99 % y p95 ≤ 1 600 ms</td><td>p95 extremo a extremo: k6 (<code>--summary-export</code>) y línea de acceso en Log Analytics</td></tr>
-<tr><td>Mari (GCP)</td><td>F3: CPU de un pod de StatsNostra al 100 %, 3 min (Chaos Mesh)</td><td>El p95 del flujo se mantiene ≤ 1 511 ms (su estado estable: 1 208 ms)</td><td>p95 extremo a extremo: k6 y Cloud Monitoring. Ronda 0: 3 425 ms, <span class="mal">se refuta</span>. Ronda 1: 774 ms, <span class="ok">se cumple</span> (datos de su repositorio)</td></tr>
+<table><tr><th>API (nube)</th><th>Fallo y duración</th><th>Hipótesis</th><th>Métrica e instrumento</th></tr>
+<tr><td>trading-journal (Azure)</td><td>F1: 3 000 ms de latencia inyectada hacia StatsNostra, 3 min</td><td>El flujo mantiene éxito ≥ 99 % y p95 ≤ 1 600 ms</td><td>p95 extremo a extremo: k6 (<code>--summary-export</code>) y línea de acceso en Log Analytics</td></tr>
+<tr><td>StatsNostra (GCP)</td><td>F3: CPU de un pod de StatsNostra al 100 %, 3 min (Chaos Toolkit y un endpoint propio, <code>POST /fault/cpu</code>)</td><td>El p95 del flujo se mantiene ≤ 1 511 ms (su estado estable: 1 208 ms)</td><td>p95 extremo a extremo: k6 y Cloud Monitoring. Ronda 0: 3 425 ms, <span class="mal">se refuta</span>. Ronda 1: 774 ms, <span class="ok">se cumple</span> (datos de su repositorio)</td></tr>
 {pipe['fila']}</table>
 
 <h2>4. Método y radio de impacto</h2>
-<p>Cada experimento es un archivo de Chaos Toolkit (<code>caos/experimentos/</code>) con estado estable, hipótesis, método y reversión, ejecutado con el mismo comando en las dos rondas. La falla de Juan se activa con la cabecera <code>X-Inject-Outbound-Latency-Ms</code> (apagada por defecto; solo con <code>FAULT_HEADER_ENABLED=true</code>, tope de 10 s). <b>Radio de impacto:</b> solo las peticiones de k6 que llevan la cabecera; infraestructura del grupo; datos sintéticos; máximo 30 usuarios virtuales. <b>Abortos:</b> éxito &lt; 50 % o p95 &gt; 15 000 ms (k6 detiene la prueba a los 20 s). <b>Interruptor de parada:</b> quitar la cabecera o <code>FAULT_HEADER_ENABLED=false</code>. <b>Reversión probada antes de la ronda 0:</b> 662 ms sin falla, 6 709 ms con ella y 659 ms al apagarla. Como medición, tres niveles: M1 extremo a extremo (k6), M2 por API (línea de acceso con <code>traceId</code>, <code>status</code> y <code>ms</code>) y M3 de plataforma (CPU, memoria, reinicios).</p>
+<p>Cada experimento es un archivo de Chaos Toolkit (<code>caos/experimentos/</code>) con estado estable, hipótesis, método y reversión, ejecutado con el mismo comando en las dos rondas. La falla de trading-journal se activa con la cabecera <code>X-Inject-Outbound-Latency-Ms</code> (apagada por defecto; solo con <code>FAULT_HEADER_ENABLED=true</code>, tope de 10 s). <b>Radio de impacto:</b> solo las peticiones de k6 que llevan la cabecera; infraestructura del grupo; datos sintéticos; máximo 30 usuarios virtuales. <b>Abortos:</b> éxito &lt; 50 % o p95 &gt; 15 000 ms (k6 detiene la prueba a los 20 s). <b>Interruptor de parada:</b> quitar la cabecera o <code>FAULT_HEADER_ENABLED=false</code>. <b>Reversión probada antes de la ronda 0:</b> 662 ms sin falla, 6 709 ms con ella y 659 ms al apagarla. Como medición, tres niveles: M1 extremo a extremo (k6), M2 por API (línea de acceso con <code>traceId</code>, <code>status</code> y <code>ms</code>) y M3 de plataforma (CPU, memoria, reinicios).</p>
 
 <h2>5. Ronda 0: resultados y modo de fallo</h2>
 {grafica(med, r0['p95'], r1['p95'], 1600)}
 <p class="pie"><b>Figura 1.</b> p95 del flujo en el estado estable y en cada ronda (mediana de las tres corridas del estado estable). <b>Figura 2.</b> Tablero por minuto de las dos rondas (misma información que el Workbook de Azure; datos en <code>caos/resultados/serie-rondas.json</code>). La latencia salta a ~6,4 s en cuanto empieza la inyección y vuelve a 300 ms en la ronda 1 en cuanto el circuito se abre; el primer minuto de la ronda 1 (3 443 ms) es el circuito aprendiendo.</p>
 {serie_svg()}
-<p>Sin protección, el p95 sube a <b class="mal">{ms(r0['p95'])}</b> (p50 {ms(r0['p50'])}, máximo {ms(r0['max'])}) con <b>{r0['exito']:.0f} % de éxito</b>: <b>la hipótesis se refuta sin que haya un solo error</b>. El throughput cae de 29,0 a {r0['tps']:.1f} req/s ({r0['n']} peticiones atendidas contra más de 5 000): el sistema no se cae, se queda sin capacidad. <b>Modo de fallo: fallo en cascada por latencia.</b> El coordinador hace dos llamadas seguidas a Mari y espera cada una completa, así que 3 000 ms se pagan dos veces (≈ 6,4 s de piso). Diagnóstico con el trace id: la petición <code>k6-8-3</code> aparece en la línea de acceso del coordinador con <code>ms=6378</code>; la latencia se inyecta antes de llamar a Mari, de modo que la API de Mari responde en su tiempo normal. Un monitoreo basado solo en la tasa de error no habría visto nada.</p>
+<p>Sin protección, el p95 sube a <b class="mal">{ms(r0['p95'])}</b> (p50 {ms(r0['p50'])}, máximo {ms(r0['max'])}) con <b>{r0['exito']:.0f} % de éxito</b>: <b>la hipótesis se refuta sin que haya un solo error</b>. El throughput cae de 29,0 a {r0['tps']:.1f} req/s ({r0['n']} peticiones atendidas contra más de 5 000): el sistema no se cae, se queda sin capacidad. <b>Modo de fallo: fallo en cascada por latencia.</b> El coordinador hace dos llamadas seguidas a StatsNostra y espera cada una completa, así que 3 000 ms se pagan dos veces (≈ 6,4 s de piso). Diagnóstico con el trace id: la petición <code>k6-8-3</code> aparece en la línea de acceso del coordinador con <code>ms=6378</code>; la latencia se inyecta antes de llamar a StatsNostra, de modo que la API de StatsNostra responde en su tiempo normal. Un monitoreo basado solo en la tasa de error no habría visto nada.</p>
 
 <h2>6. Mejoras aplicadas y justificación</h2>
 <ul><li><b>Timeout por llamada</b> (<code>COMPANIONS_CALL_TIMEOUT_MS=1000</code>): una dependencia lenta no puede consumir todo el tiempo de la petición.</li>
-<li><b>Circuit breaker</b> de Resilience4j (<code>RESILIENCE_CB_ENABLED=true</code>): tras varias llamadas lentas o fallidas deja de llamar a Mari y responde de inmediato con esa entidad en <code>null</code> (degradación elegante), que el flujo ya sabía absorber.</li></ul>
+<li><b>Circuit breaker</b> de Resilience4j (<code>RESILIENCE_CB_ENABLED=true</code>): tras varias llamadas lentas o fallidas deja de llamar a StatsNostra y responde de inmediato con esa entidad en <code>null</code> (degradación elegante), que el flujo ya sabía absorber.</li></ul>
 <p>Ambos están apagados por defecto: la ronda 0 mide el sistema sin protección y la ronda 1 se activa con dos variables, con el mismo perfil de carga y la misma versión del coordinador.</p>
 <p><b>Puerta de calidad en el pipeline.</b> El mismo experimento corre en GitHub Actions (<code>chaos-gate.yml</code>) y <b>falla si el p95 o el éxito no cumplen el umbral</b>. Sin protección el gate <span class="mal">rechazó</span> al sistema (p95 de 6 400 ms desde el runner, límite de 1 600 ms) y con timeout y circuit breaker lo <span class="ok">aprobó</span> (759 ms, éxito 100 %). Un primer intento falló por un error propio: <code>p(95)</code> en los argumentos rompe el comando en <code>/bin/sh</code> de Linux y k6 nunca corrió; se distinguió del rechazo real leyendo el diario del experimento.</p>
 
@@ -217,13 +217,13 @@ td.n, th.n {{ text-align: right; font-variant-numeric: tabular-nums; }}
 <tr><td>Éxito</td><td class="n">100 %</td><td class="n">{r0['exito']:.0f} %</td><td class="n">{r1['exito']:.0f} %</td><td class="n">sin cambio</td></tr>
 <tr><td>Throughput</td><td class="n">29,0 req/s</td><td class="n">{r0['tps']:.1f} req/s</td><td class="n">{r1['tps']:.1f} req/s</td><td class="n">×{r1['tps'] / r0['tps']:.0f}</td></tr>
 <tr><td>Hipótesis</td><td></td><td class="n mal">se refuta</td><td class="n ok">se cumple</td><td></td></tr></table>
-<p>Con timeout y circuit breaker el p95 baja a <b class="ok">{ms(r1['p95'])}</b>, equivalente al estado estable, y el flujo recupera su capacidad. <b>Costo declarado:</b> en los logs de la ronda 1 hubo 66 llamadas cortadas por el timeout y unos 11 856 avisos de circuito abierto hacia Mari (≈ dos por petición): prácticamente todas las respuestas fueron 200 pero <b>sin los datos de Mari</b>. La mejora recupera latencia y disponibilidad del flujo, no los datos de la dependencia mientras dure la falla (que el p50 sea menor que el del estado estable se explica porque con el circuito abierto se hace menos trabajo). El resultado de Mari sigue el mismo patrón: su mejora (readiness por saturación, más CPU y HPA) devolvió el p95 de 3 425 ms a 774 ms.</p>
+<p>Con timeout y circuit breaker el p95 baja a <b class="ok">{ms(r1['p95'])}</b>, equivalente al estado estable, y el flujo recupera su capacidad. <b>Costo declarado:</b> en los logs de la ronda 1 hubo 66 llamadas cortadas por el timeout y unos 11 856 avisos de circuito abierto hacia StatsNostra (≈ dos por petición): prácticamente todas las respuestas fueron 200 pero <b>sin los datos de StatsNostra</b>. La mejora recupera latencia y disponibilidad del flujo, no los datos de la dependencia mientras dure la falla (que el p50 sea menor que el del estado estable se explica porque con el circuito abierto se hace menos trabajo). El resultado de StatsNostra sigue el mismo patrón: su mejora (readiness por saturación, más CPU y HPA) devolvió el p95 de 3 425 ms a 774 ms.</p>
 {pipe['seccion7']}
 
 <h2>8. Hallazgos inesperados y backlog de resiliencia</h2>
 <ul><li>La latencia de una dependencia se paga <b>multiplicada por el número de llamadas seguidas</b>. Backlog: llamar a las dependencias en paralelo.</li>
 <li>Una falla de latencia <b>no aparece en la tasa de error</b>: la alerta debe estar sobre el p95, no solo sobre errores.</li>
-<li>Durante el estado estable el balanceador de Pipe devolvió dos respuestas <code>502</code> al final de una rampa de 30 usuarios; el coordinador las absorbió. Backlog de Pipe: revisar el balanceador bajo esa carga.</li>
+<li>Durante el estado estable el balanceador de ecommerce devolvió dos respuestas <code>502</code> al final de una rampa de 30 usuarios; el coordinador las absorbió. Backlog de ecommerce: revisar el balanceador bajo esa carga.</li>
 <li>El circuito solo se cierra cuando las llamadas de sondeo vuelven a ser rápidas: mientras la falla persista, el flujo responde degradado.</li>
 <li>Un cambio ajeno (reinicio de pods de otra nube) arruina una medición: el aviso de ventana en el chat es parte del método.</li>{pipe['hallazgos']}</ul>
 {ia}
